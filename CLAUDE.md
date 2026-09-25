@@ -38,7 +38,8 @@ motorbike loop around Taiwan. Read this file, then `docs/ARCHITECTURE.md` and `d
 
 ## Known limitations / good next tasks
 See `docs/ROADMAP.md`. Highest value next steps:
-1. Share/export a plan (URL-encoded settings, printable/PDF itinerary, .ics calendar).
+1. ~~Share/export~~ done (share link, print, .ics, .gpx). When adding a `TripSettings` field, add it to `SHARED_KEYS`
+   in `lib/share.ts`.
 2. Road-snapped route lines: plumbing exists, generate `src/data/geo/legs.ts` with `npm run snap-legs` (needs network).
 3. Traditional Chinese (繁中) UI — extract strings; data already has `zh` names.
 4. Offline PWA (service worker, cached app shell; optional tile caching).

@@ -429,3 +429,43 @@ body:has(.sheet[open]) { overflow: hidden; }
   .bleed-map { margin: -16px 0 0; border-radius: 0 0 28px 28px; }
   .day-strip { margin: 0; padding: 2px 0 10px; }
 }
+
+/* ── Share & export ─────────────────────────────────────────────────── */
+.share-card { margin: 8px 16px 20px; }
+.share-card h2 { font-size: 1.05rem; margin: 0 0 10px; }
+.share-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.share-grid .btn { min-height: 44px; font-size: 0.9rem; text-align: center; }
+.share-card p { margin: 10px 0 0; }
+.share-summary { font-size: 1.05rem; margin: 0 0 8px; }
+.share-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 16px; }
+.share-actions .btn { flex: 1; min-height: 44px; }
+
+/* ── Printable itinerary (#/print) ──────────────────────────────────── */
+.print-page { max-width: 760px; margin: 0 auto; padding: 16px 16px 48px; }
+.print-bar { display: flex; justify-content: space-between; gap: 8px; position: sticky; top: 0; padding: 8px 0; background: var(--bg); z-index: 2; }
+.print-head h1 { font-size: 1.6rem; line-height: 1.2; margin: 4px 0 8px; }
+.print-head p { margin: 0; color: var(--muted); }
+.print-notes { margin: 16px 0; padding-left: 18px; color: var(--caution); font-size: 0.9rem; }
+.print-days { list-style: none; padding: 0; margin: 16px 0; }
+.print-day { border-top: 1px solid var(--border); padding: 10px 0; break-inside: avoid; }
+.print-day p { margin: 4px 0 0; font-size: 0.9rem; }
+.print-day-head { display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: baseline; }
+.print-zh, .print-meta { color: var(--muted); }
+.print-meta { margin-left: auto; }
+.print-warn.danger { color: var(--danger); }
+.print-warn.caution { color: var(--caution); }
+.print-budget table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+.print-budget td { padding: 4px 0; border-bottom: 1px solid var(--border); }
+.print-budget td:last-child { text-align: right; }
+.print-budget .total td { font-weight: 800; border-bottom: 0; }
+.print-budget h2, .print-emergency h2 { font-size: 1.1rem; margin: 20px 0 6px; }
+.print-emergency p { margin: 0; font-size: 0.9rem; }
+
+@media print {
+  :root { --bg: #fff; --surface: #fff; --text: #000; --muted: #444; --border: #bbb; }
+  body { background: #fff; color: #000; }
+  .no-print { display: none !important; }
+  .print-page { max-width: none; padding: 0; }
+  .print-head h1 { font-size: 18pt; }
+  .print-day p, .print-budget table { font-size: 10pt; }
+}

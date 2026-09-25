@@ -47,6 +47,15 @@ restDays, vehicle, riders, bikes, stay tier, food style, season mode, saved attr
 - `components/RouteMap.tsx`: Leaflet, OSM tiles, a polyline per day, numbered overnight pins. Lines come from
   `lib/geo.ts#pathThrough`: road-snapped geometry from `data/geo/legs.ts` where it exists, straight stop-to-stop otherwise.
 
+## Share & export (`src/lib/share.ts`, `src/lib/export.ts`)
+- Share link: `#/plan?s=<base64url JSON>` with only the trip fields that differ from `defaultSettings()` (not the
+  checklist or onboarding). Decoding always goes through `migrate()`. `components/SharedPlanPrompt.tsx` applies it
+  directly for first-time visitors and asks anyone with an existing trip, then strips the code from the URL.
+  If you add a trip field to `TripSettings`, add it to `SHARED_KEYS` too.
+- `toIcs` (RFC 5545: CRLF, 75-octet folding, escaping; stable UIDs so re-importing updates events) and `toGpx` are pure;
+  `components/download.ts` saves the text. `screens/PrintScreen.tsx` (`#/print`, outside the tab bar) is the whole
+  plan as text for printing or saving as PDF.
+
 ## Road geometry (`src/data/geo/legs.ts`, `scripts/snap-legs.ts`)
 - One Google-encoded polyline per leg, keyed `from>to` in **clockwise** order; counter-clockwise travel reverses it.
 - Generated, not hand-written: `npm run snap-legs` routes every leg in `SECTIONS` through an OSRM-compatible server
@@ -72,4 +81,5 @@ restDays, vehicle, riders, bikes, stay tier, food style, season mode, saved attr
 - `src/lib/route.test.ts`: every hub × direction, ccw is exactly cw reversed for every variant, time formula.
 - `src/lib/budget.test.ts`: each line's arithmetic, discounts, season, weekend/holiday pricing.
 - `src/lib/holidays.test.ts`, `src/lib/geo.test.ts`: calendar data + lookups; polyline codec, simplification, leg paths.
+- `src/lib/share.test.ts`, `src/lib/export.test.ts`: link round-trip/sanitising; iCalendar and GPX format.
 - `src/state/settings.test.ts`: `migrate()` never lets junk through — the planner and budget must run on its output.

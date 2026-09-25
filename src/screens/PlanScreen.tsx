@@ -4,6 +4,7 @@ import { HUBS } from '../data/sections';
 import { STOP_BY_ID } from '../data/stops';
 import { MonthPicker } from '../components/MonthPicker';
 import { RouteMap } from '../components/RouteMap';
+import { ShareCard } from '../components/ShareCard';
 import { Sheet } from '../components/Sheet';
 import { IconArrow } from '../components/icons';
 import { Choice, Field, Note, Stepper } from '../components/ui';
@@ -134,6 +135,8 @@ export function PlanScreen({ go }: { go: (t: Tab, sub?: string) => void }) {
           <span>Licence, road status, typhoons, packing</span>
         </button>
       </nav>
+
+      <ShareCard onPrint={() => go('print')} onPickDate={() => setSheet('date')} />
 
       <div className="center">
         <button

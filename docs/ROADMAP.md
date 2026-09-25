@@ -34,8 +34,10 @@ Status legend: ✅ done · 🟡 partial · ⬜ todo. Priorities from `research/1
   `npm run snap-legs` from a machine that can reach an OSRM server, review on the map, commit
 
 ## v0.2 — Share & take it on the road
-- ⬜ Share plan via URL (compress settings into `#/plan?s=…`) + "copy link" button
-- ⬜ Export: printable itinerary page, `.ics` calendar, GPX of overnight stops
+- ✅ Share plan via URL (`#/plan?s=…`, base64url JSON of settings that differ from defaults) + share/copy button;
+  opening a link asks before replacing an existing trip, keeps the receiver's packing list
+- ✅ Export: printable itinerary page (`#/print`, print CSS / save as PDF), `.ics` calendar (one all-day event per day),
+  GPX (overnight waypoints + a route per riding day; tracks once road geometry exists)
 - ⬜ Service worker for offline app shell (vite-plugin-pwa or hand-rolled)
 - ⬜ "Today" mode: current day card, progress check-ins, next petrol reminder on remote legs
 - ⬜ Per-night stay tier override (e.g., splurge in Hualien)

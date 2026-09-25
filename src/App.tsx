@@ -8,10 +8,12 @@ import { ExploreScreen } from './screens/ExploreScreen';
 import { GuideScreen } from './screens/GuideScreen';
 import { Onboarding } from './screens/Onboarding';
 import { PlanScreen } from './screens/PlanScreen';
+import { PrintScreen } from './screens/PrintScreen';
+import { SharedPlanPrompt } from './components/SharedPlanPrompt';
 import { RouteScreen } from './screens/RouteScreen';
 import { useStore } from './state/store';
 
-export type Tab = 'plan' | 'route' | 'days' | 'explore' | 'budget' | 'guide';
+export type Tab = 'plan' | 'route' | 'days' | 'explore' | 'budget' | 'guide' | 'print';
 
 const TABS: { id: Tab; icon: ReactNode; label: string }[] = [
   { id: 'plan', icon: <IconCompass />, label: 'Trip' },
@@ -28,12 +30,13 @@ const TITLES: Record<Tab, string> = {
   explore: 'Explore',
   budget: 'Budget',
   guide: 'Rider guide',
+  print: 'Itinerary',
 };
 
 /** Hash-based tab routing so tabs are linkable (#/days, #/days/3) without a router dependency. */
 function useTab(): [Tab, (t: Tab, sub?: string) => void] {
   const read = (): Tab => {
-    const t = window.location.hash.replace('#/', '').split('/')[0] as Tab;
+    const t = window.location.hash.replace('#/', '').split(/[/?]/)[0] as Tab;
     return t in TITLES ? t : 'plan';
   };
   const [tab, setTab] = useState<Tab>(read);
@@ -51,9 +54,18 @@ function useTab(): [Tab, (t: Tab, sub?: string) => void] {
 
 export default function App() {
   const [tab, go] = useTab();
-  const { plan, budget, settings } = useStore();
+  const { settings } = useStore();
 
-  if (!settings.onboarded) return <Onboarding />;
+  return (
+    <>
+      <SharedPlanPrompt />
+      {!settings.onboarded ? <Onboarding /> : tab === 'print' ? <PrintScreen go={go} /> : <Shell tab={tab} go={go} />}
+    </>
+  );
+}
+
+function Shell({ tab, go }: { tab: Tab; go: (t: Tab, sub?: string) => void }) {
+  const { plan, budget, settings } = useStore();
 
   return (
     <div className="app">
