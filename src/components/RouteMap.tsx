@@ -12,14 +12,14 @@ import { stopName } from '../lib/format';
  * Tiles: OpenStreetMap standard tiles. For heavy production use, swap for a
  * tile provider with an API key (see docs/ROADMAP.md).
  */
-export function RouteMap({ plan, highlightDay, height = 360 }: { plan: Plan; highlightDay?: number; height?: number }) {
+export function RouteMap({ plan, highlightDay, height = 360, controls = true }: { plan: Plan; highlightDay?: number; height?: number; controls?: boolean }) {
   const el = useRef<HTMLDivElement>(null);
   const map = useRef<L.Map | null>(null);
   const layer = useRef<L.LayerGroup | null>(null);
 
   useEffect(() => {
     if (!el.current || map.current) return;
-    map.current = L.map(el.current, { zoomControl: true, attributionControl: true, scrollWheelZoom: false }).setView([23.7, 121], 7);
+    map.current = L.map(el.current, { zoomControl: controls, attributionControl: true, scrollWheelZoom: false, zoomSnap: 0.25 }).setView([23.7, 121], 7);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 18,
       attribution: '&copy; OpenStreetMap contributors',
@@ -45,7 +45,7 @@ export function RouteMap({ plan, highlightDay, height = 360 }: { plan: Plan; hig
       bounds.push(...latlngs);
       const active = highlightDay === undefined || highlightDay === d.day;
       L.polyline(latlngs, {
-        color: d.day % 2 ? '#0e7490' : '#f97316',
+        color: d.day % 2 ? '#0f5f7f' : '#e0522b',
         weight: active ? 5 : 3,
         opacity: active ? 0.9 : 0.35,
       })
