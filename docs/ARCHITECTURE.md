@@ -40,7 +40,10 @@ restDays, vehicle, riders, bikes, stay tier, food style, season mode, saved attr
   running summary, bottom tab bar.
 - `components/ui.tsx`: Card, Stepper, Segmented, Choice, Chips, Field, Stat, Warning, Note, Dots.
 - `components/Sheet.tsx`: bottom sheet on native `<dialog>` (used by the Trip tab's tappable sentence).
+- `components/MonthPicker.tsx`: weather-coloured month strip + exact-day input (Trip date sheet, onboarding); date maths in `lib/dates.ts`.
+- `screens/Onboarding.tsx`: first-run questions, shown while `settings.onboarded` is false (reset shows it again).
 - `components/icons.tsx`: inline SVG line icons (tab bar, top bar) — no emoji in chrome.
+- `components/leaflet.ts`: shared base map (OSM tiles) + route colours; `components/ExploreMap.tsx`: attraction dots for Explore's map view.
 - `components/RouteMap.tsx`: Leaflet, OSM tiles, schematic polylines per day, numbered overnight pins.
 - Styling: single `styles/app.css`, CSS variables with automatic dark mode.
 

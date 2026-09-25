@@ -1,5 +1,5 @@
 import { RouteMap } from '../components/RouteMap';
-import { Card, Dots, Note, Warning } from '../components/ui';
+import { Card, Dots, Warning } from '../components/ui';
 import { RIDE_OVERHEAD, VEHICLES } from '../data/costs';
 import type { Variant } from '../data/types';
 import { fmtHours, fmtKm, googleMapsDirections, stopName } from '../lib/format';
@@ -19,16 +19,17 @@ export function RouteScreen() {
 
   return (
     <div className="screen">
-      <Card className="flush">
-        <RouteMap plan={plan} />
-        <div className="map-caption">
-          {fmtKm(plan.totalKm)} loop · {settings.direction === 'ccw' ? 'counter-clockwise' : 'clockwise'} from {stopName(settings.startHub)} · lines are schematic
-        </div>
-      </Card>
+      <div className="bleed-map">
+        <RouteMap plan={plan} height={320} controls={false} />
+      </div>
 
-      <Note tone="tip">
-        Pick a variant for each section. Your day-by-day plan and budget update instantly.
-      </Note>
+      <header className="page-head">
+        <div className="eyebrow">
+          {fmtKm(plan.totalKm)} · {settings.direction === 'ccw' ? 'counter-clockwise' : 'clockwise'} from {stopName(settings.startHub)}
+        </div>
+        <h1 className="display small-display">Choose your roads</h1>
+        <p className="muted small">Pick a way through each section — coast, mountains or the quick road. Days and budget update instantly. Map lines are schematic.</p>
+      </header>
 
       {plan.route.sections.map(({ section, variant: chosen, reversed }) => {
         const from = reversed ? section.to : section.from;

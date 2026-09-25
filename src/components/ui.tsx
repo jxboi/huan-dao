@@ -85,21 +85,14 @@ export function Field({ label, hint, children }: { label: string; hint?: ReactNo
   );
 }
 
-export function Stat({ value, label }: { value: ReactNode; label: string }) {
-  return (
-    <div className="stat">
-      <div className="stat-value">{value}</div>
-      <div className="stat-label">{label}</div>
-    </div>
-  );
-}
-
-const WARN_ICON = { info: 'ℹ️', caution: '⚠️', danger: '⛔' } as const;
+const WARN_MARK = { info: 'i', caution: '!', danger: '!' } as const;
 
 export function Warning({ w }: { w: RoadWarning }) {
   return (
     <div className={`warning ${w.level}`}>
-      <span aria-hidden>{WARN_ICON[w.level]}</span>
+      <span className="warn-mark" aria-hidden>
+        {WARN_MARK[w.level]}
+      </span>
       <div>
         {w.text}
         {(w.url || w.checked) && (
