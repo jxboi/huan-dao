@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, type ReactNode } from 'react';
+import { IconBook, IconCalendar, IconCompass, IconMap, IconPin, IconWallet } from './components/icons';
 import { currencyFor } from './lib/budget';
 import { fmtKm, fmtMoney } from './lib/format';
 import { BudgetScreen } from './screens/BudgetScreen';
@@ -11,16 +12,16 @@ import { useStore } from './state/store';
 
 export type Tab = 'plan' | 'route' | 'days' | 'explore' | 'budget' | 'guide';
 
-const TABS: { id: Tab; icon: string; label: string }[] = [
-  { id: 'plan', icon: '🧭', label: 'Plan' },
-  { id: 'route', icon: '🗺️', label: 'Route' },
-  { id: 'days', icon: '📅', label: 'Days' },
-  { id: 'explore', icon: '📍', label: 'Explore' },
-  { id: 'budget', icon: '💰', label: 'Budget' },
+const TABS: { id: Tab; icon: ReactNode; label: string }[] = [
+  { id: 'plan', icon: <IconCompass />, label: 'Trip' },
+  { id: 'route', icon: <IconMap />, label: 'Route' },
+  { id: 'days', icon: <IconCalendar />, label: 'Days' },
+  { id: 'explore', icon: <IconPin />, label: 'Explore' },
+  { id: 'budget', icon: <IconWallet />, label: 'Budget' },
 ];
 
 const TITLES: Record<Tab, string> = {
-  plan: 'Plan your Huan Dao',
+  plan: 'Huan Dao',
   route: 'Route',
   days: 'Day by day',
   explore: 'Explore',
@@ -28,10 +29,10 @@ const TITLES: Record<Tab, string> = {
   guide: 'Rider guide',
 };
 
-/** Hash-based tab routing so tabs are linkable (#/days) without a router dependency. */
-function useTab(): [Tab, (t: Tab) => void] {
+/** Hash-based tab routing so tabs are linkable (#/days, #/days/3) without a router dependency. */
+function useTab(): [Tab, (t: Tab, sub?: string) => void] {
   const read = (): Tab => {
-    const t = window.location.hash.replace('#/', '') as Tab;
+    const t = window.location.hash.replace('#/', '').split('/')[0] as Tab;
     return t in TITLES ? t : 'plan';
   };
   const [tab, setTab] = useState<Tab>(read);
@@ -40,8 +41,8 @@ function useTab(): [Tab, (t: Tab) => void] {
     window.addEventListener('hashchange', on);
     return () => window.removeEventListener('hashchange', on);
   }, []);
-  const go = useCallback((t: Tab) => {
-    window.location.hash = `/${t}`;
+  const go = useCallback((t: Tab, sub?: string) => {
+    window.location.hash = sub ? `/${t}/${sub}` : `/${t}`;
     window.scrollTo({ top: 0 });
   }, []);
   return [tab, go];
@@ -58,13 +59,16 @@ export default function App() {
           <span className="logo" aria-hidden>環島</span>
           <div>
             <div className="brand-title">{TITLES[tab]}</div>
-            <div className="brand-sub">
-              {settings.days} days · {fmtKm(plan.totalKm)} · ≈{fmtMoney(budget.perPerson, currencyFor(settings.currency))}/person
-            </div>
+            {tab !== 'plan' && (
+              <div className="brand-sub">
+                {settings.days} days · {fmtKm(plan.totalKm)} · ≈{fmtMoney(budget.perPerson, currencyFor(settings.currency))}/person
+              </div>
+            )}
           </div>
         </div>
         <button className={`icon-btn ${tab === 'guide' ? 'on' : ''}`} onClick={() => go('guide')} aria-label="Rider guide">
-          📖<span>Guide</span>
+          <IconBook />
+          <span>Guide</span>
         </button>
       </header>
 
@@ -80,7 +84,7 @@ export default function App() {
       <nav className="tabbar" aria-label="Main">
         {TABS.map((t) => (
           <button key={t.id} className={tab === t.id ? 'on' : ''} onClick={() => go(t.id)} aria-current={tab === t.id ? 'page' : undefined}>
-            <span aria-hidden>{t.icon}</span>
+            {t.icon}
             {t.label}
           </button>
         ))}

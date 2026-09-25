@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { RouteMap } from '../components/RouteMap';
 import { AttractionRow } from '../components/AttractionRow';
 import { Card, Note, Warning } from '../components/ui';
@@ -11,7 +11,12 @@ import { useStore } from '../state/store';
 
 export function DaysScreen() {
   const { plan } = useStore();
-  const [open, setOpen] = useState<number | undefined>(1);
+  // #/days/3 (from the home screen's day strip) opens and scrolls to that day.
+  const [linked] = useState(() => Number(window.location.hash.match(/^#\/days\/(\d+)/)?.[1]) || undefined);
+  const [open, setOpen] = useState<number | undefined>(linked ?? 1);
+  useEffect(() => {
+    if (linked) document.getElementById(`day-${linked}`)?.scrollIntoView({ block: 'start' });
+  }, [linked]);
 
   return (
     <div className="screen">
@@ -43,7 +48,7 @@ function DayCard({ d, open, onToggle }: { d: PlanDay; open: boolean; onToggle: (
   const restHere = d.overnight ? settings.restDays[d.overnight] ?? 0 : 0;
 
   return (
-    <li className={`day ${d.kind} ${open ? 'open' : ''}`}>
+    <li id={`day-${d.day}`} className={`day ${d.kind} ${open ? 'open' : ''}`}>
       <button className="day-head" onClick={onToggle} aria-expanded={open}>
         <span className="day-num">{d.day}</span>
         <span className="day-title">

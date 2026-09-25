@@ -39,6 +39,8 @@ restDays, vehicle, riders, bikes, stay tier, food style, season mode, saved attr
 - `App.tsx`: hash routing (`#/plan`, `#/route`, `#/days`, `#/explore`, `#/budget`, `#/guide`), sticky top bar with
   running summary, bottom tab bar.
 - `components/ui.tsx`: Card, Stepper, Segmented, Choice, Chips, Field, Stat, Warning, Note, Dots.
+- `components/Sheet.tsx`: bottom sheet on native `<dialog>` (used by the Trip tab's tappable sentence).
+- `components/icons.tsx`: inline SVG line icons (tab bar, top bar) — no emoji in chrome.
 - `components/RouteMap.tsx`: Leaflet, OSM tiles, schematic polylines per day, numbered overnight pins.
 - Styling: single `styles/app.css`, CSS variables with automatic dark mode.
 
