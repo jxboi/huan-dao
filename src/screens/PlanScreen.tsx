@@ -190,6 +190,7 @@ function DayTile({ d, onOpen }: { d: PlanDay; onOpen: () => void }) {
       <span className="day-tile-meta">
         {rest ? 'Explore or wait out weather' : `${fmtKm(d.km)} · ${fmtHours(d.hours)}`}
         {d.warnings.some((w) => w.level === 'danger') && <span className="flag"> · check road</span>}
+        {d.holiday && <span className="holiday"> · holiday</span>}
       </span>
     </button>
   );

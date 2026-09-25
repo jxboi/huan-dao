@@ -37,6 +37,12 @@ export const STOPS: Stop[] = [
     food: ['Taro balls (芋圓)', 'Fish balls', 'Oolong tea'],
   },
   {
+    id: 'pingxi', name: 'Pingxi (Shifen)', zh: '平溪', lat: 25.044, lng: 121.776, region: 'northeast',
+    overnight: 1, lodgingFactor: 1.0,
+    blurb: 'Old coal-mining valley on a branch railway: sky lanterns at Shifen and Pingxi, Shifen Waterfall.',
+    food: ['Chicken wing rice rolls (雞翅包飯)', 'Sausage with sticky rice'],
+  },
+  {
     id: 'pinglin', name: 'Pinglin', zh: '坪林', lat: 24.936, lng: 121.711, region: 'northeast',
     overnight: 1, lodgingFactor: 0.9,
     blurb: 'Tea town on the twisty Beiyi Highway (Tai 9).',
@@ -128,6 +134,12 @@ export const STOPS: Stop[] = [
     food: ['Yuli noodles (玉里麵)', 'Stinky tofu'],
   },
   {
+    id: 'fuli', name: 'Fuli', zh: '富里', lat: 23.18, lng: 121.248, region: 'east',
+    overnight: 1, lodgingFactor: 0.85,
+    blurb: 'Southernmost Hualien township: organic rice, and the day-lily fields of Liushidan Mountain (Aug–Sep).',
+    food: ['Fuli rice', 'Day-lily dishes (金針花)'],
+  },
+  {
     id: 'chishang', name: 'Chishang', zh: '池上', lat: 23.125, lng: 121.219, region: 'east',
     overnight: 2, lodgingFactor: 0.95,
     blurb: 'Endless rice fields and Mr Brown Avenue. Rent a bicycle for golden hour.',
@@ -144,6 +156,12 @@ export const STOPS: Stop[] = [
     overnight: 2, lodgingFactor: 0.9,
     blurb: 'Big fishing harbour — go to the afternoon fish auction and eat sashimi.',
     food: ['Fresh sashimi', 'Swordfish', 'Flying fish'],
+  },
+  {
+    id: 'donghe', name: 'Donghe', zh: '東河', lat: 22.97, lng: 121.301, region: 'east',
+    overnight: 1, lodgingFactor: 0.9,
+    blurb: 'Where Tai 23 meets the coast: the old Donghe Bridge over the Mawuku river mouth and the Jinzun surf break.',
+    food: ['Donghe steamed buns (東河包子)'],
   },
   {
     id: 'dulan', name: 'Dulan', zh: '都蘭', lat: 22.88, lng: 121.23, region: 'east',

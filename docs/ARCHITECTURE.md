@@ -44,9 +44,32 @@ restDays, vehicle, riders, bikes, stay tier, food style, season mode, saved attr
 - `screens/Onboarding.tsx`: first-run questions, shown while `settings.onboarded` is false (reset shows it again).
 - `components/icons.tsx`: inline SVG line icons (tab bar, top bar) — no emoji in chrome.
 - `components/leaflet.ts`: shared base map (OSM tiles) + route colours; `components/ExploreMap.tsx`: attraction dots for Explore's map view.
-- `components/RouteMap.tsx`: Leaflet, OSM tiles, schematic polylines per day, numbered overnight pins.
+- `components/RouteMap.tsx`: Leaflet, OSM tiles, a polyline per day, numbered overnight pins. Lines come from
+  `lib/geo.ts#pathThrough`: road-snapped geometry from `data/geo/legs.ts` where it exists, straight stop-to-stop otherwise.
+
+## Road geometry (`src/data/geo/legs.ts`, `scripts/snap-legs.ts`)
+- One Google-encoded polyline per leg, keyed `from>to` in **clockwise** order; counter-clockwise travel reverses it.
+- Generated, not hand-written: `npm run snap-legs` routes every leg in `SECTIONS` through an OSRM-compatible server
+  (`OSRM_URL`, default the public demo, `exclude=motorway`), simplifies to ~30 m and writes the file. It skips legs that
+  already have geometry (`--force` to redo, `--only=a>b,…`, `--dry-run`) and lists legs whose routed km differs from the
+  data by >20 % — use that to check `sections.ts` distances. Check new lines on the map: expressways tagged as trunk
+  roads can still slip through; pin a road with `VIAS` in the script. A test checks keys are real legs and lines start
+  and end within 3 km of their stops.
+
+## Holidays (`src/data/holidays.ts`, `src/lib/holidays.ts`)
+- Breaks as inclusive date ranges (weekends included) per year in `HOLIDAY_YEARS`; `derived: true` marks ranges worked
+  out from the Saturday/Sunday make-up rule rather than read from the calendar.
+- Planner: `PlanDay.holiday` + plan notes for overlapping breaks, and a note when the trip's year isn't covered.
+- Budget: `nightFactor(date)` = max(weekend uplift, holiday uplift for the night before a day off); rental days inside a
+  Lunar New Year / long-weekend break use the peak rate in auto season mode.
 - Styling: single `styles/app.css`, CSS variables with automatic dark mode.
 
 ## Testing
-`src/lib/planner.test.ts` covers data integrity (references, closed loop), route direction/rotation/variants,
-planner invariants (exact day count, valid overnights, pins, rest/flex days, dates) and budget sanity.
+- `src/lib/planner.test.ts`: references, closed loop, planner invariants (exact day count, valid overnights, pins,
+  rest/flex days, dates) and budget/migration smoke tests.
+- `src/data/data.test.ts`: coordinates on Taiwan, legs no shorter than the straight line, plausible speeds, attractions
+  near their stop.
+- `src/lib/route.test.ts`: every hub × direction, ccw is exactly cw reversed for every variant, time formula.
+- `src/lib/budget.test.ts`: each line's arithmetic, discounts, season, weekend/holiday pricing.
+- `src/lib/holidays.test.ts`, `src/lib/geo.test.ts`: calendar data + lookups; polyline codec, simplification, leg paths.
+- `src/state/settings.test.ts`: `migrate()` never lets junk through — the planner and budget must run on its output.

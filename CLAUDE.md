@@ -29,6 +29,9 @@ motorbike loop around Taiwan. Read this file, then `docs/ARCHITECTURE.md` and `d
 - **New town**: add to `STOPS` (id, zh name, lat/lng, region, overnight score 0–3, lodgingFactor, blurb, food).
 - **New route variant**: add a `Variant` to the right `Section` in `sections.ts`; legs are listed **clockwise**,
   last leg must end at the section's `to` hub. Tests enforce this.
+- **New holiday year**: append breaks to `HOLIDAYS` and the year to `HOLIDAY_YEARS` in `src/data/holidays.ts`; update the
+  table in `research/08`.
+- **Road geometry**: `npm run snap-legs` (see `docs/ARCHITECTURE.md`). After adding/changing legs, re-run it for those legs.
 - **New attraction**: add to `ATTRACTIONS` with `stopId` of the nearest stop. `highlight: true` shows it by default on
   the day; `sideTrip: true` for things needing extra time (islands, gorges).
 - Run `npm test` — data-integrity tests catch broken references.
@@ -36,7 +39,7 @@ motorbike loop around Taiwan. Read this file, then `docs/ARCHITECTURE.md` and `d
 ## Known limitations / good next tasks
 See `docs/ROADMAP.md`. Highest value next steps:
 1. Share/export a plan (URL-encoded settings, printable/PDF itinerary, .ics calendar).
-2. Road-snapped route lines (pre-computed GeoJSON per leg, avoiding freeways) instead of straight lines.
+2. Road-snapped route lines: plumbing exists, generate `src/data/geo/legs.ts` with `npm run snap-legs` (needs network).
 3. Traditional Chinese (繁中) UI — extract strings; data already has `zh` names.
 4. Offline PWA (service worker, cached app shell; optional tile caching).
 5. "On the road" mode: today's card, next fuel stop, check-in progress.

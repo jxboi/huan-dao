@@ -1,13 +1,15 @@
 import { useEffect, useRef } from 'react';
 import L from 'leaflet';
 import { createBaseMap, MAP_COLORS } from './leaflet';
+import { LEG_GEOMETRY } from '../data/geo/legs';
 import { STOP_BY_ID } from '../data/stops';
+import { pathThrough } from '../lib/geo';
 import type { Plan } from '../lib/planner';
 import { stopName } from '../lib/format';
 
 /**
- * Leaflet map of the planned loop. Lines are drawn stop-to-stop (schematic,
- * not snapped to roads). Overnight stops get numbered day markers.
+ * Leaflet map of the planned loop. Lines follow the roads where snapped geometry exists
+ * (data/geo/legs.ts) and are straight stop-to-stop otherwise. Overnight stops get numbered day markers.
  */
 export function RouteMap({ plan, highlightDay, height = 360, controls = true }: { plan: Plan; highlightDay?: number; height?: number; controls?: boolean }) {
   const el = useRef<HTMLDivElement>(null);
@@ -34,7 +36,7 @@ export function RouteMap({ plan, highlightDay, height = 360, controls = true }: 
     plan.days.forEach((d) => {
       if (d.kind !== 'ride') return;
       const ids = [d.from, ...d.via];
-      const latlngs = ids.map((id) => STOP_BY_ID[id]).filter(Boolean).map((s) => [s.lat, s.lng] as L.LatLngTuple);
+      const latlngs = pathThrough(ids, STOP_BY_ID, LEG_GEOMETRY);
       bounds.push(...latlngs);
       const active = highlightDay === undefined || highlightDay === d.day;
       L.polyline(latlngs, {
@@ -76,8 +78,7 @@ export function RouteMap({ plan, highlightDay, height = 360, controls = true }: 
 
     if (highlightDay !== undefined) {
       const d = plan.days.find((x) => x.day === highlightDay);
-      const ids = d ? [d.from, ...d.via] : [];
-      const pts = ids.map((id) => STOP_BY_ID[id]).filter(Boolean).map((s) => [s.lat, s.lng] as L.LatLngTuple);
+      const pts = d ? pathThrough([d.from, ...d.via], STOP_BY_ID, LEG_GEOMETRY) : [];
       if (pts.length) m.fitBounds(L.latLngBounds(pts), { padding: [30, 30], maxZoom: 11 });
     } else if (bounds.length) {
       m.fitBounds(L.latLngBounds(bounds), { padding: [20, 20] });

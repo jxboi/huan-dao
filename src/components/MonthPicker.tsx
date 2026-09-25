@@ -1,6 +1,8 @@
 import { useMemo } from 'react';
 import { WEATHER } from '../data/guide';
+import { HOLIDAYS } from '../data/holidays';
 import { defaultStartInMonth, upcomingMonths } from '../lib/dates';
+import { fmtRange } from '../lib/holidays';
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 export const RATING_LABEL = { best: 'Best', good: 'Good', fair: 'Rainy', poor: 'Typhoons' } as const;
@@ -15,6 +17,8 @@ export function MonthPicker({ value, onChange }: { value: string; onChange: (iso
   const selYear = value ? Number(value.slice(0, 4)) : 0;
   const selMonth = value ? Number(value.slice(5, 7)) : 0;
   const weather = WEATHER.find((w) => w.month === selMonth);
+  const ym = value.slice(0, 7);
+  const holidays = value ? HOLIDAYS.filter((h) => h.start.slice(0, 7) === ym || h.end.slice(0, 7) === ym) : [];
 
   return (
     <div className="month-picker">
@@ -39,6 +43,11 @@ export function MonthPicker({ value, onChange }: { value: string; onChange: (iso
         })}
       </div>
       <p className="mp-note">{weather ? weather.note : 'Best riding: Mar–Apr and Oct–Nov. Typhoon season peaks Jul–Sep.'}</p>
+      {holidays.length > 0 && (
+        <p className="mp-note mp-holidays">
+          Holidays (busy, pricier rooms): {holidays.map((h) => `${h.name} ${fmtRange(h)}`).join(' · ')}
+        </p>
+      )}
       <div className="mp-exact">
         <label>
           <span>Exact start day</span>

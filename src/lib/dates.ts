@@ -31,3 +31,9 @@ export function defaultStartInMonth({ year, month }: MonthOption, today: Date): 
   const sat = new Date(from.getFullYear(), from.getMonth(), from.getDate() + ((6 - from.getDay() + 7) % 7));
   return sat.getMonth() === month - 1 ? toIso(sat) : toIso(tomorrow);
 }
+
+/** `iso` shifted by `days` (local calendar days). */
+export function addDays(iso: string, days: number): string {
+  const [y, m, d] = iso.split('-').map(Number);
+  return toIso(new Date(y, m - 1, d + days));
+}

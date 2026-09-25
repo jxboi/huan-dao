@@ -38,7 +38,7 @@
 | P1 | Packing checklist | ✅ |
 | P1 | Open leg in Google Maps (scooter-friendly waypoints) | ✅ |
 | P1 | Share plan via URL / export | ⬜ (roadmap) |
-| P2 | Start date → season warnings, weekend/holiday pricing | ✅ basic (month-based) |
+| P2 | Start date → season warnings, weekend/holiday pricing | ✅ month + weekend + holiday calendar (2026–27) |
 | P2 | Live road status / weather APIs (CWA open data) | ⬜ |
 | P2 | Chinese (繁中) UI, other languages | ⬜ |
 | P2 | Accommodation deep links (Booking/Agoda search by town) | ✅ basic search links |

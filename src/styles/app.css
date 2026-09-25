@@ -222,6 +222,7 @@ p { margin: 4px 0; }
 .day.rest .day-num { background: var(--accent); color: #fff; }
 .day-title { flex: 1; display: flex; flex-direction: column; min-width: 0; }
 .day-date { font-size: 0.72rem; color: var(--accent); font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; }
+.day-date .holiday { color: var(--caution); }
 .day-title strong { font-size: 1.02rem; }
 .day-zh { font-size: 0.85rem; color: var(--muted); letter-spacing: 0.04em; }
 .day-meta .flag { color: var(--danger); font-weight: 700; }
@@ -337,6 +338,7 @@ p { margin: 4px 0; }
 .day-tile-route { font-weight: 700; font-size: 0.88rem; }
 .day-tile-meta { font-size: 0.78rem; color: var(--muted); margin-top: auto; padding-top: 8px; }
 .day-tile .flag { color: var(--danger); font-weight: 700; }
+.day-tile .holiday { color: var(--caution); font-weight: 700; }
 
 .quick-links { display: flex; flex-direction: column; background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
 .quick-links button { display: flex; flex-direction: column; text-align: left; gap: 1px; background: none; border: 0; padding: 14px 40px 14px 16px; position: relative; min-height: 56px; }
@@ -361,6 +363,7 @@ p { margin: 4px 0; }
 .mp-month.poor .mp-rating { color: var(--danger); }
 .mp-month.fair .mp-rating { color: var(--caution); }
 .mp-note { font-size: 0.88rem; color: var(--muted); margin: 8px 0 14px; min-height: 2.6em; }
+.mp-note.mp-holidays { color: var(--caution); min-height: 0; margin-top: -8px; }
 .mp-exact { display: flex; align-items: flex-end; gap: 10px; }
 .mp-exact label { flex: 1; display: flex; flex-direction: column; gap: 4px; font-size: 0.8rem; font-weight: 600; color: var(--muted); }
 .mp-exact .chip { min-height: 42px; }

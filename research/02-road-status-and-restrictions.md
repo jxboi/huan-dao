@@ -38,6 +38,8 @@ Plate colours:
 ## East coast Hwy 11 & Hwy 9
 * Generally excellent; occasional rockfall closures after typhoons (esp. north of Shitiping).
 * Long stretches between towns on Hwy 11 — plan petrol at Fengbin, Chenggong, Donghe.
+* Tai 23 (Fuli → Donghe, 45.4 km): winding climb to ~637 m over the Coastal Range; no petrol between Fuli and Donghe;
+  landslide closures possible after heavy rain. **⚠ VERIFY** before riding.
 
 ## Mountain roads (Alishan Tai 18, Hehuanshan Tai 14A, Southern Cross-Island Tai 20)
 * Tai 14A (Wuling 3,275 m) — highest road in East Asia; cold, thin air, 125cc struggles.

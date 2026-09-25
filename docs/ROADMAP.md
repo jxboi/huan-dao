@@ -24,6 +24,15 @@ Status legend: ✅ done · 🟡 partial · ⬜ todo. Priorities from `research/1
 - ✅ Plus Jakarta Sans bundled (`src/assets/fonts`, latin + latin-ext, OFL) — no Google Fonts request
 - ✅ Days slider: thicker track, labelled suggested range
 
+## Data & tests (Sep 2026)
+- ✅ Tests for route, budget, settings migration, holidays, geometry, plus data sanity checks (96 tests)
+- ✅ `migrate()` validates every enum/id/collection (bad saved state used to crash the planner, e.g. unknown `pace`)
+- ✅ Taiwan holiday calendar 2026–2027: day labels, plan notes, holiday lodging & rental pricing, month-picker hints
+- ✅ New variants: Pingxi Valley (Taipei → Yilan), Rift Valley + Hwy 23 (Hualien → Taitung); new stops Pingxi, Fuli, Donghe
+- ✅ Fixed Hwy 11 Fengbin/Chenggong leg split (was shorter than the straight line)
+- 🟡 Road-snapped geometry: plumbing, generator script and tests done; `src/data/geo/legs.ts` still empty — run
+  `npm run snap-legs` from a machine that can reach an OSRM server, review on the map, commit
+
 ## v0.2 — Share & take it on the road
 - ⬜ Share plan via URL (compress settings into `#/plan?s=…`) + "copy link" button
 - ⬜ Export: printable itinerary page, `.ics` calendar, GPX of overnight stops
@@ -32,13 +41,13 @@ Status legend: ✅ done · 🟡 partial · ⬜ todo. Priorities from `research/1
 - ⬜ Per-night stay tier override (e.g., splurge in Hualien)
 
 ## v0.3 — Better data
-- ⬜ Road-snapped leg geometry (pre-compute with OSRM/GraphHopper *scooter/moped profile*, avoid motorways; store
-  simplified GeoJSON in `src/data/geo/`)
-- ⬜ More variants: Tai 61/Tai 17 coast, Hwy 23 (Fuli–Donghe), Southern Cross-Island (Tai 20), Hehuanshan (Tai 14A),
-  Pingxi detour, Alishan-only
+- 🟡 Road-snapped leg geometry — see above
+- 🟡 More variants: ✅ Hwy 23, ✅ Pingxi. ⬜ Tai 61/Tai 17 coast, Alishan-only. Southern Cross-Island (Tai 20) and
+  Hehuanshan (Tai 14A) cross the island, so they can't be a variant of one section — they need a "cross-island
+  shortcut" concept that skips sections (and live closure status)
 - ⬜ Petrol & Gogoro swap station layer on remote legs
 - ⬜ Accommodation suggestions per town (named hostels/minsu with price bands) — keep affiliate-neutral
-- ⬜ Holiday calendar (Taiwan public holidays per year) for pricing & crowd warnings
+- ✅ Holiday calendar (2026–2027) — add each new year when DGPA publishes it
 
 ## v0.4 — Live info & i18n
 - ⬜ CWA open data: typhoon warnings / forecast per overnight town for trip dates

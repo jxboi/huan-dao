@@ -37,6 +37,9 @@ Distances are approximate, scooter-legal roads, rounded.
 1. **Northeast Coast (Tai 2)** — Keelung, Jiufen, Bitou Cape, Fulong beach, Toucheng. ~120 km. Scenic, easy. *Default.*
 2. **Beiyi Highway (Tai 9)** — via Pinglin tea country. ~70 km. Twisty mountain road, notorious for speeding bikes; fast and fun but ride carefully. Shortest.
 3. **Full North Coast (Tai 2 from Tamsui)** — Tamsui, Jinshan, Yehliu, Keelung, then NE coast. ~180 km. For those with time.
+4. **Pingxi Valley (County 106 / 102)** — inland via Shenkeng to the sky-lantern villages of Pingxi & Shifen, over the hills
+   via Shuangxi (Tai 2C / County 102) to Fulong, then the NE coast. ~115 km. Narrow valley roads, weekend crowds at Shifen.
+   Leg distances approximate (last checked Sep 2026).
 
 ### Yilan ↔ Hualien (Suhua)
 Only one realistic road corridor. ~125 km. See `02-road-status-and-restrictions.md`
@@ -49,6 +52,13 @@ and good weather, check status the morning of.
 1. **Coastal Hwy 11** — Baqi viewpoint, Shitiping, Baxian Caves, Sanxiantai, Dulan. ~170 km. Pacific views all day. *Default.*
 2. **East Rift Valley Hwy 9** — Guangfu, Ruisui hot springs, Yuli, Chishang (Mr Brown Avenue), Guanshan. ~165 km. Rice fields, mountains, cycling paths.
 3. **Valley then coast (Hwy 64 Rui-Gang)** — Rift Valley to Ruisui, cross the Xiuguluan River gorge road to the coast, then Hwy 11 south. ~185 km. Best of both.
+4. **Rift Valley then Hwy 23** — Tai 9 to Fuli, then Tai 23 (Fudong Highway, 45.4 km, Fuli → Donghe, summit ~637 m at the
+   county border) over the Coastal Range through Taiyuan valley, then Hwy 11 south via Dulan. ~190 km. Quiet, few services.
+   Source: Wikipedia "Provincial Highway 23 (Taiwan)" (checked Sep 2026).
+
+Hwy 11 itself is 177.5 km from Ji'an (Hualien) to Taimali (Wikipedia, checked Sep 2026), i.e. ~170 km Hualien city →
+Taitung city. App legs: Hualien → Fengbin ~45, Fengbin → Chenggong ~65, Chenggong → Dulan ~38, Dulan → Taitung ~22
+(Fengbin/Chenggong split corrected Sep 2026 — it was 60/50, shorter than the straight line).
 
 ### Taitung ↔ Kenting
 1. **South Link (Tai 9) + Tai 26 west side** — Taimali, Dawu, cross the Central Range at Shouka pass (460 m), descend to the Taiwan Strait, Checheng, Hengchun. ~140 km. *Default.*

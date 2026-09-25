@@ -1,5 +1,5 @@
-import type { FoodStyle, SeasonMode, StayTier, VehicleId } from '../data/costs';
-import { SECTIONS } from '../data/sections';
+import { CURRENCIES, FOOD_STYLES, STAYS, VEHICLES, type FoodStyle, type SeasonMode, type StayTier, type VehicleId } from '../data/costs';
+import { HUBS, SECTIONS } from '../data/sections';
 
 export type Direction = 'ccw' | 'cw';
 export type Pace = 'relaxed' | 'moderate' | 'fast';
@@ -69,12 +69,33 @@ export function defaultSettings(): TripSettings {
 export function migrate(raw: unknown): TripSettings {
   const base = defaultSettings();
   if (!raw || typeof raw !== 'object') return base;
+  if (Array.isArray(raw)) return base;
   const s = { ...base, ...(raw as Partial<TripSettings>) };
-  s.variants = { ...base.variants, ...(s.variants ?? {}) };
+  s.variants = { ...base.variants, ...(isRecord(s.variants) ? (s.variants as Record<string, string>) : {}) };
   // Drop variant ids that no longer exist in data.
   for (const sec of SECTIONS) {
     if (!sec.variants.some((v) => v.id === s.variants[sec.id])) s.variants[sec.id] = sec.defaultVariant;
   }
+  // Enums, ids and collections: anything unknown falls back to the default, so a bad value in
+  // storage (or a hand-edited/shared link) can never crash the planner.
+  const oneOf = <T,>(v: unknown, ok: readonly T[], fallback: T): T => (ok.includes(v as T) ? (v as T) : fallback);
+  s.direction = oneOf(s.direction, ['ccw', 'cw'] as const, base.direction);
+  s.pace = oneOf(s.pace, Object.keys(PACES) as Pace[], base.pace);
+  s.startHub = oneOf(s.startHub, HUBS, base.startHub);
+  s.vehicle = oneOf(s.vehicle, VEHICLES.map((v) => v.id), base.vehicle);
+  s.stay = oneOf(s.stay, STAYS.map((x) => x.id), base.stay);
+  s.food = oneOf(s.food, FOOD_STYLES.map((f) => f.id), base.food);
+  s.season = oneOf(s.season, ['auto', 'low', 'peak'] as const, base.season);
+  s.currency = oneOf(s.currency, CURRENCIES.map((c) => c.code), base.currency);
+  s.startDate = typeof s.startDate === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s.startDate) ? s.startDate : '';
+  s.pinned = stringList(s.pinned);
+  s.saved = stringList(s.saved);
+  s.restDays = Object.fromEntries(
+    Object.entries(isRecord(s.restDays) ? s.restDays : {})
+      .map(([k, v]) => [k, clamp(Math.round(Number(v) || 0), 0, 10)] as const)
+      .filter(([, v]) => v > 0),
+  );
+  s.checklist = Object.fromEntries(Object.entries(isRecord(s.checklist) ? s.checklist : {}).filter(([, v]) => typeof v === 'boolean')) as Record<string, boolean>;
   s.days = clamp(Math.round(Number(s.days) || base.days), 3, 30);
   s.riders = clamp(Math.round(Number(s.riders) || 1), 1, 8);
   s.bikes = clamp(Math.round(Number(s.bikes) || 1), Math.ceil(s.riders / 2), s.riders);
@@ -82,6 +103,14 @@ export function migrate(raw: unknown): TripSettings {
   if (typeof (raw as Partial<TripSettings>).onboarded !== 'boolean') s.onboarded = true;
   s.version = SETTINGS_VERSION;
   return s;
+}
+
+function isRecord(v: unknown): v is Record<string, unknown> {
+  return !!v && typeof v === 'object' && !Array.isArray(v);
+}
+
+function stringList(v: unknown): string[] {
+  return Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string') : [];
 }
 
 export function clamp(n: number, min: number, max: number) {

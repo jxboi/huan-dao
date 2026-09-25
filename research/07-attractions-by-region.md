@@ -14,7 +14,8 @@ Coordinates are approximate (±200 m) — good for maps, not for pin-point nav.
 * **National Center for Traditional Arts** (Wujie, Yilan). 2 h. NT$150.
 * **Nanfang'ao harbour** — fishing port & lookout. 1 h.
 * **Tamsui** — sunset, Fort San Domingo, old street. 2 h.
-* **Pingxi / Shifen** — sky lanterns, waterfall. 2–3 h. (Detour from Tai 2/Tai 106.)
+* **Pingxi / Shifen** — sky lanterns (~NT$200–250 a lantern), Shifen Waterfall (free). 2–3 h. On the Pingxi Valley variant
+  (County 106), or a detour from Tai 2.
 
 ## East – Hualien
 * **Qingshui Cliffs** — view from Huide viewpoint on Tai 9. 30 min. Free.
@@ -24,11 +25,14 @@ Coordinates are approximate (±200 m) — good for maps, not for pin-point nav.
 * **Baqi viewpoint (芭崎)** — Hwy 11 sea view. 20 min.
 * **Shitiping** — stepped volcanic rocks, campsite. 1 h.
 * **Tropic of Cancer marker (Jingpu)** — 15 min.
+* **Liushidan Mountain (六十石山, Fuli)** — day-lily plateau, blooms Aug–Sep. 1.5 h. Free. Steep narrow access road.
 * **Rift Valley:** Liyu Lake, Mataian wetland (Guangfu), Ruisui hot springs, Yuli, **Chishang Mr Brown Avenue / Brown Boulevard** (rent a bicycle through rice fields), **Luye Highland** (hot-air balloons Jul–Aug).
 
 ## East – Taitung
 * **Baxian Caves** — prehistoric cave site. 1 h.
 * **Sanxiantai** — 8-arch dragon footbridge to islet. 1.5 h. Sunrise spot.
+* **Taiyuan Valley (泰源幽谷)** — gorge on Tai 23 with wild macaques in the late afternoon. 1 h. Free.
+* **Old Donghe Bridge & Donghe buns (東河包子)** — river-mouth gorge view where Tai 23 meets Hwy 11. 30 min.
 * **Dulan** — surf/art village, sugar factory art space. Evening.
 * **Jialulan** — seaside park, driftwood art. 30 min.
 * **Taitung Forest Park / Seaside Park** — 1–2 h.

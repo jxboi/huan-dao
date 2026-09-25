@@ -1,7 +1,9 @@
 import { useEffect, useRef } from 'react';
 import L from 'leaflet';
 import type { Attraction } from '../data/types';
+import { LEG_GEOMETRY } from '../data/geo/legs';
 import { STOP_BY_ID } from '../data/stops';
+import { pathThrough } from '../lib/geo';
 import { createBaseMap, MAP_COLORS } from './leaflet';
 
 /**
@@ -45,7 +47,7 @@ export function ExploreMap({
     const g = routeLayer.current;
     if (!g) return;
     g.clearLayers();
-    const pts = route.map((id) => STOP_BY_ID[id]).filter(Boolean).map((s) => [s.lat, s.lng] as L.LatLngTuple);
+    const pts = pathThrough(route, STOP_BY_ID, LEG_GEOMETRY);
     L.polyline(pts, { color: MAP_COLORS.primary, weight: 3, opacity: 0.35, interactive: false }).addTo(g);
   }, [route]);
 
