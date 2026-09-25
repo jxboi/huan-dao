@@ -36,14 +36,14 @@ export interface Budget {
   seasonFactor: number;
 }
 
-export const CATEGORY_META: Record<BudgetCategory, { label: string; icon: string }> = {
-  rental: { label: 'Scooter rental', icon: '🛵' },
-  fuel: { label: 'Fuel / charging', icon: '⛽' },
-  lodging: { label: 'Accommodation', icon: '🛏️' },
-  food: { label: 'Food & drink', icon: '🍜' },
-  activities: { label: 'Sights & activities', icon: '🎟️' },
-  extras: { label: 'SIM, rain gear & extras', icon: '🧰' },
-  contingency: { label: 'Contingency (10%)', icon: '🛟' },
+export const CATEGORY_META: Record<BudgetCategory, { label: string }> = {
+  rental: { label: 'Scooter rental' },
+  fuel: { label: 'Fuel / charging' },
+  lodging: { label: 'Accommodation' },
+  food: { label: 'Food & drink' },
+  activities: { label: 'Sights & activities' },
+  extras: { label: 'SIM, rain gear & extras' },
+  contingency: { label: 'Contingency (10%)' },
 };
 
 export function seasonFactor(settings: TripSettings): number {

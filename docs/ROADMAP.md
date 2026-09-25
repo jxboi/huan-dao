@@ -19,8 +19,10 @@ Status legend: ✅ done · 🟡 partial · ⬜ todo. Priorities from `research/1
 - ✅ Month strip coloured by riding weather (`MonthPicker`), picks the first Saturday; exact-day input as fine-tune
 - ✅ Days tab as a continuous journey timeline with zh names; larger map that follows the open day
 - ✅ New look on Route / Explore / Budget / Guide: page headers instead of hero cards, no emoji in titles, text category labels
-- ⬜ Replace remaining content emoji (guide section icons in data, Explore tip) and give Explore a map view
-- ⬜ Self-host the web font for the offline PWA
+- ✅ Explore: List / Map switch — places as dots over the route, tap for details & save
+- ✅ No emoji left in UI or data (guide/budget icon fields removed); ★/☆ kept as plain glyphs
+- ✅ Plus Jakarta Sans bundled (`src/assets/fonts`, latin + latin-ext, OFL) — no Google Fonts request
+- ✅ Days slider: thicker track, labelled suggested range
 
 ## v0.2 — Share & take it on the road
 - ⬜ Share plan via URL (compress settings into `#/plan?s=…`) + "copy link" button

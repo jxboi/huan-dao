@@ -81,24 +81,30 @@ export function Onboarding() {
               <output>{settings.days}</output>
               <span>days</span>
             </div>
-            <input
-              type="range"
-              className="range"
-              min={3}
-              max={30}
-              value={settings.days}
-              onChange={(e) => update({ days: Number(e.target.value) })}
-              aria-label="Trip length in days"
+            <div
+              className="range-wrap"
               style={{
-                // Shade the recommended range on the track.
+                // Shade the suggested range on the track and label it underneath.
                 ['--lo' as string]: `${((ideal - 3) / 27) * 100}%`,
                 ['--hi' as string]: `${((Math.min(30, ideal + 3) - 3) / 27) * 100}%`,
               }}
-            />
-            <div className="range-scale">
-              <span>3</span>
-              <span className="range-hint">green = suggested</span>
-              <span>30</span>
+            >
+              <input
+                type="range"
+                className="range"
+                min={3}
+                max={30}
+                value={settings.days}
+                onChange={(e) => update({ days: Number(e.target.value) })}
+                aria-label="Trip length in days"
+              />
+              <div className="range-scale">
+                <span>3</span>
+                <span className="range-hint">
+                  suggested {ideal}–{Math.min(30, ideal + 3)}
+                </span>
+                <span>30</span>
+              </div>
             </div>
             <p className={`ob-feedback ${settings.days < min ? 'warn' : ''}`}>
               {settings.days < min
