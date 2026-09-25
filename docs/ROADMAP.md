@@ -15,10 +15,12 @@ Status legend: ✅ done · 🟡 partial · ⬜ todo. Priorities from `research/1
 - ✅ Trip tab is map-first: big title, KPIs, a tappable trip sentence whose words open bottom sheets, a swipeable day strip
 - ✅ SVG icon set, warm paper/sea-blue/temple-red palette, Plus Jakarta Sans, fewer borders
 - ✅ Deep link to a day (`#/days/3`)
-- ⬜ First-run flow: one question per screen
-- ⬜ Month strip coloured by riding weather instead of the date input
-- ⬜ Days tab as a continuous journey timeline; bigger map that follows the open day
-- ⬜ Carry the new look to Route / Explore / Budget / Guide (drop emoji card titles)
+- ✅ First-run flow: start hub → pace → days (slider with suggested range, live km/day) → month (`onboarded` setting)
+- ✅ Month strip coloured by riding weather (`MonthPicker`), picks the first Saturday; exact-day input as fine-tune
+- ✅ Days tab as a continuous journey timeline with zh names; larger map that follows the open day
+- ✅ New look on Route / Explore / Budget / Guide: page headers instead of hero cards, no emoji in titles, text category labels
+- ⬜ Replace remaining content emoji (guide section icons in data, Explore tip) and give Explore a map view
+- ⬜ Self-host the web font for the offline PWA
 
 ## v0.2 — Share & take it on the road
 - ⬜ Share plan via URL (compress settings into `#/plan?s=…`) + "copy link" button

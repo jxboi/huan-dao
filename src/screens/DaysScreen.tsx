@@ -21,7 +21,7 @@ export function DaysScreen() {
   return (
     <div className="screen">
       <Card className="flush sticky-map">
-        <RouteMap plan={plan} highlightDay={open} height={200} />
+        <RouteMap plan={plan} highlightDay={open} height={240} controls={false} />
       </Card>
       {plan.notes.map((n) => (
         <Note key={n} tone="warn">{n}</Note>
@@ -57,12 +57,13 @@ function DayCard({ d, open, onToggle }: { d: PlanDay; open: boolean; onToggle: (
             {d.date && ` · ${fmtDate(d.date)}`}
           </span>
           <strong>{isRest ? `${d.flex ? 'Flex' : 'Rest'} day in ${stopName(d.to)}` : `${stopName(d.from)} → ${stopName(d.to)}`}</strong>
+          <span className="day-zh">{isRest ? STOP_BY_ID[d.to]?.zh : `${STOP_BY_ID[d.from]?.zh ?? ''} → ${STOP_BY_ID[d.to]?.zh ?? ''}`}</span>
           <span className="day-meta">
-            {isRest ? (d.flex ? 'Explore, side trip or weather buffer' : 'Your rest day') : `${fmtKm(d.km)} · ~${fmtHours(d.hours)} riding${scenic >= 2.4 ? ' · ✨ very scenic' : ''}`}
-            {d.warnings.some((w) => w.level === 'danger') && ' · ⛔ check road'}
+            {isRest ? (d.flex ? 'Explore, side trip or weather buffer' : 'Your rest day') : `${fmtKm(d.km)} · ~${fmtHours(d.hours)} riding${scenic >= 2.4 ? ' · very scenic' : ''}`}
+            {d.warnings.some((w) => w.level === 'danger') && <span className="flag"> · check road</span>}
           </span>
         </span>
-        <span className="chev" aria-hidden>{open ? '▴' : '▾'}</span>
+        <span className="chev" aria-hidden>{open ? '−' : '+'}</span>
       </button>
 
       {open && (
@@ -86,7 +87,7 @@ function DayCard({ d, open, onToggle }: { d: PlanDay; open: boolean; onToggle: (
                           onClick={() => dispatch({ type: 'togglePin', stopId: id })}
                           title={pinned ? 'Unpin this overnight stop' : isEnd ? 'Keep this overnight stop fixed when you change other settings' : 'Make this an overnight stop'}
                         >
-                          {pinned ? '📌 Pinned' : isEnd ? '📌 Pin' : '🛏️ Sleep here'}
+                          {pinned ? 'Pinned' : isEnd ? 'Pin' : 'Sleep here'}
                         </button>
                       )}
                     </span>

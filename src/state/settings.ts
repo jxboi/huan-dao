@@ -35,6 +35,8 @@ export interface TripSettings {
   currency: string;
   /** Packing checklist state: item → checked. */
   checklist: Record<string, boolean>;
+  /** Finished (or skipped) the first-run questions. */
+  onboarded: boolean;
 }
 
 export const SETTINGS_VERSION = 1;
@@ -59,6 +61,7 @@ export function defaultSettings(): TripSettings {
     saved: [],
     currency: 'USD',
     checklist: {},
+    onboarded: false,
   };
 }
 
@@ -75,6 +78,8 @@ export function migrate(raw: unknown): TripSettings {
   s.days = clamp(Math.round(Number(s.days) || base.days), 3, 30);
   s.riders = clamp(Math.round(Number(s.riders) || 1), 1, 8);
   s.bikes = clamp(Math.round(Number(s.bikes) || 1), Math.ceil(s.riders / 2), s.riders);
+  // Anyone with saved state from before onboarding existed has already set up a trip.
+  if (typeof (raw as Partial<TripSettings>).onboarded !== 'boolean') s.onboarded = true;
   s.version = SETTINGS_VERSION;
   return s;
 }

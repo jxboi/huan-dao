@@ -6,6 +6,7 @@ import { BudgetScreen } from './screens/BudgetScreen';
 import { DaysScreen } from './screens/DaysScreen';
 import { ExploreScreen } from './screens/ExploreScreen';
 import { GuideScreen } from './screens/GuideScreen';
+import { Onboarding } from './screens/Onboarding';
 import { PlanScreen } from './screens/PlanScreen';
 import { RouteScreen } from './screens/RouteScreen';
 import { useStore } from './state/store';
@@ -51,6 +52,8 @@ function useTab(): [Tab, (t: Tab, sub?: string) => void] {
 export default function App() {
   const [tab, go] = useTab();
   const { plan, budget, settings } = useStore();
+
+  if (!settings.onboarded) return <Onboarding />;
 
   return (
     <div className="app">

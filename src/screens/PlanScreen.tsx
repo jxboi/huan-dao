@@ -1,8 +1,8 @@
 import { useState, type ReactNode } from 'react';
 import { FOOD_STYLES, STAYS, VEHICLES, type FoodStyle, type StayTier, type VehicleId } from '../data/costs';
-import { WEATHER } from '../data/guide';
 import { HUBS } from '../data/sections';
 import { STOP_BY_ID } from '../data/stops';
+import { MonthPicker } from '../components/MonthPicker';
 import { RouteMap } from '../components/RouteMap';
 import { Sheet } from '../components/Sheet';
 import { IconArrow } from '../components/icons';
@@ -65,7 +65,7 @@ export function PlanScreen({ go }: { go: (t: Tab, sub?: string) => void }) {
 
   return (
     <div className="screen home">
-      <div className="home-map">
+      <div className="bleed-map">
         <RouteMap plan={plan} height={300} controls={false} />
       </div>
 
@@ -197,8 +197,6 @@ function DayTile({ d, onOpen }: { d: PlanDay; onOpen: () => void }) {
 
 function SheetContent({ id, close }: { id: SheetId; close: () => void }) {
   const { settings, plan, update } = useStore();
-  const month = settings.startDate ? Number(settings.startDate.slice(5, 7)) : 0;
-  const weather = WEATHER.find((w) => w.month === month);
   const vehicle = VEHICLES.find((v) => v.id === settings.vehicle)!;
   // Single-choice sheets close as soon as you pick, like a native picker.
   const pick = <T,>(fn: (v: T) => void) => (v: T) => {
@@ -217,16 +215,7 @@ function SheetContent({ id, close }: { id: SheetId; close: () => void }) {
         </Field>
       );
     case 'date':
-      return (
-        <Field label="Start date" hint={weather ? `${weather.note}` : 'Optional — adds dates, weekend prices and a weather heads-up.'}>
-          <input type="date" className="input" value={settings.startDate} onChange={(e) => update({ startDate: e.target.value })} />
-          {settings.startDate && (
-            <button className="text-btn" onClick={pick(() => update({ startDate: '' }))}>
-              I don't know yet
-            </button>
-          )}
-        </Field>
-      );
+      return <MonthPicker value={settings.startDate} onChange={(startDate) => update({ startDate })} />;
     case 'hub':
       return (
         <Choice<string>

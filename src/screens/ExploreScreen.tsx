@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { AttractionRow, CATEGORY_ICON } from '../components/AttractionRow';
+import { AttractionRow, CATEGORY_LABEL } from '../components/AttractionRow';
 import { Card, Note } from '../components/ui';
 import { ATTRACTIONS } from '../data/attractions';
 import { STOP_BY_ID, STOPS } from '../data/stops';
@@ -17,7 +17,7 @@ const REGIONS: { id: Region | 'all'; label: string }[] = [
   { id: 'northwest', label: 'Northwest' },
 ];
 
-const CATS = Object.keys(CATEGORY_ICON) as AttractionCategory[];
+const CATS = Object.keys(CATEGORY_LABEL) as AttractionCategory[];
 
 export function ExploreScreen() {
   const { settings, plan } = useStore();
@@ -65,7 +65,7 @@ export function ExploreScreen() {
           <button className={`chip ${cat === 'all' ? 'on' : ''}`} onClick={() => setCat('all')}>All</button>
           {CATS.map((c) => (
             <button key={c} className={`chip ${cat === c ? 'on' : ''}`} onClick={() => setCat(c)}>
-              {CATEGORY_ICON[c]} {c.replace('-', ' ').replace(/^./, (ch) => ch.toUpperCase())}
+              {CATEGORY_LABEL[c]}
             </button>
           ))}
         </div>
@@ -85,7 +85,7 @@ export function ExploreScreen() {
       </Card>
 
       {(cat === 'all' || cat === 'food') && !savedOnly && !q && (
-        <Card title="🍜 What to eat where">
+        <Card title="What to eat where">
           <dl className="food-list">
             {foodStops.map((s) => (
               <div key={s.id}>
