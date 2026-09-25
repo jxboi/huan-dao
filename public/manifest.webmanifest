@@ -1,0 +1,10 @@
+{
+  "name": "Huan Dao Planner",
+  "short_name": "Huan Dao",
+  "description": "Plan a motorbike loop around Taiwan (環島).",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#0e7490",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}
