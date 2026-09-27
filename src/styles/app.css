@@ -283,6 +283,14 @@ button.via-name.focused { background: color-mix(in srgb, var(--primary) 14%, tra
 .block-h .icon { color: var(--accent); }
 
 /* Day card: what to eat, as dish chips grouped by town */
+.more-rows { display: flex; flex-direction: column; gap: 8px; margin: 12px 0; }
+.more-row { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 56px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 16px; background: var(--surface); color: var(--text); font: inherit; text-align: left; cursor: pointer; }
+.more-row:hover { border-color: var(--accent); }
+.more-icon { flex: none; display: grid; place-items: center; width: 34px; height: 34px; border-radius: 10px; background: var(--accent-soft); color: var(--accent); }
+.more-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.more-text .muted { font-size: 0.8rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.more-count { flex: none; min-width: 26px; padding: 2px 8px; border-radius: 999px; background: var(--surface-2); font-size: 0.78rem; font-weight: 700; text-align: center; }
+.more-count::after { content: ' ›'; color: var(--muted); }
 .food-town + .food-town { margin-top: 8px; }
 .food-where { display: block; font-size: 0.74rem; font-weight: 700; color: var(--muted); margin-bottom: 4px; }
 .food-chips { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
