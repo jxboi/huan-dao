@@ -135,6 +135,22 @@ detoured ~360 km), so there's no evidence either way; Tai 18 then Tai 21 via Tat
   been the scooter-banned expressway. It's now forced onto Tai 3 via VIAS in `scripts/snap-legs.ts` and re-snapped with
   Valhalla `motor_scooter`; the data now reads "Tai 6 / Tai 3 / County 122", 100 km (was 70 km).
 
+## Scooter-rule check on every map line (Sep 2026)
+
+Every leg's map line is now map-matched (Valhalla `trace_attributes`) into the list of roads it follows
+(`src/data/geo/legRoads.ts`) and tested against the rules in `src/data/scooterRules.ts` (sources: research/02). The first
+full run found 6 more legs on roads white-plate scooters may not ride; all were re-routed with VIAS onto surface roads:
+* **Taipei → Keelung**: was on 市民大道高架 + 環東大道 → 忠孝東路 / Tai 5 via Nangang and Xizhi. 30 km.
+* **Taipei → Pinglin**: was on 建國快速道路 → 中山南路 / 羅斯福路 to Xindian, then Tai 9. 41 km (was 35).
+* **Tamsui → Taipei**: was on 洲美快速道路 → Tai 2B (大度路) and 承德路. 27 km (was 25).
+* **Hsinchu → Taipei**: was on Tai 1's elevated section in Xinzhuang/Sanchong (中山高架) → Tai 1A, Banqiao, Wanhua. 78 km.
+* **Hsinchu → Tamsui**: was on the Tai 61 expressway (臨港大橋 + mainline) → Tai 15 through Bali, 挖子尾 ramp, 淡江大橋. 79 km (was 85).
+* **Taichung → Hsinchu ("Tai 1 west plains")**: line actually ran inland on Tai 13 and touched Tai 61 → kept to Tai 1 via
+  Dajia, Tongxiao, Houlong, Zhunan, Xiangshan. 112 km (was 100).
+
+13 legs still spend under half their distance on the road the data names; they're listed with their current share in
+`src/data/scooterRules.test.ts` (OFF_NAMED_ROADS) as data to tidy up. None of them use a banned road.
+
 ## Popular side trips (extra days)
 * **Taroko Gorge** (from Xincheng/Hualien) — partly reopened, controlled access. 0.5–1 day.
 * **Green Island / Orchid Island** — ferry from Fugang (Taitung). Rent a scooter on the island. 1–3 days.
