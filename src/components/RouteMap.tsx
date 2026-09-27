@@ -3,25 +3,29 @@ import L from 'leaflet';
 import { createBaseMap, MAP_COLORS } from './leaflet';
 import { LEG_GEOMETRY } from '../data/geo/legs';
 import { STOP_BY_ID } from '../data/stops';
-import { pathThrough } from '../lib/geo';
+import { pathThrough, pointAlong } from '../lib/geo';
 import type { Plan } from '../lib/planner';
 import { stopName } from '../lib/format';
+import { parseRoads, roadTitle } from '../lib/roads';
 
 /**
  * Leaflet map of the planned loop. Lines follow the roads where snapped geometry exists
  * (data/geo/legs.ts) and are straight stop-to-stop otherwise. Overnight stops get numbered day markers.
+ * Road numbers (台9, 縣道102) label each stretch: always for the highlighted day, on the whole loop once zoomed in.
  */
 export function RouteMap({ plan, highlightDay, height = 360, controls = true }: { plan: Plan; highlightDay?: number; height?: number | string; controls?: boolean }) {
   const el = useRef<HTMLDivElement>(null);
   const map = useRef<L.Map | null>(null);
   const layer = useRef<L.LayerGroup | null>(null);
   const fit = useRef<() => void>(() => {});
+  const labels = useRef<L.LayerGroup | null>(null);
 
   useEffect(() => {
     if (!el.current || map.current) return;
     const m = createBaseMap(el.current, { controls });
     map.current = m;
     layer.current = L.layerGroup().addTo(m);
+    labels.current = L.layerGroup();
     // The container can change size (e.g. the desktop route panel opening/closing): re-measure and re-frame.
     const ro = new ResizeObserver(() => {
       m.invalidateSize();
@@ -38,8 +42,10 @@ export function RouteMap({ plan, highlightDay, height = 360, controls = true }: 
   useEffect(() => {
     const m = map.current;
     const g = layer.current;
-    if (!m || !g) return;
+    const lg = labels.current;
+    if (!m || !g || !lg) return;
     g.clearLayers();
+    lg.clearLayers();
 
     const bounds: L.LatLngExpression[] = [];
     plan.days.forEach((d) => {
@@ -55,6 +61,7 @@ export function RouteMap({ plan, highlightDay, height = 360, controls = true }: 
       })
         .bindTooltip(`Day ${d.day}: ${stopName(d.from)} → ${stopName(d.to)}`)
         .addTo(g);
+      if (highlightDay === undefined || active) addRoadLabels(d.legs, lg);
       d.via.slice(0, -1).forEach((id) => {
         const s = STOP_BY_ID[id];
         if (s) L.circleMarker([s.lat, s.lng], { radius: 3, color: MAP_COLORS.ink, weight: 1, fillOpacity: 0.8 }).bindTooltip(s.name).addTo(g);
@@ -85,6 +92,14 @@ export function RouteMap({ plan, highlightDay, height = 360, controls = true }: 
         .addTo(g);
     }
 
+    // On the whole-loop map, labels would pile up at island scale: show them from zoom 9.
+    const toggleLabels = () => {
+      const show = highlightDay !== undefined || m.getZoom() >= LABEL_MIN_ZOOM;
+      if (show && !m.hasLayer(lg)) lg.addTo(m);
+      if (!show && m.hasLayer(lg)) lg.remove();
+    };
+    m.on('zoomend', toggleLabels);
+
     fit.current = () => {
       if (highlightDay !== undefined) {
         const d = plan.days.find((x) => x.day === highlightDay);
@@ -95,7 +110,38 @@ export function RouteMap({ plan, highlightDay, height = 360, controls = true }: 
       }
     };
     fit.current();
+    toggleLabels();
+    return () => {
+      m.off('zoomend', toggleLabels);
+    };
   }, [plan, highlightDay]);
 
   return <div ref={el} className="map" style={{ height }} role="img" aria-label="Map of the planned route around Taiwan" />;
+}
+
+const LABEL_MIN_ZOOM = 9;
+
+/** One road-number label mid-way along each run of consecutive legs on the same road(s). */
+function addRoadLabels(legs: Plan['days'][number]['legs'], g: L.LayerGroup) {
+  for (let i = 0; i < legs.length; ) {
+    let j = i;
+    while (j + 1 < legs.length && legs[j + 1].road === legs[i].road) j++;
+    const ids = [legs[i].from, ...legs.slice(i, j + 1).map((l) => l.to)];
+    const at = pointAlong(pathThrough(ids, STOP_BY_ID, LEG_GEOMETRY), 0.5);
+    const roads = parseRoads(legs[i].road);
+    if (at && roads.length) {
+      // Frontage roads keep their "frontage" tag on the map: a bare 台61 would point riders at the expressway.
+      const html = roads
+        .map((r) => `<span class="road ${r.kind}${r.frontage ? ' frontage' : ''}">${r.zh || r.label}${r.frontage ? ' <small>frontage</small>' : ''}</span>`)
+        .join('');
+      L.marker(at, {
+        icon: L.divIcon({ className: 'road-label', html, iconSize: undefined }),
+        interactive: true,
+        keyboard: false,
+      })
+        .bindTooltip(roads.map(roadTitle).join(' / '))
+        .addTo(g);
+    }
+    i = j + 1;
+  }
 }

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { SECTIONS } from '../data/sections';
-import { parseRoad, parseRoads, roadSequence } from './roads';
+import { parseRoad, parseRoads, roadName, roadSequence, roadTitle } from './roads';
 
 describe('parseRoad', () => {
   it('reads provincial highways with stem suffixes', () => {
@@ -13,6 +13,15 @@ describe('parseRoad', () => {
     expect(parseRoad('Tai 9 (South Link)')).toMatchObject({ zh: '台9', note: 'South Link' });
     expect(parseRoad('Tai 61 frontage')).toMatchObject({ zh: '台61', note: 'frontage' });
     expect(parseRoad('County 102 via Shuangxi')).toMatchObject({ kind: 'county', zh: '縣道102', note: 'via Shuangxi' });
+  });
+
+  it('flags frontage roads so the scooter ban stays visible', () => {
+    const r = parseRoad('Tai 61 frontage');
+    expect(r.frontage).toBe(true);
+    expect(roadTitle(r)).toMatch(/banned/);
+    expect(roadName(r)).toBe('Tai 61 frontage');
+    expect(roadSequence([parseRoads('Tai 61'), parseRoads('Tai 61 frontage')])).toHaveLength(2);
+    expect(parseRoad('Tai 9 (South Link)').frontage).toBeUndefined();
   });
 
   it('treats bare numbers as county roads', () => {

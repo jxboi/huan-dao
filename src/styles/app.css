@@ -197,6 +197,8 @@ p { margin: 4px 0; }
 .input.search { margin-top: 12px; }
 .sticky-map { position: sticky; top: 62px; z-index: 500; }
 .day-pin { background: var(--accent); color: #fff; border-radius: 50%; border: 2px solid #fff; display: grid; place-items: center; font-weight: 800; font-size: 11px; box-shadow: 0 1px 4px rgb(0 0 0 / 40%); }
+.road-label { display: flex; gap: 2px; width: max-content !important; height: auto !important; translate: -50% -50%; font-size: 11px; }
+.road-label .road { padding: 0 5px; line-height: 1.6; box-shadow: 0 1px 3px rgb(0 0 0 / 35%); }
 .day-pin.start { background: var(--primary); font-size: 13px; }
 
 /* Route variants */
@@ -245,6 +247,9 @@ p { margin: 4px 0; }
 .road.provincial { background: var(--primary); color: var(--primary-text); }
 .road.county { background: var(--surface); color: var(--text); border: 1px solid var(--muted); }
 .road.other { background: var(--surface-2); color: var(--text); }
+/* Frontage road beside an expressway scooters can't use: dashed, so it never reads as the route itself. */
+.road.frontage { background: var(--surface); color: var(--primary); border: 1.5px dashed var(--primary); }
+.road.frontage small { font-size: 0.85em; font-weight: 600; }
 .day-roads { display: block; font-size: 0.75rem; color: var(--muted); margin-top: 2px; }
 .pin { border: 1px solid var(--border); background: var(--surface-2); border-radius: 999px; font-size: 0.72rem; padding: 3px 8px; white-space: nowrap; }
 .pin.on { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); font-weight: 700; }

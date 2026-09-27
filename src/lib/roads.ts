@@ -13,6 +13,11 @@ export interface RoadRef {
   zh: string;
   /** Trailing detail such as "South Link", "via Shuangxi", "frontage". */
   note?: string;
+  /**
+   * Ride the surface road beside this route, not the route itself — e.g. Tai 61, whose expressway
+   * (快速公路) sections ban scooters (research/02). Must stay visible wherever the number is shown.
+   */
+  frontage?: boolean;
 }
 
 // Suffix letters on Taiwanese route numbers are the Heavenly Stems: A=甲, B=乙, C=丙, D=丁…
@@ -27,7 +32,26 @@ function cleanNote(rest: string): string | undefined {
   return note || undefined;
 }
 
+function withFrontage(r: RoadRef): RoadRef {
+  return r.note && /frontage/i.test(r.note) ? { ...r, frontage: true } : r;
+}
+
 export function parseRoad(segment: string): RoadRef {
+  return withFrontage(parseRoadRef(segment));
+}
+
+/** Short name for summaries: "Tai 9", or "Tai 61 frontage" so the expressway is never implied. */
+export function roadName(r: RoadRef): string {
+  return r.frontage ? `${r.label} frontage` : r.label;
+}
+
+/** Hover/tap text for a badge; spells out the scooter ban for frontage roads. */
+export function roadTitle(r: RoadRef): string {
+  if (r.frontage) return `${r.label} frontage road — scooters are banned from the ${r.label} expressway itself`;
+  return r.note ? `${r.label} (${r.note})` : r.label;
+}
+
+function parseRoadRef(segment: string): RoadRef {
   const s = segment.trim();
   const tai = s.match(/^Tai\s+(\d+)([A-E]?)\b(.*)$/i);
   if (tai) {
@@ -55,7 +79,8 @@ export function parseRoads(road: string, reversed = false): RoadRef[] {
 export function roadSequence(roads: RoadRef[][]): RoadRef[] {
   const out: RoadRef[] = [];
   for (const r of roads.flat()) {
-    if (out[out.length - 1]?.label !== r.label) out.push(r);
+    const last = out[out.length - 1];
+    if (last?.label !== r.label || !!last.frontage !== !!r.frontage) out.push(r);
   }
   return out;
 }

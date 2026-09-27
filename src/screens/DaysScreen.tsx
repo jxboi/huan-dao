@@ -7,7 +7,7 @@ import { STOP_BY_ID } from '../data/stops';
 import { currencyFor, nightFactor } from '../lib/budget';
 import { bookingSearch, fmtDate, fmtHours, fmtKm, fmtMoney, googleMapsDirections, stopName } from '../lib/format';
 import type { PlanDay } from '../lib/planner';
-import { parseRoads, roadSequence, type RoadRef } from '../lib/roads';
+import { parseRoads, roadName, roadSequence, roadTitle, type RoadRef } from '../lib/roads';
 import { useStore } from '../state/store';
 
 export function DaysScreen() {
@@ -43,7 +43,7 @@ function DayCard({ d, open, onToggle }: { d: PlanDay; open: boolean; onToggle: (
   const overnight = d.overnight ? STOP_BY_ID[d.overnight] : undefined;
   const isRest = d.kind === 'rest';
   const legRoads = d.legs.map((l) => parseRoads(l.road));
-  const mainRoads = [...new Set(roadSequence(legRoads).map((r) => r.label))];
+  const mainRoads = [...new Set(roadSequence(legRoads).map(roadName))];
   const scenic = d.legs.length ? d.legs.reduce((s, l) => s + l.scenic * l.km, 0) / Math.max(1, d.km) : 0;
   const foods = [...new Set([d.to, ...d.via].map((id) => STOP_BY_ID[id]).filter(Boolean).flatMap((s) => s.food.map((f) => `${f} · ${s.name}`)))].slice(0, 6);
   const nightPrice = overnight
@@ -175,7 +175,7 @@ function RoadBadges({ roads }: { roads: RoadRef[] }) {
   return (
     <span className="road-badges">
       {roads.map((r, i) => (
-        <span key={`${r.label}-${i}`} className={`road ${r.kind}`} title={r.label}>
+        <span key={`${r.label}-${i}`} className={`road ${r.kind}${r.frontage ? ' frontage' : ''}`} title={roadTitle(r)}>
           <span className="road-num">{r.zh || r.label}</span>
           {r.zh && <span className="road-en">{r.label}</span>}
           {r.note && <span className="road-note">{r.note}</span>}

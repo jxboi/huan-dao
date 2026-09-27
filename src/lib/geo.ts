@@ -135,3 +135,19 @@ export function pathThrough(ids: string[], stops: Record<string, { lat: number; 
   if (ids.length === 1 && stops[ids[0]]) out.push([stops[ids[0]].lat, stops[ids[0]].lng]);
   return out;
 }
+
+/** The point `fraction` (0–1) of the way along a path by distance — e.g. 0.5 to place a label mid-leg. */
+export function pointAlong(points: LatLng[], fraction: number): LatLng | undefined {
+  if (!points.length) return undefined;
+  let left = pathKm(points) * Math.min(1, Math.max(0, fraction));
+  for (let i = 1; i < points.length; i++) {
+    const d = haversineKm(points[i - 1], points[i]);
+    if (d >= left && d > 0) {
+      const t = left / d;
+      const [a, b] = [points[i - 1], points[i]];
+      return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t];
+    }
+    left -= d;
+  }
+  return points[points.length - 1];
+}
