@@ -1,7 +1,7 @@
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { IconBed, IconExternal, IconFood, IconInfo, IconLock, IconNavigate, IconStarLine } from '../components/icons';
 import { DESKTOP, MapPanel, useMedia } from '../components/MapPanel';
-import { RouteMap } from '../components/RouteMap';
+import { RouteMap, type MapAlternative } from '../components/RouteMap';
 import { AttractionRow } from '../components/AttractionRow';
 import { StopPicker } from '../components/StopPicker';
 import { Card, Note, Warning } from '../components/ui';
@@ -89,6 +89,28 @@ export function DaysScreen() {
     dispatch({ type: 'chooseDayRoute', day, variants: o.variants, bypasses: o.bypasses });
   };
 
+  // Other ways to ride the open day: listed on its card and drawn pale on the map (tap either to ride it).
+  // Worked out for the open day only: it builds the route once per combination of today's section variants.
+  const openDay = plan.days.find((d) => d.day === open && d.kind === 'ride');
+  const routeOpts = useMemo(() => (openDay ? dayRouteOptions(settings, dayRef(openDay)) : []), [openDay, settings]);
+  const [hoverAlt, setHoverAlt] = useState<string>();
+  useEffect(() => setHoverAlt(undefined), [routeOpts]);
+  const alternatives = useMemo<MapAlternative[]>(() => {
+    const cur = routeOpts.find((o) => o.current);
+    if (!cur) return [];
+    return routeOpts
+      .filter((o) => !o.current)
+      .map((o) => ({
+        key: optKey(o),
+        path: o.path,
+        label: `<strong>${o.kind === 'other' ? '' : `${kindLabel(o)} · `}${fmtHours(o.hours)}</strong> ${fmtKm(o.km)}<br/><small>${diffText(o, cur)}</small>`,
+      }));
+  }, [routeOpts]);
+  const pickAlt = (key: string) => {
+    const o = routeOpts.find((x) => optKey(x) === key);
+    if (o && openDay) chooseRoute(dayRef(openDay), o);
+  };
+
   const desktop = useMedia(DESKTOP);
   // In the side panel, collapsing the day above can push the opened day's header out of view.
   useEffect(() => {
@@ -105,7 +127,7 @@ export function DaysScreen() {
       ))}
       <ol className="timeline">
         {plan.days.map((d) => (
-          <DayCard key={d.day} d={d} open={open === d.day} onToggle={() => setOpen(open === d.day ? undefined : d.day)} onStop={toggleStop} onChangeEnd={changeEnd} onChooseRoute={chooseRoute} onFocusStop={(stopId) => setFocus({ stopId, at: Date.now() })} focused={open === d.day ? focus?.stopId : undefined} />
+          <DayCard key={d.day} d={d} open={open === d.day} routeOpts={open === d.day ? routeOpts : []} hoverAlt={hoverAlt} onHoverAlt={setHoverAlt} onToggle={() => setOpen(open === d.day ? undefined : d.day)} onStop={toggleStop} onChangeEnd={changeEnd} onChooseRoute={chooseRoute} onFocusStop={(stopId) => setFocus({ stopId, at: Date.now() })} focused={open === d.day ? focus?.stopId : undefined} />
         ))}
       </ol>
       <div className="toast-slot" aria-live="polite">
@@ -129,7 +151,7 @@ export function DaysScreen() {
 
   if (desktop) {
     return (
-      <MapPanel map={<RouteMap plan={plan} highlightDay={open} focus={focus} height="100%" />} label="Day details" toggleLabel="Days">
+      <MapPanel map={<RouteMap plan={plan} highlightDay={open} focus={focus} height="100%" alternatives={alternatives} hoverAlt={hoverAlt} onHoverAlt={setHoverAlt} onPickAlt={pickAlt} />} label="Day details" toggleLabel="Days">
         {days}
       </MapPanel>
     );
@@ -138,7 +160,7 @@ export function DaysScreen() {
   return (
     <div className="screen">
       <Card className="flush sticky-map">
-        <RouteMap plan={plan} highlightDay={open} focus={focus} height={240} controls={false} />
+        <RouteMap plan={plan} highlightDay={open} focus={focus} height={240} controls={false} alternatives={alternatives} hoverAlt={hoverAlt} onHoverAlt={setHoverAlt} onPickAlt={pickAlt} />
       </Card>
       {days}
     </div>
@@ -148,6 +170,9 @@ export function DaysScreen() {
 function DayCard({
   d,
   open,
+  routeOpts,
+  hoverAlt,
+  onHoverAlt,
   onToggle,
   onStop,
   onChangeEnd,
@@ -157,6 +182,9 @@ function DayCard({
 }: {
   d: PlanDay;
   open: boolean;
+  routeOpts: DayRouteOption[];
+  hoverAlt?: string;
+  onHoverAlt: (key: string | undefined) => void;
   onToggle: () => void;
   onStop: (stopId: string, kind: StopChange['kind']) => void;
   onChangeEnd: (day: DayRef, stopId: string) => void;
@@ -183,8 +211,6 @@ function DayCard({
     ? stay.price * overnight.lodgingFactor * nightFactor(d.date) * (stay.perPerson ? settings.riders : Math.ceil(settings.riders / 2))
     : 0;
   const restHere = d.overnight ? settings.restDays[d.overnight] ?? 0 : 0;
-  // Only worked out for the open day: it builds the route once per combination of today's section variants.
-  const routeOpts = useMemo(() => (open && !isRest ? dayRouteOptions(settings, dayRef(d)) : []), [open, isRest, settings, d]);
 
   return (
     <li id={`day-${d.day}`} className={`day ${d.kind} ${open ? 'open' : ''}`}>
@@ -211,7 +237,7 @@ function DayCard({
         <div className="day-body">
           {!isRest && (
             <>
-              {routeOpts.length > 0 && <RouteChoice opts={routeOpts} onPick={(o) => onChooseRoute(dayRef(d), o)} />}
+              {routeOpts.length > 0 && <RouteChoice opts={routeOpts} onPick={(o) => onChooseRoute(dayRef(d), o)} hover={hoverAlt} onHover={onHoverAlt} />}
               <div className="via">
                 {[d.from, ...d.via].map((id, i, arr) => {
                   const s = STOP_BY_ID[id];
@@ -401,7 +427,17 @@ function DayCard({
  * Fast / Scenic (plus the one you ride now, if it's neither) for today, what the other headline route costs next to
  * yours, and every other way to ride the day under "More routes".
  */
-function RouteChoice({ opts, onPick }: { opts: DayRouteOption[]; onPick: (o: DayRouteOption) => void }) {
+function RouteChoice({
+  opts,
+  onPick,
+  hover,
+  onHover,
+}: {
+  opts: DayRouteOption[];
+  onPick: (o: DayRouteOption) => void;
+  hover?: string;
+  onHover: (key: string | undefined) => void;
+}) {
   const [more, setMore] = useState(false);
   const cur = opts.find((o) => o.current) ?? opts[0];
   const headline = opts.filter((o) => o.kind !== 'other' || o.current);
@@ -412,7 +448,14 @@ function RouteChoice({ opts, onPick }: { opts: DayRouteOption[]; onPick: (o: Day
       {headline.length > 1 ? (
         <div className="segmented" role="radiogroup" aria-label="Route for today">
           {headline.map((o) => (
-            <button key={o.kind} role="radio" aria-checked={o.current} className={o.current ? 'on' : ''} onClick={() => !o.current && onPick(o)}>
+            <button
+              key={o.kind}
+              role="radio"
+              aria-checked={o.current}
+              className={o.current ? 'on' : ''}
+              onClick={() => !o.current && onPick(o)}
+              {...(o.current ? {} : hoverProps(o, onHover))}
+            >
               <span className="rc-label">{kindLabel(o)}</span>
               <span className="rc-meta">{fmtKm(o.km)} · {fmtHours(o.hours)}</span>
             </button>
@@ -438,8 +481,8 @@ function RouteChoice({ opts, onPick }: { opts: DayRouteOption[]; onPick: (o: Day
           {more && (
             <ul className="rc-list">
               {others.map((o) => (
-                <li key={o.path.join('>')}>
-                  <button type="button" onClick={() => onPick(o)}>
+                <li key={optKey(o)}>
+                  <button type="button" className={hover === optKey(o) ? 'hover' : ''} onClick={() => onPick(o)} {...hoverProps(o, onHover)}>
                     <strong>{o.name || `Via ${o.path.slice(1, -1).map(stopName).join(', ') || 'the direct road'}`}</strong>
                     <span className="muted small">
                       {fmtKm(o.km)} · {fmtHours(o.hours)} ({diffText(o, cur)}){o.scenic >= 2.4 && ' · very scenic'}
@@ -454,6 +497,21 @@ function RouteChoice({ opts, onPick }: { opts: DayRouteOption[]; onPick: (o: Day
       )}
     </div>
   );
+}
+
+/** One route option, the same in the list and on the map (each option rides a different string of stops). */
+function optKey(o: DayRouteOption): string {
+  return o.path.join('>');
+}
+
+/** Pointing at (or tabbing to) a route in the list shows it on the map. */
+function hoverProps(o: DayRouteOption, onHover: (key: string | undefined) => void) {
+  return {
+    onMouseEnter: () => onHover(optKey(o)),
+    onMouseLeave: () => onHover(undefined),
+    onFocus: () => onHover(optKey(o)),
+    onBlur: () => onHover(undefined),
+  };
 }
 
 function kindLabel(o: DayRouteOption): string {
