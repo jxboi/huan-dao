@@ -7,6 +7,7 @@ describe('parseRoad', () => {
     expect(parseRoad('Tai 9')).toEqual({ kind: 'provincial', label: 'Tai 9', zh: '台9', note: undefined });
     expect(parseRoad('Tai 9D')).toMatchObject({ label: 'Tai 9D', zh: '台9丁' });
     expect(parseRoad('Tai 2B')).toMatchObject({ zh: '台2乙' });
+    expect(parseRoad('Tai 2G')).toMatchObject({ zh: '台2庚' });
   });
 
   it('keeps trailing detail as a note', () => {

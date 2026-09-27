@@ -64,12 +64,28 @@ const VIAS: Record<string, LatLng[]> = {
   'taipei>pinglin': [[25.0395, 121.5185], [25.027, 121.5225], [25.013, 121.535], [24.975, 121.54]],
   'tamsui>taipei': [[25.1255, 121.47], [25.106, 121.503], [25.08, 121.519]],
   // Into Taipei via Banqiao and Wanhua: Tai 1 through Xinzhuang/Sanchong and the Taipei Bridge approach are elevated.
-  'hsinchu>taipei': [[24.99, 121.3], [25.033, 121.438], [25.012, 121.463], [25.034, 121.5]],
+  'hsinchu>taipei': [[24.853, 121.004], [24.898, 121.115], [24.928, 121.194], [24.974, 121.261], [24.99, 121.3], [25.033, 121.438], [25.012, 121.463], [25.034, 121.5]],
   // Tai 15 through Bali, onto 淡江大橋 from the 挖子尾 ramp rather than the Tai 61 expressway (research/02).
   'hsinchu>tamsui': [[25.148, 121.4], [25.1595, 121.419]],
   // "Tai 1 (west plains)": keep to Tai 1 via Dajia, Tongxiao and Zhunan (router otherwise goes inland on Tai 13
   // and touches the Tai 61 expressway near Hsinchu).
   'taichung>hsinchu': [[24.346, 120.6245], [24.4905, 120.68], [24.615, 120.796], [24.656, 120.866], [24.719, 120.917], [24.763, 120.913]],
+  // Named-road fixes (Sep 2026): keep these legs on the highway the data names; points are on it (OSM). Tai 9 via Jiaoxi.
+  'toucheng>yilan': [[24.829, 121.777], [24.786, 121.761]],
+  // Tai 9 through Wujie (router otherwise weaves through town streets).
+  'yilan>luodong': [[24.728, 121.771], [24.696, 121.769]],
+  // Tai 9 inland via Dongshan, not Tai 2/7C along the coast.
+  'luodong>suao': [[24.653, 121.782], [24.636, 121.788], [24.615, 121.812]],
+  // Tai 9 down the rift valley via Shoufeng and Fenglin, not Tai 11C/County 193.
+  'hualien>guangfu': [[23.942, 121.546], [23.871, 121.51], [23.813, 121.467], [23.718, 121.425]],
+  // Tai 9 via Luye and Chulu, not the Tai 9B / Taitung 33 shortcut.
+  'guanshan>taitung': [[23.029, 121.157], [22.965, 121.133], [22.925, 121.144], [22.842, 121.093], [22.797, 121.091]],
+  // Tai 17 along the coast via Linyuan and Xiaogang, not Tai 25 inland.
+  'donggang>kaohsiung': [[22.477, 120.46], [22.503, 120.382], [22.546, 120.369], [22.582, 120.328]],
+  // Tai 1B via Wuri into central Taichung (Tai 1 itself bends west via Dadu).
+  'changhua>taichung': [[24.113, 120.591], [24.107, 120.637], [24.123, 120.663]],
+  // Tai 3 through the tea and bamboo country (Zhuqi, Meishan, Gukeng, Douliu, Zhushan), then Tai 16/21.
+  'chiayi>sunmoonlake': [[23.492, 120.537], [23.579, 120.559], [23.641, 120.547], [23.699, 120.544], [23.772, 120.637], [23.757, 120.681]],
   // Hakka hills: router otherwise runs up the coast on Tai 61 (expressway sections ban scooters). Force Tai 3 via
   // Dahu, Shitan and Beipu, then County 122 from Xiagongguan (Zhudong) into Hsinchu (research/01).
   'sanyi>hsinchu': [[24.423, 120.866], [24.54, 120.9205], [24.702, 121.0567], [24.7231, 121.096]],
@@ -150,6 +166,18 @@ async function traceRoads(line: LatLng[]): Promise<RoadSeg[]> {
   return segs.map((x) => ({ ...x, km: Math.round(x.km * 100) / 100, lat: Math.round(x.lat * 1000) / 1000, lng: Math.round(x.lng * 1000) / 1000 }));
 }
 
+/** "Tai 9 12 km → County 192 5 km → …": numbered roads a line follows, in order, merging repeats. */
+function roadOrder(segs: RoadSeg[]): string {
+  const runs: [string, number][] = [];
+  for (const x of segs) {
+    const ref = x.names.filter((n) => /\d/.test(n) && n.length <= 6).sort((a, b) => a.length - b.length)[0] ?? '·';
+    const last = runs[runs.length - 1];
+    if (last && last[0] === ref) last[1] += x.km;
+    else runs.push([ref, x.km]);
+  }
+  return runs.filter(([, km]) => km >= 1).map(([r, km]) => `${r} ${km.toFixed(0)}`).join(' → ');
+}
+
 async function route(points: LatLng[]): Promise<{ line: LatLng[]; km: number }> {
   return VALHALLA_URL ? routeValhalla(points) : routeOsrm(points);
 }
@@ -219,6 +247,8 @@ async function main() {
       const bad = violations(segs, SCOOTER_RULES);
       const share = namedShare(leg.road, segs);
       if (roadsOnly) console.log(`${key.padEnd(24)} ${(share * 100).toFixed(0).padStart(3)} % on "${leg.road}"${bad.length ? ` · ${bad.length} banned run(s)` : ''}`);
+      // With --only, also show the numbered roads in riding order (runs ≥ 1 km) — what to write in the \`road\` string.
+      if (only) console.log(`  ${roadsOnly ? '' : `${(share * 100).toFixed(0)} % on "${leg.road}" · `}roads: ${roadOrder(segs)}`);
       bad.forEach((v) => console.warn(`  ✗ ${v.rule.label}: ${describeSeg(v.seg)}`));
       if (share < 0.5) offRoad.push(`${key.padEnd(24)} ${(share * 100).toFixed(0)} % on "${leg.road}"`);
 
