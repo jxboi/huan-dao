@@ -37,6 +37,8 @@ interface Cloud {
   conflict: TripSettings | null;
   signIn: () => void;
   signOut: () => void;
+  /** Delete the account and its synced plan from the server. This device keeps its copy. */
+  deleteAccount: () => Promise<boolean>;
   resolveConflict: (keep: 'cloud' | 'device') => void;
 }
 
@@ -212,6 +214,23 @@ export function CloudProvider({ children }: { children: ReactNode }) {
     setStatus('signedOut');
   }, []);
 
+  const deleteAccount = useCallback(async () => {
+    const supabase = await getClient();
+    const { error: e } = await supabase.rpc('delete_my_account');
+    if (e) {
+      setError(e.message);
+      return false;
+    }
+    // The user no longer exists server-side, so only clear the local session.
+    await supabase.auth.signOut({ scope: 'local' });
+    writeBase(null, null);
+    ready.current = false;
+    setConflict(null);
+    setSession(null);
+    setStatus('signedOut');
+    return true;
+  }, []);
+
   const resolveConflict = useCallback(
     (keep: 'cloud' | 'device') => {
       if (!conflict || !userId) return;
@@ -227,8 +246,8 @@ export function CloudProvider({ children }: { children: ReactNode }) {
 
   const user = useMemo(() => (session ? toUser(session) : null), [session]);
   const value = useMemo<Cloud>(
-    () => ({ available, status, user, error, conflict, signIn, signOut, resolveConflict }),
-    [available, status, user, error, conflict, signIn, signOut, resolveConflict],
+    () => ({ available, status, user, error, conflict, signIn, signOut, deleteAccount, resolveConflict }),
+    [available, status, user, error, conflict, signIn, signOut, deleteAccount, resolveConflict],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
