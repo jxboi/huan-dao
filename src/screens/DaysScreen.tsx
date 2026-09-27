@@ -29,6 +29,9 @@ export function DaysScreen() {
   // #/days/3 (from the home screen's day strip) opens and scrolls to that day.
   const [linked] = useState(() => Number(window.location.hash.match(/^#\/days\/(\d+)/)?.[1]) || undefined);
   const [open, setOpen] = useState<number | undefined>(linked ?? 1);
+  // A stop tapped in the open day's list: the map flies to it. Cleared when another day opens.
+  const [focus, setFocus] = useState<{ stopId: string; at: number }>();
+  useEffect(() => setFocus(undefined), [open]);
   useEffect(() => {
     if (linked) document.getElementById(`day-${linked}`)?.scrollIntoView({ block: 'start' });
   }, [linked]);
@@ -99,7 +102,7 @@ export function DaysScreen() {
       ))}
       <ol className="timeline">
         {plan.days.map((d) => (
-          <DayCard key={d.day} d={d} open={open === d.day} onToggle={() => setOpen(open === d.day ? undefined : d.day)} onStop={toggleStop} onChangeEnd={changeEnd} onChooseRoute={chooseRoute} />
+          <DayCard key={d.day} d={d} open={open === d.day} onToggle={() => setOpen(open === d.day ? undefined : d.day)} onStop={toggleStop} onChangeEnd={changeEnd} onChooseRoute={chooseRoute} onFocusStop={(stopId) => setFocus({ stopId, at: Date.now() })} focused={open === d.day ? focus?.stopId : undefined} />
         ))}
       </ol>
       <div className="toast-slot" aria-live="polite">
@@ -123,7 +126,7 @@ export function DaysScreen() {
 
   if (desktop) {
     return (
-      <MapPanel map={<RouteMap plan={plan} highlightDay={open} height="100%" />} label="Day details" toggleLabel="Days">
+      <MapPanel map={<RouteMap plan={plan} highlightDay={open} focus={focus} height="100%" />} label="Day details" toggleLabel="Days">
         {days}
       </MapPanel>
     );
@@ -132,7 +135,7 @@ export function DaysScreen() {
   return (
     <div className="screen">
       <Card className="flush sticky-map">
-        <RouteMap plan={plan} highlightDay={open} height={240} controls={false} />
+        <RouteMap plan={plan} highlightDay={open} focus={focus} height={240} controls={false} />
       </Card>
       {days}
     </div>
@@ -146,6 +149,8 @@ function DayCard({
   onStop,
   onChangeEnd,
   onChooseRoute,
+  onFocusStop,
+  focused,
 }: {
   d: PlanDay;
   open: boolean;
@@ -153,6 +158,8 @@ function DayCard({
   onStop: (stopId: string, kind: StopChange['kind']) => void;
   onChangeEnd: (day: DayRef, stopId: string) => void;
   onChooseRoute: (day: DayRef, o: DayRouteOption) => void;
+  onFocusStop: (stopId: string) => void;
+  focused?: string;
 }) {
   const { settings, plan, dispatch } = useStore();
   const [picking, setPicking] = useState(false);
@@ -212,9 +219,15 @@ function DayCard({
                   return (
                     <Fragment key={`${id}-${i}`}>
                       <span className={`via-stop ${isEnd ? 'end' : ''}`}>
-                        <span className="via-name">
+                        <button
+                          type="button"
+                          className={`via-name ${focused === id ? 'focused' : ''}`}
+                          onClick={() => onFocusStop(id)}
+                          aria-pressed={focused === id}
+                          title={`Show ${s?.name} on the map`}
+                        >
                           {s?.name} <small>{s?.zh}</small>
-                        </span>
+                        </button>
                         {canSleep && isEnd && (
                           // Already tonight's stop: the only choice left is whether to lock it in.
                           <button

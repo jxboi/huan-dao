@@ -12,13 +12,27 @@ import { parseRoads, roadTitle } from '../lib/roads';
  * Leaflet map of the planned loop. Lines follow the roads where snapped geometry exists
  * (data/geo/legs.ts) and are straight stop-to-stop otherwise. Overnight stops get numbered day markers.
  * Road numbers (台9, 縣道102) label each stretch: always for the highlighted day, on the whole loop once zoomed in.
+ * `focus` (a stop tapped in the day list) flies the map to that stop and rings it; `at` makes a repeat tap fly again.
  */
-export function RouteMap({ plan, highlightDay, height = 360, controls = true }: { plan: Plan; highlightDay?: number; height?: number | string; controls?: boolean }) {
+export function RouteMap({
+  plan,
+  highlightDay,
+  focus,
+  height = 360,
+  controls = true,
+}: {
+  plan: Plan;
+  highlightDay?: number;
+  focus?: { stopId: string; at: number };
+  height?: number | string;
+  controls?: boolean;
+}) {
   const el = useRef<HTMLDivElement>(null);
   const map = useRef<L.Map | null>(null);
   const layer = useRef<L.LayerGroup | null>(null);
   const fit = useRef<() => void>(() => {});
   const labels = useRef<L.LayerGroup | null>(null);
+  const focusLayer = useRef<L.LayerGroup | null>(null);
 
   useEffect(() => {
     if (!el.current || map.current) return;
@@ -26,6 +40,7 @@ export function RouteMap({ plan, highlightDay, height = 360, controls = true }: 
     map.current = m;
     layer.current = L.layerGroup().addTo(m);
     labels.current = L.layerGroup();
+    focusLayer.current = L.layerGroup().addTo(m);
     // The container can change size (e.g. the desktop route panel opening/closing): re-measure and re-frame.
     const ro = new ResizeObserver(() => {
       m.invalidateSize();
@@ -116,10 +131,30 @@ export function RouteMap({ plan, highlightDay, height = 360, controls = true }: 
     };
   }, [plan, highlightDay]);
 
+  useEffect(() => {
+    const m = map.current;
+    const g = focusLayer.current;
+    if (!m || !g) return;
+    g.clearLayers();
+    const s = focus && STOP_BY_ID[focus.stopId];
+    if (!s) return;
+    L.marker([s.lat, s.lng], {
+      icon: L.divIcon({ className: 'focus-pin', html: '<span></span>', iconSize: [34, 34] }),
+      interactive: false,
+      keyboard: false,
+    }).addTo(g);
+    L.tooltip({ direction: 'top', offset: [0, -16], permanent: true, className: 'focus-label' })
+      .setLatLng([s.lat, s.lng])
+      .setContent(`<strong>${s.name}</strong> ${s.zh}`)
+      .addTo(g);
+    m.flyTo([s.lat, s.lng], Math.max(m.getZoom(), FOCUS_ZOOM), { duration: 0.8 });
+  }, [focus]);
+
   return <div ref={el} className="map" style={{ height }} role="img" aria-label="Map of the planned route around Taiwan" />;
 }
 
 const LABEL_MIN_ZOOM = 9;
+const FOCUS_ZOOM = 13;
 
 /** One road-number label mid-way along each run of consecutive legs on the same road(s). */
 function addRoadLabels(legs: Plan['days'][number]['legs'], g: L.LayerGroup) {
