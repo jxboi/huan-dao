@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { haversineKm } from '../lib/geo';
 import { ATTRACTIONS } from './attractions';
+import { LINKS } from './links';
 import { HUBS, SECTIONS } from './sections';
 import { STOPS, STOP_BY_ID } from './stops';
 
@@ -49,6 +50,16 @@ describe('sections', () => {
           expect(l.speed, name).toBeLessThanOrEqual(60);
         });
       }
+    }
+  });
+
+  it('links are no shorter than the straight line and use plausible speeds', () => {
+    for (const l of LINKS) {
+      const name = `link ${l.from}>${l.to}`;
+      expect(l.from, name).not.toBe(l.to);
+      expect(l.km, name).toBeGreaterThanOrEqual(haversineKm(at(l.from), at(l.to)) * 0.95);
+      expect(l.speed, name).toBeGreaterThanOrEqual(20);
+      expect(l.speed, name).toBeLessThanOrEqual(60);
     }
   });
 

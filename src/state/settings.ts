@@ -1,6 +1,7 @@
 import { CURRENCIES, FOOD_STYLES, STAYS, VEHICLES, type FoodStyle, type SeasonMode, type StayTier, type VehicleId } from '../data/costs';
 import { HUBS, SECTIONS } from '../data/sections';
 import { STOP_BY_ID } from '../data/stops';
+import { CUSTOM_VARIANT, NETWORK_STOPS } from '../lib/network';
 
 export type Direction = 'ccw' | 'cw';
 export type Pace = 'relaxed' | 'moderate' | 'fast';
@@ -18,8 +19,10 @@ export interface TripSettings {
   startHub: string;
   direction: Direction;
   pace: Pace;
-  /** sectionId → variantId */
+  /** sectionId → variantId, or 'custom' to ride that section through `customRoutes`. */
   variants: Record<string, string>;
+  /** sectionId → the stops you chose for that section, clockwise (hubs excluded). Kept when you switch back to a preset. */
+  customRoutes: Record<string, string[]>;
   /** Stops the user wants to sleep at. */
   pinned: string[];
   /** stopId → extra nights (rest days) there. Implies pinned. */
@@ -51,6 +54,7 @@ export function defaultSettings(): TripSettings {
     direction: 'ccw',
     pace: 'moderate',
     variants: Object.fromEntries(SECTIONS.map((s) => [s.id, s.defaultVariant])),
+    customRoutes: {},
     pinned: [],
     restDays: {},
     vehicle: 'scooter125',
@@ -72,10 +76,21 @@ export function migrate(raw: unknown): TripSettings {
   if (!raw || typeof raw !== 'object') return base;
   if (Array.isArray(raw)) return base;
   const s = { ...base, ...(raw as Partial<TripSettings>) };
+  // Custom stop lists: known sections, stops the road network reaches, no hubs or repeats.
+  const network = new Set(NETWORK_STOPS);
+  s.customRoutes = Object.fromEntries(
+    Object.entries(isRecord(s.customRoutes) ? s.customRoutes : {}).flatMap(([id, stops]) => {
+      const sec = SECTIONS.find((x) => x.id === id);
+      if (!sec) return [];
+      const ok = [...new Set(stringList(stops))].filter((x) => network.has(x) && x !== sec.from && x !== sec.to).slice(0, 20);
+      return [[id, ok] as const];
+    }),
+  );
   s.variants = { ...base.variants, ...(isRecord(s.variants) ? (s.variants as Record<string, string>) : {}) };
   // Drop variant ids that no longer exist in data.
   for (const sec of SECTIONS) {
-    if (!sec.variants.some((v) => v.id === s.variants[sec.id])) s.variants[sec.id] = sec.defaultVariant;
+    const custom = s.variants[sec.id] === CUSTOM_VARIANT && sec.id in s.customRoutes;
+    if (!custom && !sec.variants.some((v) => v.id === s.variants[sec.id])) s.variants[sec.id] = sec.defaultVariant;
   }
   // …and sections that no longer exist.
   for (const k of Object.keys(s.variants)) if (!SECTIONS.some((sec) => sec.id === k)) delete s.variants[k];

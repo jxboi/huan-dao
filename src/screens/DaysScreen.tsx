@@ -1,11 +1,13 @@
 import { Fragment, useEffect, useState } from 'react';
 import { RouteMap } from '../components/RouteMap';
 import { AttractionRow } from '../components/AttractionRow';
+import { StopPicker } from '../components/StopPicker';
 import { Card, Note, Warning } from '../components/ui';
 import { STAYS } from '../data/costs';
 import { STOP_BY_ID } from '../data/stops';
 import { currencyFor, nightFactor } from '../lib/budget';
 import { bookingSearch, fmtDate, fmtHours, fmtKm, fmtMoney, googleMapsDirections, stopName } from '../lib/format';
+import { dayEndOptions, type DayRef } from '../lib/editRoute';
 import type { PlanDay } from '../lib/planner';
 import { parseRoads, roadName, roadSequence, roadTitle, type RoadRef } from '../lib/roads';
 import { useStore } from '../state/store';
@@ -37,7 +39,8 @@ export function DaysScreen() {
 }
 
 function DayCard({ d, open, onToggle }: { d: PlanDay; open: boolean; onToggle: () => void }) {
-  const { settings, dispatch } = useStore();
+  const { settings, plan, dispatch } = useStore();
+  const [picking, setPicking] = useState(false);
   const cur = currencyFor(settings.currency);
   const stay = STAYS.find((s) => s.id === settings.stay)!;
   const overnight = d.overnight ? STOP_BY_ID[d.overnight] : undefined;
@@ -109,9 +112,34 @@ function DayCard({ d, open, onToggle }: { d: PlanDay; open: boolean; onToggle: (
                   );
                 })}
               </div>
+              {d.overnight && (
+                <div className="day-actions">
+                  <button type="button" className="btn ghost small" onClick={() => setPicking(true)}>
+                    Change destination
+                  </button>
+                </div>
+              )}
               {d.warnings.map((w) => (
                 <Warning key={w.text} w={w} />
               ))}
+              {d.overnight && (
+                <StopPicker
+                  open={picking}
+                  onClose={() => setPicking(false)}
+                  title={`Day ${d.day}: ${stopName(d.from)} → …`}
+                  hint={`Pick where to sleep instead of ${stopName(d.to)}. The route is re-drawn through it on the app's roads, and both ends of today are pinned.`}
+                  options={
+                    picking
+                      ? dayEndOptions(settings, plan.route, dayRef(d)).map((o) => ({
+                          id: o.id,
+                          detail: `${fmtKm(o.km)} from ${stopName(d.from)} by road`,
+                          tag: o.onRoute ? 'on your route' : undefined,
+                        }))
+                      : []
+                  }
+                  onPick={(stopId) => dispatch({ type: 'changeDayEnd', day: dayRef(d), stopId })}
+                />
+              )}
             </>
           )}
 
@@ -169,6 +197,10 @@ function DayCard({ d, open, onToggle }: { d: PlanDay; open: boolean; onToggle: (
       )}
     </li>
   );
+}
+
+function dayRef(d: PlanDay): DayRef {
+  return { from: d.from, to: d.to, via: d.via, sectionIds: [...new Set(d.legs.map((l) => l.sectionId))] };
 }
 
 function RoadBadges({ roads }: { roads: RoadRef[] }) {

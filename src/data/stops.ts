@@ -262,6 +262,12 @@ export const STOPS: Stop[] = [
     food: ['Assam black tea', 'Thao cuisine', 'Tea eggs'],
   },
   {
+    id: 'puli', name: 'Puli', zh: '埔里', lat: 23.965, lng: 120.967, region: 'central',
+    overnight: 2, lodgingFactor: 0.9,
+    blurb: 'Basin town at the geographic centre of Taiwan — gateway to Sun Moon Lake and Cingjing. Shaoxing winery, paper mill.',
+    food: ['Rice noodles (米粉)', 'Water bamboo shoots (茭白筍)', 'Shaoxing wine ice cream'],
+  },
+  {
     id: 'lukang', name: 'Lukang', zh: '鹿港', lat: 24.057, lng: 120.435, region: 'central',
     overnight: 2, lodgingFactor: 0.9,
     blurb: 'Well-preserved Qing-era port town: temples, alleys, craftsmen.',

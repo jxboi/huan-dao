@@ -37,6 +37,11 @@ motorbike loop around Taiwan. Read this file, then `docs/ARCHITECTURE.md` and `d
   It also records which roads each line follows (`src/data/geo/legRoads.ts`) and refuses lines on roads white-plate
   scooters may not ride (`src/data/scooterRules.ts`); steer those with `VIAS`. Tests fail on a banned road, on a line
   that isn't on the roads its `road` string names, or on stale road data (`npm run snap-legs -- --roads-only`).
+- **Custom routes**: riders can ride any section through their own stops (`variants[id] = 'custom'`,
+  `customRoutes[id]` = stops, clockwise). `lib/network.ts` joins them with shortest paths over every preset leg plus
+  `src/data/links.ts`, so km/roads/warnings/map lines still come from data. To make a town reachable, add it to `STOPS`
+  and connect it with a `Link` (then `snap-legs` it). Edits (add/remove a stop, change a day's destination) live in
+  `lib/editRoute.ts`.
 - **New attraction**: add to `ATTRACTIONS` with `stopId` of the nearest stop. `highlight: true` shows it by default on
   the day; `sideTrip: true` for things needing extra time (islands, gorges).
 - Run `npm test` — data-integrity tests catch broken references.
