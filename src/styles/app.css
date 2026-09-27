@@ -272,3 +272,23 @@ p { margin: 4px 0; }
 @media (min-width: 560px) {
   .screen { padding: 16px 16px 0; }
 }
+
+/* Shared-link banner */
+.share-banner { padding-bottom: 0; }
+.share-banner .note { display: flex; align-items: center; gap: 8px; }
+.share-banner .note span { flex: 1; }
+
+/* Print: only the whole-trip itinerary (components/PrintItinerary.tsx) */
+.print-only { display: none; }
+@media print {
+  .app > :not(.print-only) { display: none !important; }
+  .app { padding: 0; max-width: none; }
+  body { background: #fff; color: #000; }
+  .print-only { display: block; font-size: 10pt; }
+  .print-itinerary h1 { font-size: 16pt; margin: 0 0 4px; }
+  .print-itinerary table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+  .print-itinerary th, .print-itinerary td { border: 1px solid #999; padding: 4px 6px; vertical-align: top; text-align: left; }
+  .print-itinerary tr { break-inside: avoid; }
+  .print-itinerary .nowrap { white-space: nowrap; }
+  .print-itinerary .small { font-size: 8.5pt; color: #333; }
+}

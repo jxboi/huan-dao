@@ -1,6 +1,7 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useReducer, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useReducer, useRef, useState, type ReactNode } from 'react';
 import { makeBudget, type Budget } from '../lib/budget';
 import { makePlan, type Plan } from '../lib/planner';
+import { decodeSettings, shareCodeFromHash } from '../lib/share';
 import { defaultSettings, migrate, type TripSettings } from './settings';
 
 const STORAGE_KEY = 'huandao.settings.v1';
@@ -12,6 +13,7 @@ type Action =
   | { type: 'togglePin'; stopId: string }
   | { type: 'setRest'; stopId: string; nights: number }
   | { type: 'toggleCheck'; item: string }
+  | { type: 'replace'; settings: TripSettings }
   | { type: 'reset' };
 
 function reducer(s: TripSettings, a: Action): TripSettings {
@@ -39,6 +41,8 @@ function reducer(s: TripSettings, a: Action): TripSettings {
     }
     case 'toggleCheck':
       return { ...s, checklist: { ...s.checklist, [a.item]: !s.checklist[a.item] } };
+    case 'replace':
+      return migrate(a.settings);
     case 'reset':
       return defaultSettings();
   }
@@ -59,6 +63,8 @@ interface Store {
   budget: Budget;
   dispatch: (a: Action) => void;
   update: (patch: Partial<TripSettings>) => void;
+  /** Set right after a shared link (#/plan?s=…) replaced the user's plan. */
+  shareImport?: { undo: () => void; dismiss: () => void };
 }
 
 const Ctx = createContext<Store | null>(null);
@@ -74,11 +80,41 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     }
   }, [settings]);
 
+  // Open a shared link: adopt its plan (keeping the user's own checklist), offer undo.
+  const current = useRef(settings);
+  current.current = settings;
+  const [previous, setPrevious] = useState<TripSettings | undefined>();
+  useEffect(() => {
+    const check = () => {
+      const code = shareCodeFromHash(window.location.hash);
+      if (code === undefined) return;
+      const shared = decodeSettings(code);
+      history.replaceState(null, '', `${window.location.pathname}${window.location.search}#/plan`);
+      if (!shared) return;
+      setPrevious(current.current);
+      dispatch({ type: 'replace', settings: { ...shared, checklist: current.current.checklist } });
+    };
+    check();
+    window.addEventListener('hashchange', check);
+    return () => window.removeEventListener('hashchange', check);
+  }, []);
+  const shareImport = useMemo(
+    () =>
+      previous && {
+        undo: () => {
+          dispatch({ type: 'replace', settings: previous });
+          setPrevious(undefined);
+        },
+        dismiss: () => setPrevious(undefined),
+      },
+    [previous],
+  );
+
   const plan = useMemo(() => makePlan(settings), [settings]);
   const budget = useMemo(() => makeBudget(settings, plan), [settings, plan]);
   const update = useCallback((patch: Partial<TripSettings>) => dispatch({ type: 'update', patch }), []);
 
-  const value = useMemo(() => ({ settings, plan, budget, dispatch, update }), [settings, plan, budget, update]);
+  const value = useMemo(() => ({ settings, plan, budget, dispatch, update, shareImport }), [settings, plan, budget, update, shareImport]);
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
 

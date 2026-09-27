@@ -7,6 +7,8 @@ import { ExploreScreen } from './screens/ExploreScreen';
 import { GuideScreen } from './screens/GuideScreen';
 import { PlanScreen } from './screens/PlanScreen';
 import { RouteScreen } from './screens/RouteScreen';
+import { PrintItinerary } from './components/PrintItinerary';
+import { Note } from './components/ui';
 import { useStore } from './state/store';
 
 export type Tab = 'plan' | 'route' | 'days' | 'explore' | 'budget' | 'guide';
@@ -31,7 +33,7 @@ const TITLES: Record<Tab, string> = {
 /** Hash-based tab routing so tabs are linkable (#/days) without a router dependency. */
 function useTab(): [Tab, (t: Tab) => void] {
   const read = (): Tab => {
-    const t = window.location.hash.replace('#/', '') as Tab;
+    const t = window.location.hash.replace('#/', '').split('?')[0] as Tab;
     return t in TITLES ? t : 'plan';
   };
   const [tab, setTab] = useState<Tab>(read);
@@ -49,7 +51,7 @@ function useTab(): [Tab, (t: Tab) => void] {
 
 export default function App() {
   const [tab, go] = useTab();
-  const { plan, budget, settings } = useStore();
+  const { plan, budget, settings, shareImport } = useStore();
 
   return (
     <div className="app">
@@ -69,6 +71,15 @@ export default function App() {
       </header>
 
       <main>
+        {shareImport && (
+          <div className="screen share-banner">
+            <Note tone="tip">
+              <span>Loaded a shared plan.</span>
+              <button className="btn ghost small" onClick={shareImport.undo}>Undo</button>
+              <button className="btn ghost small" onClick={shareImport.dismiss} aria-label="Dismiss">✕</button>
+            </Note>
+          </div>
+        )}
         {tab === 'plan' && <PlanScreen go={go} />}
         {tab === 'route' && <RouteScreen />}
         {tab === 'days' && <DaysScreen />}
@@ -85,6 +96,8 @@ export default function App() {
           </button>
         ))}
       </nav>
+
+      <PrintItinerary />
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import { FOOD_STYLES, STAYS, VEHICLES, type FoodStyle, type StayTier, type VehicleId } from '../data/costs';
 import { WEATHER } from '../data/guide';
 import { HUBS } from '../data/sections';
+import { ShareCard } from '../components/ShareCard';
 import { Card, Chips, Choice, Field, Note, Segmented, Stat, Stepper } from '../components/ui';
 import { currencyFor } from '../lib/budget';
 import { fmtHours, fmtKm, fmtMoney, fmtTwd, stopName } from '../lib/format';
@@ -122,6 +123,8 @@ export function PlanScreen({ go }: { go: (t: Tab) => void }) {
         </Field>
         <button className="btn ghost small" onClick={() => go('budget')}>Budget breakdown →</button>
       </Card>
+
+      <ShareCard />
 
       <Card title="📖 Before you go" action={<button className="btn ghost small" onClick={() => go('guide')}>Guide →</button>}>
         <ul className="bullets">

@@ -12,8 +12,8 @@ Status legend: ✅ done · 🟡 partial · ⬜ todo. Priorities from `research/1
 - ✅ localStorage persistence, dark mode, PWA manifest, unit tests, CI
 
 ## v0.2 — Share & take it on the road
-- ⬜ Share plan via URL (compress settings into `#/plan?s=…`) + "copy link" button
-- ⬜ Export: printable itinerary page, `.ics` calendar, GPX of overnight stops
+- ✅ Share plan via URL (`#/plan?s=…`, non-default fields only, validated by `migrate()`) + share/copy button, undo on import
+- 🟡 Export: ✅ printable itinerary (print CSS → PDF), ✅ `.ics` calendar · ⬜ GPX of overnight stops
 - ⬜ Service worker for offline app shell (vite-plugin-pwa or hand-rolled)
 - ⬜ "Today" mode: current day card, progress check-ins, next petrol reminder on remote legs
 - ⬜ Per-night stay tier override (e.g., splurge in Hualien)
