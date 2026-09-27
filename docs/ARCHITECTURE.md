@@ -69,7 +69,10 @@ restDays, vehicle, riders, bikes, stay tier, food style, season mode, saved attr
   (packing ticks from both are kept). Pulls on sign-in, tab refocus and `online`; local edits upsert after 1.2 s.
 - Setup: create a Facebook app (Facebook Login → valid OAuth redirect URI =
   `https://<project>.supabase.co/auth/v1/callback`); in Supabase enable the Facebook provider with its App ID/secret,
-  add the app's URLs (incl. `http://localhost:5173/`) to Auth → URL Configuration → Redirect URLs, run the migration.
+  add the app's URLs (incl. `http://localhost:5173/`) to Auth → URL Configuration → Redirect URLs, run the migrations.
+- Account deletion: "Delete my account" calls the `delete_my_account()` RPC (security definer, deletes the caller's
+  `auth.users` row; `plans` cascades). Facebook's required pages are static files in `public/`: `privacy.html`,
+  `data-deletion.html` (+ `icon-1024.png` for the app icon). Keep them accurate if what's collected changes.
 
 ## Road geometry (`src/data/geo/legs.ts`, `scripts/snap-legs.ts`)
 - One Google-encoded polyline per leg, keyed `from>to` in **clockwise** order; counter-clockwise travel reverses it.
