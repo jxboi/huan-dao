@@ -1,5 +1,5 @@
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
-import { IconBed, IconLock } from '../components/icons';
+import { IconBed, IconExternal, IconFood, IconInfo, IconLock, IconNavigate, IconStarLine } from '../components/icons';
 import { DESKTOP, MapPanel, useMedia } from '../components/MapPanel';
 import { RouteMap } from '../components/RouteMap';
 import { AttractionRow } from '../components/AttractionRow';
@@ -163,7 +163,12 @@ function DayCard({
   const legRoads = d.legs.map((l) => parseRoads(l.road));
   const mainRoads = [...new Set(roadSequence(legRoads).map(roadName))];
   const scenic = d.legs.length ? d.legs.reduce((s, l) => s + l.scenic * l.km, 0) / Math.max(1, d.km) : 0;
-  const foods = [...new Set([d.to, ...d.via].map((id) => STOP_BY_ID[id]).filter(Boolean).flatMap((s) => s.food.map((f) => `${f} · ${s.name}`)))].slice(0, 6);
+  // Local dishes grouped by town (tonight's first), capped so the card stays short.
+  const foodTowns = [...new Set([d.to, ...d.via])]
+    .map((id) => STOP_BY_ID[id])
+    .filter((s) => s && s.food.length > 0)
+    .slice(0, 3)
+    .map((s) => ({ id: s.id, name: s.name, food: s.food.slice(0, 4) }));
   const nightPrice = overnight
     ? stay.price * overnight.lodgingFactor * nightFactor(d.date) * (stay.perPerson ? settings.riders : Math.ceil(settings.riders / 2))
     : 0;
@@ -278,54 +283,98 @@ function DayCard({
 
           {d.attractions.length > 0 && (
             <div className="block">
-              <h3>{isRest ? 'Things to do' : 'Stops worth making'}</h3>
-              {d.attractions.map((a) => (
-                <AttractionRow key={a.id} a={a} compact />
+              <h3 className="block-h">
+                <IconStarLine /> {isRest ? 'Things to do' : 'Stops worth making'}
+              </h3>
+              <div className="tiles">
+                {d.attractions.map((a) => (
+                  <AttractionRow key={a.id} a={a} compact />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {foodTowns.length > 0 && (
+            <div className="block">
+              <h3 className="block-h">
+                <IconFood /> Eat
+              </h3>
+              {foodTowns.map((t) => (
+                <div key={t.id} className="food-town">
+                  {foodTowns.length > 1 && <span className="food-where">{t.name}</span>}
+                  <ul className="food-chips">
+                    {t.food.map((f) => (
+                      <li key={f}>{f}</li>
+                    ))}
+                  </ul>
+                </div>
               ))}
             </div>
           )}
 
-          {foods.length > 0 && (
-            <div className="block">
-              <h3>Eat</h3>
-              <ul className="food">
-                {foods.map((f) => (
-                  <li key={f}>{f}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-
           {overnight && (
-            <div className="block sleep">
-              <h3>Sleep in {overnight.name}</h3>
-              <p className="muted small">{overnight.blurb}</p>
-              <div className="sleep-row">
-                <span>
-                  {stay.label}: ~{fmtMoney(nightPrice, cur)} / night
-                  {overnight.overnight === 1 && ' · limited options, book ahead'}
-                  {d.date && nightFactor(d.date) > 1 && ' · weekend/holiday rate'}
+            <div className="block sleep-card">
+              <div className="sleep-top">
+                <span className="sleep-icon">
+                  <IconBed />
                 </span>
-                <a className="btn ghost small" href={bookingSearch(overnight.id, d.date)} target="_blank" rel="noreferrer">
-                  Find a stay ↗
-                </a>
+                <div className="sleep-title">
+                  <span className="sleep-kicker">Tonight</span>
+                  <strong>
+                    {overnight.name} <small className="muted">{overnight.zh}</small>
+                  </strong>
+                </div>
+                <div className="sleep-price">
+                  <strong>~{fmtMoney(nightPrice, cur)}</strong>
+                  <span>{stay.label} / night</span>
+                </div>
               </div>
-              {!isRest && (
-                <div className="rest-ctl">
-                  <span>Extra nights here: {restHere}{restHere > 0 && ` (${restHere} rest day${restHere > 1 ? 's' : ''})`}</span>
-                  <button className="btn ghost small" disabled={restHere === 0} onClick={() => dispatch({ type: 'setRest', stopId: overnight.id, nights: restHere - 1 })}>−</button>
-                  <button className="btn ghost small" onClick={() => dispatch({ type: 'setRest', stopId: overnight.id, nights: restHere + 1 })}>+</button>
+              <p className="sleep-blurb">{overnight.blurb}</p>
+              {(overnight.overnight === 1 || (d.date && nightFactor(d.date) > 1)) && (
+                <div className="a-chips">
+                  {overnight.overnight === 1 && <span className="chip warn">Few beds · book ahead</span>}
+                  {d.date && nightFactor(d.date) > 1 && <span className="chip">Weekend / holiday rate</span>}
                 </div>
               )}
+              <div className="sleep-actions">
+                {!isRest && (
+                  <div className="nights">
+                    <span className="nights-label">
+                      Extra nights
+                      {restHere > 0 && <small>{restHere} rest day{restHere > 1 ? 's' : ''}</small>}
+                    </span>
+                    <div className="stepper small">
+                      <button
+                        disabled={restHere === 0}
+                        aria-label="One fewer night here"
+                        onClick={() => dispatch({ type: 'setRest', stopId: overnight.id, nights: restHere - 1 })}
+                      >
+                        −
+                      </button>
+                      <output aria-live="polite">{restHere}</output>
+                      <button aria-label="One more night here" onClick={() => dispatch({ type: 'setRest', stopId: overnight.id, nights: restHere + 1 })}>
+                        +
+                      </button>
+                    </div>
+                  </div>
+                )}
+                <a className="btn ghost small" href={bookingSearch(overnight.id, d.date)} target="_blank" rel="noreferrer">
+                  Find a stay <IconExternal />
+                </a>
+              </div>
             </div>
           )}
 
           {!isRest && (
-            <a className="btn primary block-btn" href={googleMapsDirections([d.from, ...d.via])} target="_blank" rel="noreferrer">
-              Navigate in Google Maps ↗
-            </a>
+            <>
+              <a className="btn primary block-btn nav-btn" href={googleMapsDirections([d.from, ...d.via])} target="_blank" rel="noreferrer">
+                <IconNavigate /> Navigate in Google Maps
+              </a>
+              <p className="nav-tip">
+                <IconInfo /> Pick <b>Avoid highways</b> — scooters can't ride freeways.
+              </p>
+            </>
           )}
-          {!isRest && <p className="muted tiny">Tip: in Google Maps choose "Avoid highways" — scooters can't use freeways.</p>}
         </div>
       )}
     </li>
