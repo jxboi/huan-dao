@@ -37,7 +37,7 @@ Distances are approximate, scooter-legal roads, rounded.
 1. **Northeast Coast (Tai 2)** — Keelung, Jiufen, Bitou Cape, Fulong beach, Toucheng. ~120 km. Scenic, easy. *Default.*
 2. **Beiyi Highway (Tai 9)** — via Pinglin tea country. ~70 km. Twisty mountain road, notorious for speeding bikes; fast and fun but ride carefully. Shortest.
 3. **Full North Coast (Tai 2 from Tamsui)** — Tamsui, Jinshan, Yehliu, Keelung, then NE coast. ~180 km. For those with time.
-4. **Pingxi Valley (County 106 / 102)** — inland via Shenkeng to the sky-lantern villages of Pingxi & Shifen, over the hills
+4. **Pingxi Valley (County 106 / Tai 2C)** — inland via Shenkeng to the sky-lantern villages of Pingxi & Shifen, over the hills
    via Shuangxi (Tai 2C / County 102) to Fulong, then the NE coast. ~115 km. Narrow valley roads, weekend crowds at Shifen.
    Leg distances approximate (last checked Sep 2026).
 
@@ -68,24 +68,72 @@ Taitung city. App legs: Hualien → Fengbin ~45, Fengbin → Chenggong ~65, Chen
 Tai 26 → Tai 1 via Fangliao & Donggang (ferry to Xiaoliuqiu). ~105 km.
 
 ### Kaohsiung ↔ Tainan
-Tai 1 / Tai 17. ~50 km. Urban.
+Tai 17 / Tai 1 (clockwise, Kaohsiung → Tainan: Tai 17 north out of Zuoying, Tai 1 for the last ~8 km into Tainan). ~50 km. Urban.
 
 ### Tainan ↔ Chiayi
 1. **Tai 1 direct** ~65 km. *Default.*
 2. **Salt coast (Tai 17/61 via Beimen)** — Qigu salt mountain, Beimen crystal church, Budai. ~95 km.
 
 ### Chiayi ↔ Taichung
-1. **Plains via Lukang & Changhua** — Tai 1 / Tai 17. ~110 km. *Default.*
+1. **Plains via Lukang & Changhua** — Tai 1 / Tai 19. ~110 km. *Default.*
 2. **Sun Moon Lake detour** — Tai 3 / Tai 21 inland to Sun Moon Lake then down to Taichung. ~170 km. Mountain roads.
 3. **Alishan + Sun Moon Lake (advanced)** — Tai 18 up to Alishan (2,200 m), Tai 18/21 over Tataka (2,600 m) to Sun Moon Lake, then Taichung. ~245 km, cold, steep, fog. 125cc works but slow. Plan 2 days.
 
 ### Taichung ↔ Hsinchu
 1. **Tai 1 / Tai 61 coast** ~100 km. *Default.* (Tai 61 expressway sections are banned for scooters — follow signs; Tai 1 is safe.)
-2. **Hakka hills (Tai 3 / Tai 13 via Sanyi)** — woodcarving town Sanyi, Dahu strawberries, Beipu. ~115 km.
+2. **Hakka hills (Tai 3 / Tai 13 via Sanyi)** — woodcarving town Sanyi, Dahu strawberries, Beipu. ~145 km.
+   Taichung → Sanyi on Tai 13 (~45 km); Sanyi → Hsinchu ~100 km: Tai 13 to Tongluo, County 128 / Miaoli 27 to
+   Tai 6, Tai 3 north through Dahu, Shitan, Sanwan, Emei and Beipu (~57 km), then County 122 from Xiagongguan
+   (Zhudong) into Hsinchu (~16 km). Tai 3 doesn't pass through Sanyi and meets County 122 at Xiagongguan
+   (zh.wikipedia 臺3線; checked Sep 2026). Distance and roads from Valhalla `motor_scooter` routing (Sep 2026).
 
 ### Hsinchu ↔ Taipei
 1. **Tai 1 via Taoyuan** ~80 km. Urban, traffic lights.
 2. **West coast via Bali & Tamsui** — Tai 15/61 frontage roads, sunset at Tamsui. ~110 km.
+
+## Road order within legs (audit, checked Sep 2026)
+
+A leg's `road` in `src/data/sections.ts` lists its roads in **clockwise riding order** ("Tai 5 / Tai 2" = Tai 5 first);
+the app flips them for anticlockwise trips and shows them as badges on the day timeline and map.
+
+Method: for each of the 23 legs with more than one road, route through 12 points sampled along the leg's snapped
+geometry (`src/data/geo/legs.ts`) with the public OSRM demo (`steps=true`) and read the OSM `ref` of each step in order.
+This shows the roads the **drawn map line** follows, which is router-generated, so it is evidence, not ground truth.
+
+**Order fixed:**
+* Manzhou → Kenting: was "Tai 26 / 200" → now **County 200 / Tai 26** (County 200 out of Manzhou ~12 km, then Tai 26 ~8 km).
+* Kaohsiung → Tainan: was "Tai 1 / Tai 17" → now **Tai 17 / Tai 1** (Tai 17 ~27 km, then Tai 1 ~8 km).
+
+**Order confirmed** (first road first, as listed): Taipei→Keelung (Tai 5 / Tai 2), Keelung→Jiufen (Tai 2 / 102),
+Taipei→Pingxi, Pingxi→Fulong, Su'ao→Nan'ao (Tai 9D 15 km, then Tai 9 11 km), Shouka→Kenting (Tai 9 / Tai 26),
+Shouka→Xuhai (199 / 199A), Kenting→Fangliao (Tai 26 / Tai 1), Tainan→Beimen, Chiayi→Sun Moon Lake (Tai 3 … Tai 21),
+Sun Moon Lake→Taichung (Tai 21 → Tai 14 …), Ruisui→Yuli (Tai 9 first).
+
+**Order not meaningful:** Hsinchu → Tamsui alternates Tai 15 and the Tai 61 frontage road several times; read it as
+"Tai 15 and Tai 61 frontage", not a sequence. Alishan → Sun Moon Lake: the router couldn't follow the line (it
+detoured ~360 km), so there's no evidence either way; Tai 18 then Tai 21 via Tataka matches the route description.
+
+**Map line vs named road — all resolved (Sep 2026).** Each leg below was checked with Valhalla `motor_scooter` routing
+(maneuver street names), plus the sources cited. "Forced" legs have VIAS in `scripts/snap-legs.ts` and were re-snapped.
+* **Taipei → Pingxi** — forced onto **County 106** via Shenkeng & Shiding, as the variant intends. zh.wikipedia 市道106號:
+  Muzha → Shenkeng → Shiding → Pingxi → Shifen → Ruifang. Waypoints also keep it on surface streets leaving Taipei:
+  the router otherwise used 市民大道高架 / 環東大道 / 建國 elevated roads, which ban scooters. Now "County 106", 47 km (was 38).
+* **Pingxi → Fulong** — line was right: Tai 2C runs through Shuangxi to Fulong, and County 102 shares it from Shuangxi
+  (zh.wikipedia 縣道102號: Keelung … Shuangxi → Gongliao → Fulong). Road name kept, km fixed: 23 km (was 30).
+* **Nan'ao → Heping** — **safety fix.** The line was on the 蘇花改 Tai 9 tunnels, which white-plate scooters still may
+  not use (only the Zhongren Tunnel trial is open to them; TVBS 2026 Suhua control guide, research/02). Forced onto
+  **Tai 9D** (old Suhua road): "Tai 9D", 29 km. OSM marks one short Tai 9D way in Nan'ao closed since the April 2024
+  quake ("2024-04-03地震封閉"); the route passes around it. **⚠ VERIFY** Tai 9D Nan'ao–Heping status before release.
+* **Ruisui → Yuli** — line follows Tai 9 (the variant is "East Rift Valley Hwy 9"); road now "Tai 9". County 193 is a
+  quieter alternative on the other side of the valley (~24 km, zh.wikipedia 縣道193號).
+* **Beimen → Chiayi** — County 168 runs Dongshi → Puzi → Taibao → Shuishang and never reaches Beimen or Chiayi city
+  (zh.wikipedia 縣道168號), so the old name was wrong. Line is Tai 17 → County 163 → Tai 1; road now "Tai 17 / County 163 / Tai 1".
+* **Chiayi → Lukang** — line is Tai 1 → Tai 19 → County 146 into Lukang; road now "Tai 1 / Tai 19 / County 146", 73 km.
+* **Sun Moon Lake → Taichung** — forced onto Tai 21 to Puli, Tai 14 via Guoxing to Caotun, then Tai 3 via Wufeng
+  (router otherwise took County 136 over the hills). "Tai 21 / Tai 14 / Tai 3", 76 km (was 70).
+* ~~Sanyi → Hsinchu~~ **fixed (Sep 2026):** the old line ran ~26 km along the coast on Tai 61, which may have
+  been the scooter-banned expressway. It's now forced onto Tai 3 via VIAS in `scripts/snap-legs.ts` and re-snapped with
+  Valhalla `motor_scooter`; the data now reads "Tai 6 / Tai 3 / County 122", 100 km (was 70 km).
 
 ## Popular side trips (extra days)
 * **Taroko Gorge** (from Xincheng/Hualien) — partly reopened, controlled access. 0.5–1 day.

@@ -70,10 +70,10 @@ export const SECTIONS: Section[] = [
         tags: ['hills', 'culture'],
         legs: [
           {
-            to: 'pingxi', km: 38, speed: 30, road: 'Tai 5 / County 106', scenic: 2,
+            to: 'pingxi', km: 47, speed: 30, road: 'County 106', scenic: 2,
             warnings: [{ level: 'info', text: 'Narrow valley road; tour buses and weekend crowds around Shifen.' }],
           },
-          { to: 'fulong', km: 30, speed: 32, road: 'Tai 2C / County 102 via Shuangxi', scenic: 2 },
+          { to: 'fulong', km: 23, speed: 32, road: 'Tai 2C / County 102 via Shuangxi', scenic: 2 },
           { to: 'toucheng', km: 30, speed: 45, road: 'Tai 2', scenic: 3 },
           { to: 'yilan', km: 15, speed: 35, road: 'Tai 9', scenic: 1 },
         ],
@@ -113,7 +113,7 @@ export const SECTIONS: Section[] = [
           { to: 'luodong', km: 12, speed: 35, road: 'Tai 9', scenic: 1 },
           { to: 'suao', km: 18, speed: 40, road: 'Tai 9', scenic: 1 },
           { to: 'nanao', km: 28, speed: 35, road: 'Tai 9D / Tai 9', scenic: 3, warnings: [SUHUA_WARNING] },
-          { to: 'heping', km: 30, speed: 35, road: 'Tai 9D / Tai 9', scenic: 3, warnings: [SUHUA_WARNING] },
+          { to: 'heping', km: 29, speed: 35, road: 'Tai 9D', scenic: 3, warnings: [SUHUA_WARNING] },
           { to: 'xincheng', km: 30, speed: 35, road: 'Tai 9', scenic: 3, warnings: [SUHUA_WARNING] },
           { to: 'hualien', km: 20, speed: 35, road: 'Tai 9', scenic: 1 },
         ],
@@ -149,7 +149,7 @@ export const SECTIONS: Section[] = [
         legs: [
           { to: 'guangfu', km: 40, speed: 45, road: 'Tai 9', scenic: 2 },
           { to: 'ruisui', km: 25, speed: 45, road: 'Tai 9', scenic: 2 },
-          { to: 'yuli', km: 22, speed: 45, road: 'Tai 9 / 193', scenic: 2 },
+          { to: 'yuli', km: 22, speed: 45, road: 'Tai 9', scenic: 2 },
           { to: 'chishang', km: 28, speed: 45, road: 'Tai 9', scenic: 3 },
           { to: 'guanshan', km: 10, speed: 40, road: 'Tai 9', scenic: 2 },
           { to: 'taitung', km: 45, speed: 45, road: 'Tai 9', scenic: 2 },
@@ -164,7 +164,7 @@ export const SECTIONS: Section[] = [
         legs: [
           { to: 'guangfu', km: 40, speed: 45, road: 'Tai 9', scenic: 2 },
           { to: 'ruisui', km: 25, speed: 45, road: 'Tai 9', scenic: 2 },
-          { to: 'yuli', km: 22, speed: 45, road: 'Tai 9 / 193', scenic: 2 },
+          { to: 'yuli', km: 22, speed: 45, road: 'Tai 9', scenic: 2 },
           { to: 'fuli', km: 23, speed: 45, road: 'Tai 9', scenic: 2 },
           {
             to: 'donghe', km: 45, speed: 35, road: 'Tai 23 (Fudong Hwy)', scenic: 3,
@@ -229,7 +229,7 @@ export const SECTIONS: Section[] = [
             warnings: [{ level: 'caution', text: 'Remote, few services, no fuel. Verify road numbers & conditions locally.' }],
           },
           { to: 'manzhou', km: 32, speed: 35, road: 'Tai 26', scenic: 3 },
-          { to: 'kenting', km: 18, speed: 35, road: 'Tai 26 / 200', scenic: 2 },
+          { to: 'kenting', km: 18, speed: 35, road: 'County 200 / Tai 26', scenic: 2 },
         ],
       },
     ],
@@ -268,7 +268,7 @@ export const SECTIONS: Section[] = [
         summary: 'Short urban hop between the two southern cities.',
         difficulty: 1,
         tags: ['urban'],
-        legs: [{ to: 'tainan', km: 50, speed: 30, road: 'Tai 1 / Tai 17', scenic: 1 }],
+        legs: [{ to: 'tainan', km: 50, speed: 30, road: 'Tai 17 / Tai 1', scenic: 1 }],
       },
     ],
   },
@@ -295,7 +295,7 @@ export const SECTIONS: Section[] = [
         tags: ['coast', 'culture'],
         legs: [
           { to: 'beimen', km: 45, speed: 40, road: 'Tai 17 / Tai 61 frontage', scenic: 2 },
-          { to: 'chiayi', km: 50, speed: 40, road: 'County 168 / Tai 1', scenic: 1 },
+          { to: 'chiayi', km: 50, speed: 40, road: 'Tai 17 / County 163 / Tai 1', scenic: 1 },
         ],
       },
     ],
@@ -310,11 +310,11 @@ export const SECTIONS: Section[] = [
       {
         id: 'plains',
         name: 'Plains via Lukang',
-        summary: 'Tai 1/Tai 17 across farmland to the old port of Lukang, then Changhua and Taichung.',
+        summary: 'Tai 1/Tai 19 across farmland to the old port of Lukang, then Changhua and Taichung.',
         difficulty: 1,
         tags: ['culture'],
         legs: [
-          { to: 'lukang', km: 75, speed: 40, road: 'Tai 1 / Tai 17', scenic: 1 },
+          { to: 'lukang', km: 73, speed: 40, road: 'Tai 1 / Tai 19 / County 146', scenic: 1 },
           { to: 'changhua', km: 15, speed: 30, road: 'Tai 19', scenic: 1 },
           { to: 'taichung', km: 20, speed: 30, road: 'Tai 1', scenic: 1 },
         ],
@@ -327,7 +327,7 @@ export const SECTIONS: Section[] = [
         tags: ['mountain', 'lake'],
         legs: [
           { to: 'sunmoonlake', km: 100, speed: 35, road: 'Tai 3 / Tai 21', scenic: 3, warnings: [MOUNTAIN_WARNING] },
-          { to: 'taichung', km: 70, speed: 40, road: 'Tai 21 / Tai 14 / Tai 3', scenic: 2 },
+          { to: 'taichung', km: 76, speed: 40, road: 'Tai 21 / Tai 14 / Tai 3', scenic: 2 },
         ],
       },
       {
@@ -342,7 +342,7 @@ export const SECTIONS: Section[] = [
             to: 'sunmoonlake', km: 100, speed: 28, road: 'Tai 18 / Tai 21', scenic: 3,
             warnings: [MOUNTAIN_WARNING, { level: 'caution', text: 'No fuel between Alishan and Shuili — fill up in Alishan.' }],
           },
-          { to: 'taichung', km: 70, speed: 40, road: 'Tai 21 / Tai 14 / Tai 3', scenic: 2 },
+          { to: 'taichung', km: 76, speed: 40, road: 'Tai 21 / Tai 14 / Tai 3', scenic: 2 },
         ],
       },
     ],
@@ -370,7 +370,7 @@ export const SECTIONS: Section[] = [
         tags: ['hills', 'culture'],
         legs: [
           { to: 'sanyi', km: 45, speed: 38, road: 'Tai 13', scenic: 2 },
-          { to: 'hsinchu', km: 70, speed: 35, road: 'Tai 3 / County 122', scenic: 2 },
+          { to: 'hsinchu', km: 100, speed: 35, road: 'Tai 6 / Tai 3 / County 122', scenic: 2 },
         ],
       },
     ],

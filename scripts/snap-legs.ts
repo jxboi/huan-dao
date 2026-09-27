@@ -40,6 +40,16 @@ const VIAS: Record<string, LatLng[]> = {
   'ruisui>jingpu': [[23.505, 121.44]],
   // Router otherwise leaves Tai 23 for the coast road.
   'fuli>donghe': [[23.08, 121.31]],
+  // County 106 via Shenkeng & Shiding (research/01). Surface streets out of Taipei: the router otherwise takes the
+  // 市民大道高架 / 環東大道 / 建國 elevated expressways, which ban scooters.
+  'taipei>pingxi': [[25.0415, 121.544], [25.0215, 121.557], [24.9985, 121.57], [24.9993, 121.6158], [24.9914, 121.6583]],
+  // White-plate scooters may not use the 蘇花改 Nan'ao–Heping tunnels (Tai 9): keep to the old road, Tai 9D (research/02).
+  'nanao>heping': [[24.4448, 121.7824], [24.3947, 121.7847], [24.3484, 121.7733]],
+  // Tai 21 to Puli, Tai 14 via Guoxing to Caotun, Tai 3 via Wufeng; router otherwise takes County 136 over the hills.
+  'sunmoonlake>taichung': [[23.918, 120.927], [23.966, 120.946], [24.042, 120.858], [23.9737, 120.6802], [24.061, 120.7]],
+  // Hakka hills: router otherwise runs up the coast on Tai 61 (expressway sections ban scooters). Force Tai 3 via
+  // Dahu, Shitan and Beipu, then County 122 from Xiagongguan (Zhudong) into Hsinchu (research/01).
+  'sanyi>hsinchu': [[24.423, 120.866], [24.54, 120.9205], [24.702, 121.0567], [24.7231, 121.096]],
 };
 
 const args = process.argv.slice(2);
