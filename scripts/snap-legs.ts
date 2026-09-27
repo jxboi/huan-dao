@@ -35,7 +35,12 @@ const DELAY_MS = /project-osrm\.org|openstreetmap\.de/.test(VALHALLA_URL ?? OSRM
  * Extra waypoints ([lat, lng]) per leg, for legs where the router picks the wrong road.
  * Example: 'taipei>pinglin': [[24.99, 121.63]] to keep it on Tai 9.
  */
-const VIAS: Record<string, LatLng[]> = {};
+const VIAS: Record<string, LatLng[]> = {
+  // Router otherwise detours via Guangfu / Tai 11A and the coast instead of along the Xiuguluan River.
+  'ruisui>jingpu': [[23.505, 121.44]],
+  // Router otherwise leaves Tai 23 for the coast road.
+  'fuli>donghe': [[23.08, 121.31]],
+};
 
 const args = process.argv.slice(2);
 const force = args.includes('--force');
