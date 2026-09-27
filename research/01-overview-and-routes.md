@@ -68,7 +68,7 @@ Taitung city. App legs: Hualien → Fengbin ~45, Fengbin → Chenggong ~65, Chen
 Tai 26 → Tai 1 via Fangliao & Donggang (ferry to Xiaoliuqiu). ~105 km.
 
 ### Kaohsiung ↔ Tainan
-Tai 1 / Tai 17. ~50 km. Urban.
+Tai 17 / Tai 1 (clockwise, Kaohsiung → Tainan: Tai 17 north out of Zuoying, Tai 1 for the last ~8 km into Tainan). ~50 km. Urban.
 
 ### Tainan ↔ Chiayi
 1. **Tai 1 direct** ~65 km. *Default.*
@@ -86,6 +86,39 @@ Tai 1 / Tai 17. ~50 km. Urban.
 ### Hsinchu ↔ Taipei
 1. **Tai 1 via Taoyuan** ~80 km. Urban, traffic lights.
 2. **West coast via Bali & Tamsui** — Tai 15/61 frontage roads, sunset at Tamsui. ~110 km.
+
+## Road order within legs (audit, checked Sep 2026)
+
+A leg's `road` in `src/data/sections.ts` lists its roads in **clockwise riding order** ("Tai 5 / Tai 2" = Tai 5 first);
+the app flips them for anticlockwise trips and shows them as badges on the day timeline and map.
+
+Method: for each of the 23 legs with more than one road, route through 12 points sampled along the leg's snapped
+geometry (`src/data/geo/legs.ts`) with the public OSRM demo (`steps=true`) and read the OSM `ref` of each step in order.
+This shows the roads the **drawn map line** follows, which is router-generated, so it is evidence, not ground truth.
+
+**Order fixed:**
+* Manzhou → Kenting: was "Tai 26 / 200" → now **County 200 / Tai 26** (County 200 out of Manzhou ~12 km, then Tai 26 ~8 km).
+* Kaohsiung → Tainan: was "Tai 1 / Tai 17" → now **Tai 17 / Tai 1** (Tai 17 ~27 km, then Tai 1 ~8 km).
+
+**Order confirmed** (first road first, as listed): Taipei→Keelung (Tai 5 / Tai 2), Keelung→Jiufen (Tai 2 / 102),
+Taipei→Pingxi, Pingxi→Fulong, Su'ao→Nan'ao (Tai 9D 15 km, then Tai 9 11 km), Shouka→Kenting (Tai 9 / Tai 26),
+Shouka→Xuhai (199 / 199A), Kenting→Fangliao (Tai 26 / Tai 1), Tainan→Beimen, Chiayi→Sun Moon Lake (Tai 3 … Tai 21),
+Sun Moon Lake→Taichung (Tai 21 → Tai 14 …), Ruisui→Yuli (Tai 9 first).
+
+**Order not meaningful:** Hsinchu → Tamsui alternates Tai 15 and the Tai 61 frontage road several times; read it as
+"Tai 15 and Tai 61 frontage", not a sequence. Alishan → Sun Moon Lake: the router couldn't follow the line (it
+detoured ~360 km), so there's no evidence either way; Tai 18 then Tai 21 via Tataka matches the route description.
+
+**⚠ VERIFY: the map line takes a different road from the one named** (not changed, needs research before editing):
+* Taipei → Pingxi: named County 106, line uses Tai 2C (2丙) into Pingxi.
+* Pingxi → Fulong: named "Tai 2C / County 102 via Shuangxi" (30 km), line is Tai 2C only (~20 km).
+* Nan'ao → Heping: named "Tai 9D / Tai 9", line is Tai 9 only (fits the 2024 quake notes in research/02).
+* Ruisui → Yuli: named "Tai 9 / 193", line ends on Hualien 71 (花71), not County 193.
+* Beimen → Chiayi: named "County 168 / Tai 1", line uses Tai 17 then County 163.
+* Chiayi → Lukang: named "Tai 1 / Tai 17", line leaves Tai 1 for Tai 19 and County 146/144.
+* Sun Moon Lake → Taichung: named "Tai 21 / Tai 14 / Tai 3", line takes County 136 instead of Tai 3.
+* Sanyi → Hsinchu: named "Tai 3 / County 122", line uses Tai 13, County 119 and **~26 km on Tai 61**. If that's the
+  expressway mainline, the drawn line is on a road scooters can't use. Re-snap with Valhalla `motor_scooter` or add VIAS.
 
 ## Popular side trips (extra days)
 * **Taroko Gorge** (from Xincheng/Hualien) — partly reopened, controlled access. 0.5–1 day.
