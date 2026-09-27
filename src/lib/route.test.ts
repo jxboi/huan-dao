@@ -69,7 +69,10 @@ describe('buildRoute', () => {
       expectConsistent(cw);
       expectConsistent(ccw);
       expect(ccw.points).toEqual([...cw.points].reverse());
-      const flipped = [...cw.legs].reverse().map((l) => ({ ...l, from: l.to, to: l.from }));
+      // Riding the other way flips the stops and the order of roads within a leg.
+      const flipped = [...cw.legs]
+        .reverse()
+        .map((l) => ({ ...l, from: l.to, to: l.from, road: l.road.split(' / ').reverse().join(' / ') }));
       expect(ccw.legs).toEqual(flipped);
     }
   });

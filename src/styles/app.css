@@ -236,6 +236,16 @@ p { margin: 4px 0; }
 .via-stop.end::before { background: var(--accent); border-color: var(--accent); }
 .via-stop.end .via-name { font-weight: 700; }
 .via-name small { color: var(--muted); }
+.via-leg { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; padding: 2px 0 6px 14px; font-size: 0.75rem; }
+.road-badges { display: inline-flex; flex-wrap: wrap; gap: 4px; }
+.road { display: inline-flex; align-items: baseline; gap: 4px; border-radius: 6px; padding: 1px 6px; line-height: 1.5; }
+.road-num { font-weight: 700; }
+.road-en, .road-note { font-size: 0.68rem; opacity: 0.85; }
+/* Provincial highways (台x) are signed white-on-blue; county roads (縣道) white shields with dark text. */
+.road.provincial { background: var(--primary); color: var(--primary-text); }
+.road.county { background: var(--surface); color: var(--text); border: 1px solid var(--muted); }
+.road.other { background: var(--surface-2); color: var(--text); }
+.day-roads { display: block; font-size: 0.75rem; color: var(--muted); margin-top: 2px; }
 .pin { border: 1px solid var(--border); background: var(--surface-2); border-radius: 999px; font-size: 0.72rem; padding: 3px 8px; white-space: nowrap; }
 .pin.on { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); font-weight: 700; }
 .block { margin-top: 14px; }
