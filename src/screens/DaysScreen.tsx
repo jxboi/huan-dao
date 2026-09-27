@@ -1,5 +1,6 @@
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { IconBed, IconLock } from '../components/icons';
+import { DESKTOP, MapPanel, useMedia } from '../components/MapPanel';
 import { RouteMap } from '../components/RouteMap';
 import { AttractionRow } from '../components/AttractionRow';
 import { StopPicker } from '../components/StopPicker';
@@ -82,11 +83,17 @@ export function DaysScreen() {
     dispatch({ type: 'chooseDayRoute', day, variants: o.variants });
   };
 
-  return (
-    <div className="screen">
-      <Card className="flush sticky-map">
-        <RouteMap plan={plan} highlightDay={open} height={240} controls={false} />
-      </Card>
+  const desktop = useMedia(DESKTOP);
+  // In the side panel, collapsing the day above can push the opened day's header out of view.
+  useEffect(() => {
+    if (!desktop || open === undefined) return;
+    const el = document.getElementById(`day-${open}`);
+    const panel = el?.closest('.side-panel');
+    if (el && panel && el.getBoundingClientRect().top < panel.getBoundingClientRect().top) el.scrollIntoView({ block: 'start' });
+  }, [desktop, open]);
+
+  const days = (
+    <>
       {plan.notes.map((n) => (
         <Note key={n} tone="warn">{n}</Note>
       ))}
@@ -111,6 +118,23 @@ export function DaysScreen() {
           </div>
         )}
       </div>
+    </>
+  );
+
+  if (desktop) {
+    return (
+      <MapPanel map={<RouteMap plan={plan} highlightDay={open} height="100%" />} label="Day details" toggleLabel="Days">
+        {days}
+      </MapPanel>
+    );
+  }
+
+  return (
+    <div className="screen">
+      <Card className="flush sticky-map">
+        <RouteMap plan={plan} highlightDay={open} height={240} controls={false} />
+      </Card>
+      {days}
     </div>
   );
 }
