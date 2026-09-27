@@ -63,6 +63,22 @@ export const SECTIONS: Section[] = [
         ],
       },
       {
+        id: 'pingxi',
+        name: 'Pingxi Valley (106 / 102)',
+        summary: 'Inland through the sky-lantern villages of Pingxi and Shifen, over the hills to Fulong, then the NE coast.',
+        difficulty: 2,
+        tags: ['hills', 'culture'],
+        legs: [
+          {
+            to: 'pingxi', km: 38, speed: 30, road: 'Tai 5 / County 106', scenic: 2,
+            warnings: [{ level: 'info', text: 'Narrow valley road; tour buses and weekend crowds around Shifen.' }],
+          },
+          { to: 'fulong', km: 30, speed: 32, road: 'Tai 2C / County 102 via Shuangxi', scenic: 2 },
+          { to: 'toucheng', km: 30, speed: 45, road: 'Tai 2', scenic: 3 },
+          { to: 'yilan', km: 15, speed: 35, road: 'Tai 9', scenic: 1 },
+        ],
+      },
+      {
         id: 'north-coast',
         name: 'Full North Coast (Tamsui → Tai 2)',
         summary: 'The long way round: Tamsui sunset, Jinshan, Yehliu rocks, Keelung, then the NE coast.',
@@ -118,8 +134,8 @@ export const SECTIONS: Section[] = [
         difficulty: 1,
         tags: ['coast', 'classic'],
         legs: [
-          { to: 'fengbin', km: 60, speed: 45, road: 'Tai 11', scenic: 3, warnings: [FUEL_EAST] },
-          { to: 'chenggong', km: 50, speed: 45, road: 'Tai 11', scenic: 3 },
+          { to: 'fengbin', km: 45, speed: 45, road: 'Tai 11', scenic: 3, warnings: [FUEL_EAST] },
+          { to: 'chenggong', km: 65, speed: 45, road: 'Tai 11', scenic: 3 },
           { to: 'dulan', km: 38, speed: 45, road: 'Tai 11', scenic: 3 },
           { to: 'taitung', km: 22, speed: 40, road: 'Tai 11', scenic: 2 },
         ],
@@ -137,6 +153,28 @@ export const SECTIONS: Section[] = [
           { to: 'chishang', km: 28, speed: 45, road: 'Tai 9', scenic: 3 },
           { to: 'guanshan', km: 10, speed: 40, road: 'Tai 9', scenic: 2 },
           { to: 'taitung', km: 45, speed: 45, road: 'Tai 9', scenic: 2 },
+        ],
+      },
+      {
+        id: 'rift-23',
+        name: 'Rift Valley then Hwy 23 to the coast',
+        summary: 'Tai 9 down the Rift Valley to Fuli, over the Coastal Range on quiet Tai 23 through Taiyuan valley, then Hwy 11 south.',
+        difficulty: 2,
+        tags: ['valley', 'mountain', 'coast'],
+        legs: [
+          { to: 'guangfu', km: 40, speed: 45, road: 'Tai 9', scenic: 2 },
+          { to: 'ruisui', km: 25, speed: 45, road: 'Tai 9', scenic: 2 },
+          { to: 'yuli', km: 22, speed: 45, road: 'Tai 9 / 193', scenic: 2 },
+          { to: 'fuli', km: 23, speed: 45, road: 'Tai 9', scenic: 2 },
+          {
+            to: 'donghe', km: 45, speed: 35, road: 'Tai 23 (Fudong Hwy)', scenic: 3,
+            warnings: [
+              FUEL_EAST,
+              { level: 'caution', text: 'Winding climb to ~640 m over the Coastal Range; landslides after heavy rain. Few services.' },
+            ],
+          },
+          { to: 'dulan', km: 14, speed: 45, road: 'Tai 11', scenic: 3 },
+          { to: 'taitung', km: 22, speed: 40, road: 'Tai 11', scenic: 2 },
         ],
       },
       {

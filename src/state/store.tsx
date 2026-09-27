@@ -12,6 +12,7 @@ type Action =
   | { type: 'togglePin'; stopId: string }
   | { type: 'setRest'; stopId: string; nights: number }
   | { type: 'toggleCheck'; item: string }
+  | { type: 'replace'; settings: TripSettings }
   | { type: 'reset' };
 
 function reducer(s: TripSettings, a: Action): TripSettings {
@@ -39,6 +40,8 @@ function reducer(s: TripSettings, a: Action): TripSettings {
     }
     case 'toggleCheck':
       return { ...s, checklist: { ...s.checklist, [a.item]: !s.checklist[a.item] } };
+    case 'replace':
+      return migrate(a.settings);
     case 'reset':
       return defaultSettings();
   }

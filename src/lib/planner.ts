@@ -1,8 +1,10 @@
 import { ATTRACTIONS } from '../data/attractions';
 import { VEHICLES } from '../data/costs';
 import { STOP_BY_ID } from '../data/stops';
+import type { HolidayBreak } from '../data/holidays';
 import type { Attraction, RoadWarning } from '../data/types';
 import { PACES, type TripSettings } from '../state/settings';
+import { fmtRange, holidayOn, holidaysCovered, holidaysDuring } from './holidays';
 import { buildRoute, type Route, type RouteLeg } from './route';
 
 /**
@@ -22,6 +24,8 @@ export interface PlanDay {
   day: number;
   /** ISO date when a start date is set. */
   date?: string;
+  /** Public holiday break this day falls in (needs a start date). */
+  holiday?: HolidayBreak;
   kind: 'ride' | 'rest';
   /** Rest day added automatically because the user has more days than needed at this pace. */
   flex?: boolean;
@@ -152,7 +156,8 @@ export function makePlan(settings: TripSettings): Plan {
   let prev = 0;
   const pushDay = (d: Omit<PlanDay, 'day' | 'date'>) => {
     const dayNum = days.length + 1;
-    days.push({ ...d, day: dayNum, date: dateFor(settings.startDate, dayNum - 1) });
+    const date = dateFor(settings.startDate, dayNum - 1);
+    days.push({ ...d, day: dayNum, date, holiday: date ? holidayOn(date) : undefined });
   };
 
   for (const e of ends) {
@@ -208,6 +213,8 @@ export function makePlan(settings: TripSettings): Plan {
   if (maxDay > pace.max + 0.25) {
     notes.push(`Longest day is about ${maxDay.toFixed(1)} h of riding — start early and avoid riding after dark.`);
   }
+
+  notes.push(...holidayNotes(settings.startDate, days.length));
 
   return {
     route,
@@ -294,6 +301,25 @@ function pickAttractions(stops: string[], saved: Set<string>, shown: Set<string>
   if (includeSideTrips) picked.push(...here.filter((a) => !saved.has(a.id) && !a.highlight));
   const out = picked.slice(0, includeSideTrips ? 8 : 6);
   out.forEach((a) => shown.add(a.id));
+  return out;
+}
+
+function holidayNotes(start: string, days: number): string[] {
+  const out: string[] = [];
+  if (!dateFor(start, 0)) return out;
+  for (const h of holidaysDuring(start, days)) {
+    if (h.kind === 'lunar-new-year') {
+      out.push(
+        `Your trip overlaps Lunar New Year (${fmtRange(h)}): rooms sell out and cost up to double, roads out of the cities jam, ` +
+          `and many small restaurants close for the first days. Book every night ahead or shift your dates.`,
+      );
+    } else if (h.kind === 'long-weekend') {
+      out.push(`${h.name} long weekend (${fmtRange(h)}): book rooms ahead and expect heavy traffic on the Suhua and South Link.`);
+    } else {
+      out.push(`${h.name} (${fmtRange(h)}) is a public holiday — busier roads and sights that day.`);
+    }
+  }
+  if (!holidaysCovered(start, days)) out.push("Public holidays for your dates aren't in the app yet — check Taiwan's holiday calendar before booking.");
   return out;
 }
 

@@ -4,6 +4,7 @@ import { HUBS } from '../data/sections';
 import { STOP_BY_ID } from '../data/stops';
 import { MonthPicker } from '../components/MonthPicker';
 import { RouteMap } from '../components/RouteMap';
+import { ShareCard } from '../components/ShareCard';
 import { Sheet } from '../components/Sheet';
 import { IconArrow } from '../components/icons';
 import { Choice, Field, Note, Stepper } from '../components/ui';
@@ -135,6 +136,8 @@ export function PlanScreen({ go }: { go: (t: Tab, sub?: string) => void }) {
         </button>
       </nav>
 
+      <ShareCard onPrint={() => go('print')} onPickDate={() => setSheet('date')} />
+
       <div className="center">
         <button
           className="text-btn muted"
@@ -190,6 +193,7 @@ function DayTile({ d, onOpen }: { d: PlanDay; onOpen: () => void }) {
       <span className="day-tile-meta">
         {rest ? 'Explore or wait out weather' : `${fmtKm(d.km)} · ${fmtHours(d.hours)}`}
         {d.warnings.some((w) => w.level === 'danger') && <span className="flag"> · check road</span>}
+        {d.holiday && <span className="holiday"> · holiday</span>}
       </span>
     </button>
   );

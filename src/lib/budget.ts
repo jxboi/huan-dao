@@ -13,8 +13,10 @@ import {
   seasonFactorForMonth,
   type Currency,
 } from '../data/costs';
+import { HOLIDAY_RENTAL_FACTOR } from '../data/holidays';
 import { STOP_BY_ID } from '../data/stops';
 import type { TripSettings } from '../state/settings';
+import { holidayNightFactor, holidayRentalFactor } from './holidays';
 import type { Plan } from './planner';
 
 export type BudgetCategory = 'rental' | 'fuel' | 'lodging' | 'food' | 'activities' | 'extras' | 'contingency';
@@ -64,11 +66,16 @@ export function makeBudget(settings: TripSettings, plan: Plan): Budget {
   const food = FOOD_STYLES.find((f) => f.id === settings.food) ?? FOOD_STYLES[1];
   const sf = seasonFactor(settings);
 
-  // Rental
+  // Rental: in auto season mode each dated day is priced by its own month, and days inside a
+  // Lunar New Year / long-weekend break at the peak rate.
   const discount = days >= LONG_RENTAL_DAYS ? 1 - LONG_RENTAL_DISCOUNT : 1;
-  const rental = vehicle.rentPerDay * bikes * days * sf * discount;
+  const dayFactors = plan.days.map((d) => rentalDayFactor(settings, sf, d.date));
+  const holidayRentalDays = plan.days.filter((d) => d.date && settings.season === 'auto' && holidayRentalFactor(d.date) > 1).length;
+  const rental = vehicle.rentPerDay * bikes * dayFactors.reduce((a, b) => a + b, 0) * discount;
   const rentalDetail = vehicle.rentPerDay
-    ? `${bikes} × ${days} days × NT$${vehicle.rentPerDay}${sf !== 1 ? ` × ${sf} season` : ''}${discount !== 1 ? ' − 15% weekly discount' : ''}`
+    ? `${bikes} × ${days} days × NT$${vehicle.rentPerDay}${sf !== 1 ? ` × ${sf} season` : ''}` +
+      `${holidayRentalDays ? ` (${holidayRentalDays} holiday day${holidayRentalDays > 1 ? 's' : ''} × ${HOLIDAY_RENTAL_FACTOR})` : ''}` +
+      `${discount !== 1 ? ' − 15% weekly discount' : ''}`
     : 'Own bike';
 
   // Fuel (ridden km include rest-day local riding estimate of 30 km)
@@ -87,9 +94,9 @@ export function makeBudget(settings: TripSettings, plan: Plan): Budget {
   for (const d of plan.days) {
     if (!d.overnight) continue;
     const factor = STOP_BY_ID[d.overnight]?.lodgingFactor ?? 1;
-    lodging += stay.price * units * factor * weekendFactor(d.date) * (sf > 1 ? 1.1 : 1);
+    lodging += stay.price * units * factor * nightFactor(d.date) * (sf > 1 ? 1.1 : 1);
   }
-  const lodgingDetail = `${nights} nights × ${units} ${stay.perPerson ? 'bed' : 'room'}${units > 1 ? 's' : ''} × ~NT$${stay.price} (adjusted per town${settings.startDate ? ' & weekends' : ''})`;
+  const lodgingDetail = `${nights} nights × ${units} ${stay.perPerson ? 'bed' : 'room'}${units > 1 ? 's' : ''} × ~NT$${stay.price} (adjusted per town${settings.startDate ? ', weekends & holidays' : ''})`;
 
   // Food
   const foodTotal = food.perDay * riders * days;
@@ -124,10 +131,17 @@ export function makeBudget(settings: TripSettings, plan: Plan): Budget {
   };
 }
 
-function weekendFactor(date?: string): number {
+/** Friday/Saturday nights and nights before a public holiday cost more; the larger uplift wins. */
+export function nightFactor(date?: string): number {
   if (!date) return 1;
   const dow = new Date(`${date}T00:00:00`).getDay();
-  return dow === 5 || dow === 6 ? WEEKEND_LODGING_FACTOR : 1;
+  return Math.max(dow === 5 || dow === 6 ? WEEKEND_LODGING_FACTOR : 1, holidayNightFactor(date));
+}
+
+function rentalDayFactor(settings: TripSettings, sf: number, date?: string): number {
+  if (settings.season !== 'auto' || !date) return sf;
+  const m = Number(date.slice(5, 7));
+  return Math.max(seasonFactorForMonth(m), holidayRentalFactor(date));
 }
 
 export function currencyFor(code: string): Currency {

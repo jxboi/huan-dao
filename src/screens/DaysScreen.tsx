@@ -4,7 +4,7 @@ import { AttractionRow } from '../components/AttractionRow';
 import { Card, Note, Warning } from '../components/ui';
 import { STAYS } from '../data/costs';
 import { STOP_BY_ID } from '../data/stops';
-import { currencyFor } from '../lib/budget';
+import { currencyFor, nightFactor } from '../lib/budget';
 import { bookingSearch, fmtDate, fmtHours, fmtKm, fmtMoney, googleMapsDirections, stopName } from '../lib/format';
 import type { PlanDay } from '../lib/planner';
 import { useStore } from '../state/store';
@@ -44,7 +44,9 @@ function DayCard({ d, open, onToggle }: { d: PlanDay; open: boolean; onToggle: (
   const roads = [...new Set(d.legs.map((l) => l.road))];
   const scenic = d.legs.length ? d.legs.reduce((s, l) => s + l.scenic * l.km, 0) / Math.max(1, d.km) : 0;
   const foods = [...new Set([d.to, ...d.via].map((id) => STOP_BY_ID[id]).filter(Boolean).flatMap((s) => s.food.map((f) => `${f} · ${s.name}`)))].slice(0, 6);
-  const nightPrice = overnight ? stay.price * overnight.lodgingFactor * (stay.perPerson ? settings.riders : Math.ceil(settings.riders / 2)) : 0;
+  const nightPrice = overnight
+    ? stay.price * overnight.lodgingFactor * nightFactor(d.date) * (stay.perPerson ? settings.riders : Math.ceil(settings.riders / 2))
+    : 0;
   const restHere = d.overnight ? settings.restDays[d.overnight] ?? 0 : 0;
 
   return (
@@ -55,6 +57,7 @@ function DayCard({ d, open, onToggle }: { d: PlanDay; open: boolean; onToggle: (
           <span className="day-date">
             Day {d.day}
             {d.date && ` · ${fmtDate(d.date)}`}
+            {d.holiday && <span className="holiday"> · {d.holiday.name}</span>}
           </span>
           <strong>{isRest ? `${d.flex ? 'Flex' : 'Rest'} day in ${stopName(d.to)}` : `${stopName(d.from)} → ${stopName(d.to)}`}</strong>
           <span className="day-zh">{isRest ? STOP_BY_ID[d.to]?.zh : `${STOP_BY_ID[d.from]?.zh ?? ''} → ${STOP_BY_ID[d.to]?.zh ?? ''}`}</span>
@@ -129,6 +132,7 @@ function DayCard({ d, open, onToggle }: { d: PlanDay; open: boolean; onToggle: (
                 <span>
                   {stay.label}: ~{fmtMoney(nightPrice, cur)} / night
                   {overnight.overnight === 1 && ' · limited options, book ahead'}
+                  {d.date && nightFactor(d.date) > 1 && ' · weekend/holiday rate'}
                 </span>
                 <a className="btn ghost small" href={bookingSearch(overnight.id, d.date)} target="_blank" rel="noreferrer">
                   Find a stay ↗
