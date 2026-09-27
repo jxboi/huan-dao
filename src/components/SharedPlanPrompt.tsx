@@ -29,7 +29,6 @@ export function SharedPlanPrompt() {
     return () => window.removeEventListener('hashchange', check);
   }, [settings, dispatch]);
 
-  const km = useMemo(() => (incoming && incoming !== 'invalid' ? makePlan(incoming).totalKm : 0), [incoming]);
   const close = () => setIncoming(null);
 
   return (
@@ -39,11 +38,7 @@ export function SharedPlanPrompt() {
       ) : (
         incoming && (
           <div className="share-prompt">
-            <p className="share-summary">
-              <strong>{incoming.days} days</strong> from {stopName(incoming.startHub)}, {incoming.direction === 'ccw' ? 'counter-clockwise' : 'clockwise'} at a{' '}
-              {PACES[incoming.pace].label.toLowerCase()} pace · {fmtKm(km)}
-              {incoming.startDate ? ` · leaving ${fmtDate(incoming.startDate)}` : ''}
-            </p>
+            <TripSummary s={incoming} />
             <p className="muted small">This replaces your current trip. Your packing list stays as it is.</p>
             <div className="share-actions">
               <button
@@ -64,5 +59,17 @@ export function SharedPlanPrompt() {
         )
       )}
     </Sheet>
+  );
+}
+
+/** One-line description of a trip, for "which plan?" prompts. */
+export function TripSummary({ s }: { s: TripSettings }) {
+  const km = useMemo(() => makePlan(s).totalKm, [s]);
+  return (
+    <p className="share-summary">
+      <strong>{s.days} days</strong> from {stopName(s.startHub)}, {s.direction === 'ccw' ? 'counter-clockwise' : 'clockwise'} at a {PACES[s.pace].label.toLowerCase()} pace ·{' '}
+      {fmtKm(km)}
+      {s.startDate ? ` · leaving ${fmtDate(s.startDate)}` : ''}
+    </p>
   );
 }

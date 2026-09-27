@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import { RouteMap } from '../components/RouteMap';
 import { AttractionRow } from '../components/AttractionRow';
 import { Card, Note, Warning } from '../components/ui';
@@ -7,6 +7,7 @@ import { STOP_BY_ID } from '../data/stops';
 import { currencyFor, nightFactor } from '../lib/budget';
 import { bookingSearch, fmtDate, fmtHours, fmtKm, fmtMoney, googleMapsDirections, stopName } from '../lib/format';
 import type { PlanDay } from '../lib/planner';
+import { parseRoads, roadSequence, type RoadRef } from '../lib/roads';
 import { useStore } from '../state/store';
 
 export function DaysScreen() {
@@ -41,7 +42,8 @@ function DayCard({ d, open, onToggle }: { d: PlanDay; open: boolean; onToggle: (
   const stay = STAYS.find((s) => s.id === settings.stay)!;
   const overnight = d.overnight ? STOP_BY_ID[d.overnight] : undefined;
   const isRest = d.kind === 'rest';
-  const roads = [...new Set(d.legs.map((l) => l.road))];
+  const legRoads = d.legs.map((l) => parseRoads(l.road));
+  const mainRoads = [...new Set(roadSequence(legRoads).map((r) => r.label))];
   const scenic = d.legs.length ? d.legs.reduce((s, l) => s + l.scenic * l.km, 0) / Math.max(1, d.km) : 0;
   const foods = [...new Set([d.to, ...d.via].map((id) => STOP_BY_ID[id]).filter(Boolean).flatMap((s) => s.food.map((f) => `${f} · ${s.name}`)))].slice(0, 6);
   const nightPrice = overnight
@@ -65,6 +67,7 @@ function DayCard({ d, open, onToggle }: { d: PlanDay; open: boolean; onToggle: (
             {isRest ? (d.flex ? 'Explore, side trip or weather buffer' : 'Your rest day') : `${fmtKm(d.km)} · ~${fmtHours(d.hours)} riding${scenic >= 2.4 ? ' · very scenic' : ''}`}
             {d.warnings.some((w) => w.level === 'danger') && <span className="flag"> · check road</span>}
           </span>
+          {!isRest && mainRoads.length > 0 && <span className="day-roads">via {mainRoads.join(' · ')}</span>}
         </span>
         <span className="chev" aria-hidden>{open ? '−' : '+'}</span>
       </button>
@@ -79,25 +82,33 @@ function DayCard({ d, open, onToggle }: { d: PlanDay; open: boolean; onToggle: (
                   const isEnd = i === arr.length - 1;
                   const pinned = settings.pinned.includes(id);
                   const canSleep = (s?.overnight ?? 0) > 0 && i > 0 && id !== settings.startHub;
+                  const leg = d.legs[i];
                   return (
-                    <span key={`${id}-${i}`} className={`via-stop ${isEnd ? 'end' : ''}`}>
-                      <span className="via-name">
-                        {s?.name} <small>{s?.zh}</small>
+                    <Fragment key={`${id}-${i}`}>
+                      <span className={`via-stop ${isEnd ? 'end' : ''}`}>
+                        <span className="via-name">
+                          {s?.name} <small>{s?.zh}</small>
+                        </span>
+                        {canSleep && (
+                          <button
+                            className={`pin ${pinned ? 'on' : ''}`}
+                            onClick={() => dispatch({ type: 'togglePin', stopId: id })}
+                            title={pinned ? 'Unpin this overnight stop' : isEnd ? 'Keep this overnight stop fixed when you change other settings' : 'Make this an overnight stop'}
+                          >
+                            {pinned ? 'Pinned' : isEnd ? 'Pin' : 'Sleep here'}
+                          </button>
+                        )}
                       </span>
-                      {canSleep && (
-                        <button
-                          className={`pin ${pinned ? 'on' : ''}`}
-                          onClick={() => dispatch({ type: 'togglePin', stopId: id })}
-                          title={pinned ? 'Unpin this overnight stop' : isEnd ? 'Keep this overnight stop fixed when you change other settings' : 'Make this an overnight stop'}
-                        >
-                          {pinned ? 'Pinned' : isEnd ? 'Pin' : 'Sleep here'}
-                        </button>
+                      {leg && (
+                        <span className="via-leg">
+                          <RoadBadges roads={legRoads[i]} />
+                          <span className="muted">{fmtKm(leg.km)} · {fmtHours(leg.hours)}</span>
+                        </span>
                       )}
-                    </span>
+                    </Fragment>
                   );
                 })}
               </div>
-              <div className="muted small">Roads: {roads.join(' → ')}</div>
               {d.warnings.map((w) => (
                 <Warning key={w.text} w={w} />
               ))}
@@ -157,5 +168,19 @@ function DayCard({ d, open, onToggle }: { d: PlanDay; open: boolean; onToggle: (
         </div>
       )}
     </li>
+  );
+}
+
+function RoadBadges({ roads }: { roads: RoadRef[] }) {
+  return (
+    <span className="road-badges">
+      {roads.map((r, i) => (
+        <span key={`${r.label}-${i}`} className={`road ${r.kind}`} title={r.label}>
+          <span className="road-num">{r.zh || r.label}</span>
+          {r.zh && <span className="road-en">{r.label}</span>}
+          {r.note && <span className="road-note">{r.note}</span>}
+        </span>
+      ))}
+    </span>
   );
 }
