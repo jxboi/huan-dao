@@ -6,7 +6,7 @@ import { STOP_BY_ID } from '../data/stops';
 import { pathThrough, pointAlong } from '../lib/geo';
 import type { Plan } from '../lib/planner';
 import { stopName } from '../lib/format';
-import { parseRoads } from '../lib/roads';
+import { parseRoads, roadTitle } from '../lib/roads';
 
 /**
  * Leaflet map of the planned loop. Lines follow the roads where snapped geometry exists
@@ -130,13 +130,16 @@ function addRoadLabels(legs: Plan['days'][number]['legs'], g: L.LayerGroup) {
     const at = pointAlong(pathThrough(ids, STOP_BY_ID, LEG_GEOMETRY), 0.5);
     const roads = parseRoads(legs[i].road);
     if (at && roads.length) {
-      const html = roads.map((r) => `<span class="road ${r.kind}">${r.zh || r.label}</span>`).join('');
+      // Frontage roads keep their "frontage" tag on the map: a bare 台61 would point riders at the expressway.
+      const html = roads
+        .map((r) => `<span class="road ${r.kind}${r.frontage ? ' frontage' : ''}">${r.zh || r.label}${r.frontage ? ' <small>frontage</small>' : ''}</span>`)
+        .join('');
       L.marker(at, {
         icon: L.divIcon({ className: 'road-label', html, iconSize: undefined }),
         interactive: true,
         keyboard: false,
       })
-        .bindTooltip(roads.map((r) => r.label + (r.note ? ` (${r.note})` : '')).join(' / '))
+        .bindTooltip(roads.map(roadTitle).join(' / '))
         .addTo(g);
     }
     i = j + 1;

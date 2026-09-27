@@ -247,6 +247,9 @@ p { margin: 4px 0; }
 .road.provincial { background: var(--primary); color: var(--primary-text); }
 .road.county { background: var(--surface); color: var(--text); border: 1px solid var(--muted); }
 .road.other { background: var(--surface-2); color: var(--text); }
+/* Frontage road beside an expressway scooters can't use: dashed, so it never reads as the route itself. */
+.road.frontage { background: var(--surface); color: var(--primary); border: 1.5px dashed var(--primary); }
+.road.frontage small { font-size: 0.85em; font-weight: 600; }
 .day-roads { display: block; font-size: 0.75rem; color: var(--muted); margin-top: 2px; }
 .pin { border: 1px solid var(--border); background: var(--surface-2); border-radius: 999px; font-size: 0.72rem; padding: 3px 8px; white-space: nowrap; }
 .pin.on { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); font-weight: 700; }
