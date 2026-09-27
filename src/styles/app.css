@@ -253,8 +253,21 @@ p { margin: 4px 0; }
 .road.frontage { background: var(--surface); color: var(--primary); border: 1.5px dashed var(--primary); }
 .road.frontage small { font-size: 0.85em; font-weight: 600; }
 .day-roads { display: block; font-size: 0.75rem; color: var(--muted); margin-top: 2px; }
-.pin { border: 1px solid var(--border); background: var(--surface-2); border-radius: 999px; font-size: 0.72rem; padding: 3px 8px; white-space: nowrap; }
+/* Overnight controls: "Sleep here" on passing towns, "Tonight · Lock" on the day's end. */
+.pin { flex: none; display: inline-flex; align-items: center; gap: 5px; min-height: 34px; border: 1px solid var(--border); background: var(--surface-2); color: var(--text); border-radius: 999px; font-size: 0.76rem; padding: 4px 11px; white-space: nowrap; }
+.pin .icon { flex: none; }
 .pin.on { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); font-weight: 700; }
+.pin.tonight { background: var(--accent-soft); border-color: transparent; color: var(--accent); font-weight: 700; padding-right: 4px; }
+.pin.tonight.on { border-color: var(--accent); }
+.pin-lock { display: inline-flex; align-items: center; gap: 3px; margin-left: 3px; padding: 3px 8px; border-radius: 999px; background: var(--surface); color: var(--muted); font-weight: 600; }
+.pin.tonight.on .pin-lock { background: var(--accent); color: #fff; }
+.toast-slot { position: fixed; left: 0; right: 0; bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom) + 12px); z-index: 1000; display: flex; justify-content: center; padding: 0 16px; pointer-events: none; }
+.toast { pointer-events: auto; max-width: 560px; display: flex; align-items: center; gap: 12px; background: var(--text); color: var(--bg); border-radius: 14px; padding: 8px 8px 8px 14px; font-size: 0.86rem; box-shadow: var(--shadow); animation: toast-in 0.2s ease-out; }
+.toast span { flex: 1; }
+.toast-undo { flex: none; min-height: 36px; padding: 0 12px; border: 0; border-radius: 10px; background: transparent; color: inherit; font-weight: 800; text-decoration: underline; }
+@keyframes toast-in { from { opacity: 0; transform: translateY(8px); } }
+@media (prefers-reduced-motion: reduce) { .toast { animation: none; } }
+@media (min-width: 1024px) { .toast-slot { bottom: 24px; } }
 .block { margin-top: 14px; }
 .food { margin: 0; padding-left: 18px; font-size: 0.88rem; }
 .sleep-row .btn { white-space: nowrap; flex: none; }

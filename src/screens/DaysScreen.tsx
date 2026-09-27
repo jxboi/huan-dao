@@ -1,4 +1,5 @@
-import { Fragment, useEffect, useState } from 'react';
+import { Fragment, useEffect, useRef, useState } from 'react';
+import { IconBed, IconLock } from '../components/icons';
 import { RouteMap } from '../components/RouteMap';
 import { AttractionRow } from '../components/AttractionRow';
 import { StopPicker } from '../components/StopPicker';
@@ -11,15 +12,63 @@ import { dayEndOptions, type DayRef } from '../lib/editRoute';
 import type { PlanDay } from '../lib/planner';
 import { parseRoads, roadName, roadSequence, roadTitle, type RoadRef } from '../lib/roads';
 import { useStore } from '../state/store';
+import type { TripSettings } from '../state/settings';
+
+/** What the user just did to an overnight stop, so the toast can say where it landed and undo it. */
+interface StopChange {
+  stopId: string;
+  kind: 'sleep' | 'lock' | 'unlock' | 'move';
+  prev: Pick<TripSettings, 'pinned' | 'restDays' | 'days' | 'variants' | 'customRoutes'>;
+}
 
 export function DaysScreen() {
-  const { plan } = useStore();
+  const { plan, settings, dispatch, update } = useStore();
   // #/days/3 (from the home screen's day strip) opens and scrolls to that day.
   const [linked] = useState(() => Number(window.location.hash.match(/^#\/days\/(\d+)/)?.[1]) || undefined);
   const [open, setOpen] = useState<number | undefined>(linked ?? 1);
   useEffect(() => {
     if (linked) document.getElementById(`day-${linked}`)?.scrollIntoView({ block: 'start' });
   }, [linked]);
+
+  // Changing an overnight re-splits the whole trip, so tell the user where things landed (with undo).
+  const [change, setChange] = useState<StopChange>();
+  const [toast, setToast] = useState<{ text: string; undo: StopChange['prev'] }>();
+  const timer = useRef<number | undefined>(undefined);
+  useEffect(() => {
+    if (!change) return;
+    const name = stopName(change.stopId);
+    const day = plan.days.find((d) => d.kind === 'ride' && d.overnight === change.stopId);
+    const text =
+      change.kind === 'unlock'
+        ? `${name} unlocked — the planner may move this night.`
+        : !day
+          ? `Couldn't fit a night in ${name} with ${settings.days} days — try adding a day.`
+          : change.kind === 'sleep' || change.kind === 'move'
+            ? `Day ${day.day} now ends in ${name}. Later days re-balanced.`
+            : `${name} locked for Day ${day.day} — it stays when you change days or pace.`;
+    if ((change.kind === 'sleep' || change.kind === 'move') && day) setOpen(day.day);
+    setToast({ text, undo: change.prev });
+    setChange(undefined);
+    window.clearTimeout(timer.current);
+    timer.current = window.setTimeout(() => setToast(undefined), 6000);
+  }, [change, plan, settings.days]);
+  useEffect(() => () => window.clearTimeout(timer.current), []);
+
+  const prev = (): StopChange['prev'] => ({
+    pinned: settings.pinned,
+    restDays: settings.restDays,
+    days: settings.days,
+    variants: settings.variants,
+    customRoutes: settings.customRoutes,
+  });
+  const toggleStop = (stopId: string, kind: StopChange['kind']) => {
+    setChange({ stopId, kind, prev: prev() });
+    dispatch({ type: 'togglePin', stopId });
+  };
+  const changeEnd = (day: DayRef, stopId: string) => {
+    setChange({ stopId, kind: 'move', prev: prev() });
+    dispatch({ type: 'changeDayEnd', day, stopId });
+  };
 
   return (
     <div className="screen">
@@ -31,14 +80,42 @@ export function DaysScreen() {
       ))}
       <ol className="timeline">
         {plan.days.map((d) => (
-          <DayCard key={d.day} d={d} open={open === d.day} onToggle={() => setOpen(open === d.day ? undefined : d.day)} />
+          <DayCard key={d.day} d={d} open={open === d.day} onToggle={() => setOpen(open === d.day ? undefined : d.day)} onStop={toggleStop} onChangeEnd={changeEnd} />
         ))}
       </ol>
+      <div className="toast-slot" aria-live="polite">
+        {toast && (
+          <div className="toast" role="status">
+            <span>{toast.text}</span>
+            <button
+              className="toast-undo"
+              onClick={() => {
+                update(toast.undo);
+                setToast(undefined);
+              }}
+            >
+              Undo
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
 
-function DayCard({ d, open, onToggle }: { d: PlanDay; open: boolean; onToggle: () => void }) {
+function DayCard({
+  d,
+  open,
+  onToggle,
+  onStop,
+  onChangeEnd,
+}: {
+  d: PlanDay;
+  open: boolean;
+  onToggle: () => void;
+  onStop: (stopId: string, kind: StopChange['kind']) => void;
+  onChangeEnd: (day: DayRef, stopId: string) => void;
+}) {
   const { settings, plan, dispatch } = useStore();
   const [picking, setPicking] = useState(false);
   const cur = currencyFor(settings.currency);
@@ -92,13 +169,28 @@ function DayCard({ d, open, onToggle }: { d: PlanDay; open: boolean; onToggle: (
                         <span className="via-name">
                           {s?.name} <small>{s?.zh}</small>
                         </span>
-                        {canSleep && (
+                        {canSleep && isEnd && (
+                          // Already tonight's stop: the only choice left is whether to lock it in.
+                          <button
+                            className={`pin tonight ${pinned ? 'on' : ''}`}
+                            aria-pressed={pinned}
+                            onClick={() => onStop(id, pinned ? 'unlock' : 'lock')}
+                            title={pinned ? 'Locked: stays an overnight when you change days, pace or route. Tap to unlock.' : 'Chosen by the planner and may move if you change days, pace or route. Tap to lock it in.'}
+                          >
+                            <IconBed /> Tonight
+                            <span className="pin-lock">
+                              <IconLock open={!pinned} /> {pinned ? 'Locked' : 'Lock'}
+                            </span>
+                          </button>
+                        )}
+                        {canSleep && !isEnd && (
                           <button
                             className={`pin ${pinned ? 'on' : ''}`}
-                            onClick={() => dispatch({ type: 'togglePin', stopId: id })}
-                            title={pinned ? 'Unpin this overnight stop' : isEnd ? 'Keep this overnight stop fixed when you change other settings' : 'Make this an overnight stop'}
+                            aria-pressed={pinned}
+                            onClick={() => onStop(id, pinned ? 'unlock' : 'sleep')}
+                            title={pinned ? "You asked to sleep here but it didn't fit. Tap to remove." : `End Day ${d.day} here and re-balance the days after`}
                           >
-                            {pinned ? 'Pinned' : isEnd ? 'Pin' : 'Sleep here'}
+                            <IconBed /> Sleep here
                           </button>
                         )}
                       </span>
@@ -137,7 +229,7 @@ function DayCard({ d, open, onToggle }: { d: PlanDay; open: boolean; onToggle: (
                         }))
                       : []
                   }
-                  onPick={(stopId) => dispatch({ type: 'changeDayEnd', day: dayRef(d), stopId })}
+                  onPick={(stopId) => onChangeEnd(dayRef(d), stopId)}
                 />
               )}
             </>
@@ -179,7 +271,7 @@ function DayCard({ d, open, onToggle }: { d: PlanDay; open: boolean; onToggle: (
               </div>
               {!isRest && (
                 <div className="rest-ctl">
-                  <span>Rest days here: {restHere}</span>
+                  <span>Extra nights here: {restHere}{restHere > 0 && ` (${restHere} rest day${restHere > 1 ? 's' : ''})`}</span>
                   <button className="btn ghost small" disabled={restHere === 0} onClick={() => dispatch({ type: 'setRest', stopId: overnight.id, nights: restHere - 1 })}>−</button>
                   <button className="btn ghost small" onClick={() => dispatch({ type: 'setRest', stopId: overnight.id, nights: restHere + 1 })}>+</button>
                 </div>
