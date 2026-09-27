@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useRef, useState } from 'react';
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { IconBed, IconLock } from '../components/icons';
 import { RouteMap } from '../components/RouteMap';
 import { AttractionRow } from '../components/AttractionRow';
@@ -8,7 +8,7 @@ import { STAYS } from '../data/costs';
 import { STOP_BY_ID } from '../data/stops';
 import { currencyFor, nightFactor } from '../lib/budget';
 import { bookingSearch, fmtDate, fmtHours, fmtKm, fmtMoney, googleMapsDirections, stopName } from '../lib/format';
-import { dayEndOptions, type DayRef } from '../lib/editRoute';
+import { dayEndOptions, dayRouteOptions, type DayRef, type DayRouteOption } from '../lib/editRoute';
 import type { PlanDay } from '../lib/planner';
 import { parseRoads, roadName, roadSequence, roadTitle, type RoadRef } from '../lib/roads';
 import { useStore } from '../state/store';
@@ -17,7 +17,9 @@ import type { TripSettings } from '../state/settings';
 /** What the user just did to an overnight stop, so the toast can say where it landed and undo it. */
 interface StopChange {
   stopId: string;
-  kind: 'sleep' | 'lock' | 'unlock' | 'move';
+  kind: 'sleep' | 'lock' | 'unlock' | 'move' | 'route';
+  /** For 'route': the day's start and the name of the route picked. */
+  route?: { from: string; label: string };
   prev: Pick<TripSettings, 'pinned' | 'restDays' | 'days' | 'variants' | 'customRoutes'>;
 }
 
@@ -38,8 +40,13 @@ export function DaysScreen() {
     if (!change) return;
     const name = stopName(change.stopId);
     const day = plan.days.find((d) => d.kind === 'ride' && d.overnight === change.stopId);
+    const rode = change.route && plan.days.find((d) => d.kind === 'ride' && d.from === change.route!.from);
     const text =
-      change.kind === 'unlock'
+      change.kind === 'route' && rode
+        ? rode.to === change.stopId
+          ? `Day ${rode.day} now takes the ${change.route!.label.toLowerCase()} route. Later days re-balanced.`
+          : `${change.route!.label} route set — the longer ride was split: Day ${rode.day} now ends in ${stopName(rode.to)}.`
+        : change.kind === 'unlock'
         ? `${name} unlocked — the planner may move this night.`
         : !day
           ? `Couldn't fit a night in ${name} with ${settings.days} days — try adding a day.`
@@ -47,6 +54,7 @@ export function DaysScreen() {
             ? `Day ${day.day} now ends in ${name}. Later days re-balanced.`
             : `${name} locked for Day ${day.day} — it stays when you change days or pace.`;
     if ((change.kind === 'sleep' || change.kind === 'move') && day) setOpen(day.day);
+    if (rode) setOpen(rode.day);
     setToast({ text, undo: change.prev });
     setChange(undefined);
     window.clearTimeout(timer.current);
@@ -69,6 +77,10 @@ export function DaysScreen() {
     setChange({ stopId, kind: 'move', prev: prev() });
     dispatch({ type: 'changeDayEnd', day, stopId });
   };
+  const chooseRoute = (day: DayRef, o: DayRouteOption) => {
+    setChange({ stopId: day.to, kind: 'route', route: { from: day.from, label: ROUTE_LABEL[o.kind] }, prev: prev() });
+    dispatch({ type: 'chooseDayRoute', day, variants: o.variants });
+  };
 
   return (
     <div className="screen">
@@ -80,7 +92,7 @@ export function DaysScreen() {
       ))}
       <ol className="timeline">
         {plan.days.map((d) => (
-          <DayCard key={d.day} d={d} open={open === d.day} onToggle={() => setOpen(open === d.day ? undefined : d.day)} onStop={toggleStop} onChangeEnd={changeEnd} />
+          <DayCard key={d.day} d={d} open={open === d.day} onToggle={() => setOpen(open === d.day ? undefined : d.day)} onStop={toggleStop} onChangeEnd={changeEnd} onChooseRoute={chooseRoute} />
         ))}
       </ol>
       <div className="toast-slot" aria-live="polite">
@@ -109,12 +121,14 @@ function DayCard({
   onToggle,
   onStop,
   onChangeEnd,
+  onChooseRoute,
 }: {
   d: PlanDay;
   open: boolean;
   onToggle: () => void;
   onStop: (stopId: string, kind: StopChange['kind']) => void;
   onChangeEnd: (day: DayRef, stopId: string) => void;
+  onChooseRoute: (day: DayRef, o: DayRouteOption) => void;
 }) {
   const { settings, plan, dispatch } = useStore();
   const [picking, setPicking] = useState(false);
@@ -130,6 +144,8 @@ function DayCard({
     ? stay.price * overnight.lodgingFactor * nightFactor(d.date) * (stay.perPerson ? settings.riders : Math.ceil(settings.riders / 2))
     : 0;
   const restHere = d.overnight ? settings.restDays[d.overnight] ?? 0 : 0;
+  // Only worked out for the open day: it builds the route once per combination of today's section variants.
+  const routeOpts = useMemo(() => (open && !isRest ? dayRouteOptions(settings, dayRef(d)) : []), [open, isRest, settings, d]);
 
   return (
     <li id={`day-${d.day}`} className={`day ${d.kind} ${open ? 'open' : ''}`}>
@@ -156,6 +172,7 @@ function DayCard({
         <div className="day-body">
           {!isRest && (
             <>
+              {routeOpts.length > 0 && <RouteChoice opts={routeOpts} onPick={(o) => onChooseRoute(dayRef(d), o)} />}
               <div className="via">
                 {[d.from, ...d.via].map((id, i, arr) => {
                   const s = STOP_BY_ID[id];
@@ -289,6 +306,46 @@ function DayCard({
       )}
     </li>
   );
+}
+
+const ROUTE_LABEL: Record<DayRouteOption['kind'], string> = { fast: 'Fast', scenic: 'Scenic', current: 'Your' };
+
+/** Fast / Scenic (/ the one you ride now) for today, with what each costs next to the one you ride. */
+function RouteChoice({ opts, onPick }: { opts: DayRouteOption[]; onPick: (o: DayRouteOption) => void }) {
+  const cur = opts.find((o) => o.current) ?? opts[0];
+  const alt = opts.find((o) => !o.current);
+  const extra = alt && diffText(alt, cur);
+  // Towns the other route passes that yours doesn't.
+  const newTowns = alt ? alt.path.filter((x) => !cur.path.includes(x)) : [];
+  return (
+    <div className="route-choice">
+      <div className="segmented" role="radiogroup" aria-label="Route for today">
+        {opts.map((o) => (
+          <button key={o.kind} role="radio" aria-checked={o.current} className={o.current ? 'on' : ''} onClick={() => !o.current && onPick(o)}>
+            <span className="rc-label">{routeName(o)}</span>
+            <span className="rc-meta">{fmtKm(o.km)} · {fmtHours(o.hours)}</span>
+          </button>
+        ))}
+      </div>
+      {alt && (
+        <p className="muted tiny">
+          {routeName(alt)}: {extra}
+          {newTowns.length > 0 && ` · via ${newTowns.map(stopName).join(', ')}`}
+        </p>
+      )}
+    </div>
+  );
+}
+
+function routeName(o: DayRouteOption): string {
+  return o.kind === 'current' ? 'Your route' : ROUTE_LABEL[o.kind];
+}
+
+function diffText(o: DayRouteOption, from: DayRouteOption): string {
+  const km = Math.round(o.km - from.km);
+  const h = o.hours - from.hours;
+  const sign = (n: number) => (n >= 0 ? '+' : '−');
+  return `${sign(km)}${fmtKm(Math.abs(km))}, ${sign(h)}${fmtHours(Math.abs(h))}`;
 }
 
 function dayRef(d: PlanDay): DayRef {
