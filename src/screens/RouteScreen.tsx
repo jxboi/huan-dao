@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+import { DESKTOP, MapPanel, useMedia } from '../components/MapPanel';
 import { RouteMap } from '../components/RouteMap';
 import { StopPicker } from '../components/StopPicker';
 import { Card, Dots, Warning } from '../components/ui';
@@ -19,19 +20,6 @@ function variantStats(v: Variant, speedFactor: number) {
   return { km, hours, scenic };
 }
 
-const DESKTOP = '(min-width: 1024px)';
-
-function useMedia(query: string) {
-  const [on, setOn] = useState(() => window.matchMedia(query).matches);
-  useEffect(() => {
-    const mq = window.matchMedia(query);
-    const change = () => setOn(mq.matches);
-    mq.addEventListener('change', change);
-    return () => mq.removeEventListener('change', change);
-  }, [query]);
-  return on;
-}
-
 export function RouteScreen() {
   const { settings, plan, dispatch } = useStore();
   const speedFactor = VEHICLES.find((v) => v.id === settings.vehicle)?.speedFactor ?? 1;
@@ -42,7 +30,6 @@ export function RouteScreen() {
     straight === 0 ? 'Map lines follow the roads.' : straight === legCount ? 'Map lines are schematic.' : `Map lines follow the roads, except ${straight} of ${legCount} legs drawn straight.`;
 
   const desktop = useMedia(DESKTOP);
-  const [panelOpen, setPanelOpen] = useState(true);
 
   const head = (
     <header className="page-head">
@@ -106,26 +93,10 @@ export function RouteScreen() {
 
   if (desktop) {
     return (
-      <div className={`route-desk ${panelOpen ? 'panel-open' : ''}`}>
-        <div className="route-desk-map">
-          <RouteMap plan={plan} height="100%" />
-        </div>
-        <button
-          type="button"
-          className="panel-toggle"
-          onClick={() => setPanelOpen((o) => !o)}
-          aria-expanded={panelOpen}
-          aria-controls="route-panel"
-          aria-label={panelOpen ? 'Hide road choices' : 'Show road choices'}
-        >
-          <span aria-hidden>{panelOpen ? '›' : '‹'}</span>
-          {!panelOpen && <span className="panel-toggle-label">Roads</span>}
-        </button>
-        <aside id="route-panel" className="route-panel" aria-label="Road choices" inert={!panelOpen}>
-          {head}
-          {sections}
-        </aside>
-      </div>
+      <MapPanel map={<RouteMap plan={plan} height="100%" />} label="Road choices" toggleLabel="Roads">
+        {head}
+        {sections}
+      </MapPanel>
     );
   }
 
