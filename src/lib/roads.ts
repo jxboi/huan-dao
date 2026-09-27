@@ -21,7 +21,7 @@ export interface RoadRef {
 }
 
 // Suffix letters on Taiwanese route numbers are the Heavenly Stems: A=甲, B=乙, C=丙, D=丁…
-const STEMS: Record<string, string> = { A: '甲', B: '乙', C: '丙', D: '丁', E: '戊' };
+const STEMS: Record<string, string> = { A: '甲', B: '乙', C: '丙', D: '丁', E: '戊', F: '己', G: '庚' };
 
 function zhNumber(num: string, suffix: string): string {
   return `${num}${suffix ? STEMS[suffix] ?? suffix : ''}`;
@@ -53,14 +53,14 @@ export function roadTitle(r: RoadRef): string {
 
 function parseRoadRef(segment: string): RoadRef {
   const s = segment.trim();
-  const tai = s.match(/^Tai\s+(\d+)([A-E]?)\b(.*)$/i);
+  const tai = s.match(/^Tai\s+(\d+)([A-G]?)\b(.*)$/i);
   if (tai) {
     const [, num, suf, rest] = tai;
     const sufU = suf.toUpperCase();
     return { kind: 'provincial', label: `Tai ${num}${sufU}`, zh: `台${zhNumber(num, sufU)}`, note: cleanNote(rest) };
   }
   // "County 106", or a bare number like "102" / "199A" (county roads in our data).
-  const county = s.match(/^(?:County\s+)?(\d+)([A-E]?)\b(.*)$/i);
+  const county = s.match(/^(?:County\s+)?(\d+)([A-G]?)\b(.*)$/i);
   if (county) {
     const [, num, suf, rest] = county;
     const sufU = suf.toUpperCase();

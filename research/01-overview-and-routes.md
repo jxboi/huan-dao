@@ -75,8 +75,9 @@ Tai 17 / Tai 1 (clockwise, Kaohsiung → Tainan: Tai 17 north out of Zuoying, Ta
 2. **Salt coast (Tai 17/61 via Beimen)** — Qigu salt mountain, Beimen crystal church, Budai. ~95 km.
 
 ### Chiayi ↔ Taichung
-1. **Plains via Lukang & Changhua** — Tai 1 / Tai 19. ~110 km. *Default.*
-2. **Sun Moon Lake detour** — Tai 3 / Tai 21 inland to Sun Moon Lake then down to Taichung. ~170 km. Mountain roads.
+1. **Plains via Lukang & Changhua** — Tai 1 / Tai 19 to Lukang, County 142 to Changhua, Tai 1B into Taichung. ~107 km. *Default.*
+2. **Sun Moon Lake detour** — Tai 3 inland through Meishan and Zhushan, Tai 16 and County 131 up to Sun Moon Lake, then
+   Tai 21 / Tai 14 / Tai 3 down to Taichung. ~185 km. Mountain roads.
 3. **Alishan + Sun Moon Lake (advanced)** — Tai 18 up to Alishan (2,200 m), Tai 18/21 over Tataka (2,600 m) to Sun Moon Lake, then Taichung. ~245 km, cold, steep, fog. 125cc works but slow. Plan 2 days.
 
 ### Taichung ↔ Hsinchu
@@ -148,8 +149,23 @@ full run found 6 more legs on roads white-plate scooters may not ride; all were 
 * **Taichung → Hsinchu ("Tai 1 west plains")**: line actually ran inland on Tai 13 and touched Tai 61 → kept to Tai 1 via
   Dajia, Tongxiao, Houlong, Zhunan, Xiangshan. 112 km (was 100).
 
-13 legs still spend under half their distance on the road the data names; they're listed with their current share in
-`src/data/scooterRules.test.ts` (OFF_NAMED_ROADS) as data to tidy up. None of them use a banned road.
+**Named-road check (Sep 2026).** 13 more legs had under half their line on the roads the data names; all fixed, so every
+leg is now ≥ 50 % on its named roads (test: `OFF_NAMED_ROADS` is empty). Waypoints are points on the highway from OSM.
+* Line steered onto the named highway (VIAS):
+  * **Toucheng → Yilan**: Tai 9 via Jiaoxi (was Tai 2 / County 192 on the coast). Road now "Tai 2G / Tai 9".
+  * **Yilan → Luodong** (11 km) and **Luodong → Su'ao** (16 km): Tai 9 via Wujie and Dongshan (was town streets, Tai 2/7C/2E).
+  * **Hualien → Guangfu**: Tai 9 via Shoufeng and Fenglin (was Tai 11C / County 193). 51 km (was 40).
+  * **Guanshan → Taitung**: Tai 9 via Luye and Chulu, Tai 9B into town (was a Taitung 33 shortcut). 49 km (was 45).
+  * **Donggang → Kaohsiung**: Tai 17 via Linyuan and Xiaogang (was Tai 25 / Kaohsiung 85 inland). 35 km (was 30).
+  * **Changhua → Taichung**: Tai 1 then Tai 1B via Wuri (was Tai 14 and 環中路). 21 km.
+  * **Chiayi → Sun Moon Lake**: Tai 3 through Zhuqi, Meishan, Gukeng, Douliu and Zhushan (was Tai 1 to Dounan), then
+    Tai 16 and County 131 up to the lake. Road now "Tai 3 / Tai 16 / County 131", 107 km (was 100).
+  * **Hsinchu → Taipei**: Tai 1 via Hukou, Yangmei, Zhongli and Taoyuan, Tai 1A into New Taipei (was county roads). 77 km.
+* Line was right, road name fixed:
+  * **Taitung → Taimali**: "Tai 11 / Tai 9" (OSM carries Tai 11 south out of Taitung city for ~14 km).
+  * **Dawu → Shouka**: "Tai 9 / Tai 9E (old South Link)"; Shouka is on the old road (台9戊), not the new tunnels.
+  * **Xuhai → Manzhou**: "Tai 26 / County 200" (Tai 26 past Jiupeng, then County 200 into Manzhou).
+  * **Lukang → Changhua**: "County 142" (彰鹿路), the direct road; Tai 19 doesn't serve Lukang.
 
 ## Popular side trips (extra days)
 * **Taroko Gorge** (from Xincheng/Hualien) — partly reopened, controlled access. 0.5–1 day.

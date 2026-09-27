@@ -10,21 +10,7 @@ import { SECTIONS } from './sections';
  * Each is a data job: fix the `road` string, or steer the line with VIAS in scripts/snap-legs.ts. Shares may
  * only go up; remove a leg once it reaches 50 %.
  */
-const OFF_NAMED_ROADS: Record<string, number> = {
-  'toucheng>yilan': 0, // "Tai 9"
-  'yilan>luodong': 0.41, // "Tai 9"
-  'luodong>suao': 0, // "Tai 9"
-  'hualien>guangfu': 0.4, // "Tai 9"
-  'guanshan>taitung': 0.45, // "Tai 9"
-  'taitung>taimali': 0.37, // "Tai 9"
-  'dawu>shouka': 0.3, // "Tai 9 (South Link)"
-  'xuhai>manzhou': 0.29, // "Tai 26"
-  'donggang>kaohsiung': 0.12, // "Tai 17"
-  'lukang>changhua': 0.17, // "Tai 19"
-  'changhua>taichung': 0.08, // "Tai 1"
-  'chiayi>sunmoonlake': 0.31, // "Tai 3 / Tai 21"
-  'hsinchu>taipei': 0.12, // "Tai 1"
-};
+const OFF_NAMED_ROADS: Record<string, number> = {};
 const MIN_SHARE = 0.5;
 
 /** Every leg once, keyed "from>to" clockwise, with the road string the data gives it. */
