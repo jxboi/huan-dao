@@ -44,4 +44,4 @@ See **[CLAUDE.md](CLAUDE.md)** for the handoff guide for AI/dev contributors.
 ## Disclaimer
 
 Road status (Suhua Highway, Taroko Gorge) and prices change. The app shows "last checked" dates and links to
-official sources — always verify before riding. Distances are approximate; map lines follow roads only where geometry has been generated (`npm run geo`), otherwise they are straight.
+official sources — always verify before riding. Distances are approximate; map lines follow roads only where geometry has been generated (`npm run snap-legs`), otherwise they are straight.

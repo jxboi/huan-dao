@@ -5,7 +5,6 @@
 
 export interface GuideSection {
   id: string;
-  icon: string;
   title: string;
   items: { title: string; body: string; url?: string }[];
 }
@@ -13,7 +12,6 @@ export interface GuideSection {
 export const GUIDE: GuideSection[] = [
   {
     id: 'licence',
-    icon: '🪪',
     title: 'Licence & renting',
     items: [
       { title: 'You need an IDP with motorcycle category', body: 'Bring an International Driving Permit that covers motorcycles, your home licence and passport. Reputable shops won\'t rent without it — and riding unlicensed voids insurance. IDPs are usually valid 30 days from entry.' },
@@ -24,7 +22,6 @@ export const GUIDE: GuideSection[] = [
   },
   {
     id: 'rules',
-    icon: '🚦',
     title: 'Road rules that catch visitors',
     items: [
       { title: 'No freeways', body: 'Scooters are banned from National Freeways (國道) and some expressways (e.g. parts of Tai 61, Tai 64). Follow the signs; the app only uses scooter-legal highways.' },
@@ -37,7 +34,6 @@ export const GUIDE: GuideSection[] = [
   },
   {
     id: 'roads',
-    icon: '⛰️',
     title: 'Road status (check before you go)',
     items: [
       { title: 'Suhua Highway (Yilan ↔ Hualien)', body: 'Scooters ≤250cc must use Tai 9D and designated tunnels (Renshui; Zhongren on trial since 2025). The Daqingshui–Heren part of Tai 9D will not be repaired after the 2024 quake — traffic uses Tai 9. Most demanding section: trucks, tunnels, rockfall. Ride in daylight and good weather.', url: 'https://www.thb.gov.tw/' },
@@ -48,7 +44,6 @@ export const GUIDE: GuideSection[] = [
   },
   {
     id: 'safety',
-    icon: '🛟',
     title: 'Safety & emergencies',
     items: [
       { title: 'Emergency numbers', body: '110 police (all traffic accidents) · 119 ambulance/fire · 112 from any mobile · 1990 foreigner helpline (24h, English) · 0800-011-765 tourist info hotline.' },
@@ -60,7 +55,6 @@ export const GUIDE: GuideSection[] = [
   },
   {
     id: 'culture',
-    icon: '🧧',
     title: 'Huandao culture & tips',
     items: [
       { title: 'Stamp collecting', body: 'Stations, temples, visitor centres and even 7-Elevens have souvenir ink stamps (紀念章). Buy a notebook and collect them around the island.' },

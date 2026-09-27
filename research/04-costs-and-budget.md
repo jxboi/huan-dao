@@ -34,6 +34,9 @@ and **long-rental discount** 15 % for ≥7 days.
 
 Regional multiplier: Taipei 1.25, Kenting 1.3 (summer/weekend spike), Sun Moon Lake/Alishan 1.3, Hualien/Taitung 1.0, west-coast mid cities 0.9, small towns 0.85.
 Weekend (Fri/Sat) + holiday uplift: ×1.2–1.5.
+App (Sep 2026): Fri/Sat nights ×1.25; nights before a day off in a holiday break ×1.4 (long weekend) / ×1.5 (Lunar New
+Year) / ×1.25 (single-day holiday), the larger uplift wins. Rental days inside a Lunar New Year or long-weekend break are
+priced at the 1.3 peak rate (auto season mode). Holiday dates: research/08.
 
 ## Food (per person per day)
 | Style | Default | What it looks like |

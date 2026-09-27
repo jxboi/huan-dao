@@ -131,4 +131,11 @@ describe('settings migration', () => {
     expect(s.bikes).toBe(2);
     expect(s.variants['taipei-yilan']).toBe('ne-coast');
   });
+
+  it('skips onboarding for state saved before it existed, but not for new users', () => {
+    expect(migrate({ days: 12 }).onboarded).toBe(true);
+    expect(migrate({ days: 12, onboarded: false }).onboarded).toBe(false);
+    expect(defaultSettings().onboarded).toBe(false);
+    expect(migrate(undefined).onboarded).toBe(false);
+  });
 });

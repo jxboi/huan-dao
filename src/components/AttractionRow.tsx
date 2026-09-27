@@ -3,17 +3,17 @@ import { fmtHours, fmtTwd, googleMapsPlace, stopName } from '../lib/format';
 import { useStore } from '../state/store';
 import { Warning } from './ui';
 
-export const CATEGORY_ICON: Record<AttractionCategory, string> = {
-  nature: '🌿',
-  viewpoint: '🔭',
-  beach: '🏖️',
-  culture: '🏛️',
-  temple: '⛩️',
-  'hot-spring': '♨️',
-  'night-market': '🏮',
-  food: '🍜',
-  activity: '🪂',
-  island: '🏝️',
+export const CATEGORY_LABEL: Record<AttractionCategory, string> = {
+  nature: 'Nature',
+  viewpoint: 'Viewpoint',
+  beach: 'Beach',
+  culture: 'Culture',
+  temple: 'Temple',
+  'hot-spring': 'Hot spring',
+  'night-market': 'Night market',
+  food: 'Food',
+  activity: 'Activity',
+  island: 'Island',
 };
 
 export function AttractionRow({ a, compact = false, offRoute = false }: { a: Attraction; compact?: boolean; offRoute?: boolean }) {
@@ -21,12 +21,12 @@ export function AttractionRow({ a, compact = false, offRoute = false }: { a: Att
   const saved = settings.saved.includes(a.id);
   return (
     <div className={`attraction ${compact ? 'compact' : ''} ${offRoute ? 'off' : ''}`}>
-      <span className="a-icon" aria-hidden>{CATEGORY_ICON[a.category]}</span>
       <div className="a-body">
         <div className="a-title">
           <strong>{a.name}</strong> {a.zh && <small className="muted">{a.zh}</small>}
         </div>
         <div className="a-meta">
+          <span className={`cat cat-${a.category}`}>{CATEGORY_LABEL[a.category]}</span>
           {!compact && <span>{stopName(a.stopId)}</span>}
           <span>{a.hours >= 8 ? 'full day+' : fmtHours(a.hours)}</span>
           <span>{a.cost ? `~${fmtTwd(a.cost)}` : 'Free'}</span>
@@ -34,7 +34,7 @@ export function AttractionRow({ a, compact = false, offRoute = false }: { a: Att
           {offRoute && <span className="tag">not on your route</span>}
         </div>
         {!compact && <p>{a.description}</p>}
-        {a.tip && !compact && <p className="tip">💡 {a.tip}</p>}
+        {a.tip && !compact && <p className="tip">Tip: {a.tip}</p>}
         {a.status && !compact && <Warning w={a.status} />}
         <a className="link small" href={googleMapsPlace(a.lat, a.lng, a.zh ?? a.name)} target="_blank" rel="noreferrer">
           Map ↗

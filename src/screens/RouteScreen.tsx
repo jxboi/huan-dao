@@ -1,9 +1,10 @@
-import { RouteMap, useLegGeometry } from '../components/RouteMap';
-import { Card, Dots, Note, Warning } from '../components/ui';
+import { RouteMap } from '../components/RouteMap';
+import { Card, Dots, Warning } from '../components/ui';
 import { RIDE_OVERHEAD, VEHICLES } from '../data/costs';
 import type { Variant } from '../data/types';
+import { LEG_GEOMETRY } from '../data/geo/legs';
 import { fmtHours, fmtKm, googleMapsDirections, stopName } from '../lib/format';
-import { hasLegGeometry } from '../lib/geometry';
+import { legKey } from '../lib/geo';
 import { variantStops } from '../lib/route';
 import { useStore } from '../state/store';
 
@@ -17,22 +18,25 @@ function variantStats(v: Variant, speedFactor: number) {
 export function RouteScreen() {
   const { settings, plan, dispatch } = useStore();
   const speedFactor = VEHICLES.find((v) => v.id === settings.vehicle)?.speedFactor ?? 1;
-  const geo = useLegGeometry();
-  const unsnapped = plan.route.legs.filter((l) => !hasLegGeometry(geo, l.from, l.to)).length;
+
+  const legCount = plan.route.legs.length;
+  const straight = plan.route.legs.filter((l) => !LEG_GEOMETRY[legKey(l.from, l.to)] && !LEG_GEOMETRY[legKey(l.to, l.from)]).length;
+  const mapNote =
+    straight === 0 ? 'Map lines follow the roads.' : straight === legCount ? 'Map lines are schematic.' : `Map lines follow the roads, except ${straight} of ${legCount} legs drawn straight.`;
 
   return (
     <div className="screen">
-      <Card className="flush">
-        <RouteMap plan={plan} />
-        <div className="map-caption">
-          {fmtKm(plan.totalKm)} loop · {settings.direction === 'ccw' ? 'counter-clockwise' : 'clockwise'} from {stopName(settings.startHub)}
-          {geo && (unsnapped === 0 ? ' · lines follow roads' : ` · ${unsnapped} of ${plan.route.legs.length} legs drawn as straight lines`)}
-        </div>
-      </Card>
+      <div className="bleed-map">
+        <RouteMap plan={plan} height={320} controls={false} />
+      </div>
 
-      <Note tone="tip">
-        Pick a variant for each section. Your day-by-day plan and budget update instantly.
-      </Note>
+      <header className="page-head">
+        <div className="eyebrow">
+          {fmtKm(plan.totalKm)} · {settings.direction === 'ccw' ? 'counter-clockwise' : 'clockwise'} from {stopName(settings.startHub)}
+        </div>
+        <h1 className="display small-display">Choose your roads</h1>
+        <p className="muted small">Pick a way through each section — coast, mountains or the quick road. Days and budget update instantly. {mapNote}</p>
+      </header>
 
       {plan.route.sections.map(({ section, variant: chosen, reversed }) => {
         const from = reversed ? section.to : section.from;

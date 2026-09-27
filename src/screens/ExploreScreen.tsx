@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
-import { AttractionRow, CATEGORY_ICON } from '../components/AttractionRow';
-import { Card, Note } from '../components/ui';
+import { AttractionRow, CATEGORY_LABEL } from '../components/AttractionRow';
+import { ExploreMap } from '../components/ExploreMap';
+import { Card, Note, Segmented } from '../components/ui';
 import { ATTRACTIONS } from '../data/attractions';
 import { STOP_BY_ID, STOPS } from '../data/stops';
 import type { AttractionCategory, Region } from '../data/types';
@@ -17,7 +18,7 @@ const REGIONS: { id: Region | 'all'; label: string }[] = [
   { id: 'northwest', label: 'Northwest' },
 ];
 
-const CATS = Object.keys(CATEGORY_ICON) as AttractionCategory[];
+const CATS = Object.keys(CATEGORY_LABEL) as AttractionCategory[];
 
 export function ExploreScreen() {
   const { settings, plan } = useStore();
@@ -26,6 +27,8 @@ export function ExploreScreen() {
   const [cat, setCat] = useState<AttractionCategory | 'all'>('all');
   const [savedOnly, setSavedOnly] = useState(false);
   const [onRouteOnly, setOnRouteOnly] = useState(true);
+  const [view, setView] = useState<'list' | 'map'>('list');
+  const [selected, setSelected] = useState<string>();
 
   const onRoute = useMemo(() => new Set(plan.route.points), [plan]);
   // Order stops by where they appear on the current route.
@@ -52,10 +55,21 @@ export function ExploreScreen() {
     (a, b) => (routeOrder.get(a.id) ?? 999) - (routeOrder.get(b.id) ?? 999),
   );
 
+  const picked = list.find((a) => a.id === selected);
+
   return (
     <div className="screen">
       <Card>
-        <input className="input" type="search" placeholder="Search sights, towns, 中文…" value={q} onChange={(e) => setQ(e.target.value)} aria-label="Search" />
+        <Segmented<'list' | 'map'>
+          label="View"
+          value={view}
+          onChange={setView}
+          options={[
+            { value: 'list', label: 'List' },
+            { value: 'map', label: 'Map' },
+          ]}
+        />
+        <input className="input search" type="search" placeholder="Search sights, towns, 中文…" value={q} onChange={(e) => setQ(e.target.value)} aria-label="Search" />
         <div className="chips scroll" role="group" aria-label="Region">
           {REGIONS.map((r) => (
             <button key={r.id} className={`chip ${region === r.id ? 'on' : ''}`} onClick={() => setRegion(r.id)}>{r.label}</button>
@@ -65,7 +79,7 @@ export function ExploreScreen() {
           <button className={`chip ${cat === 'all' ? 'on' : ''}`} onClick={() => setCat('all')}>All</button>
           {CATS.map((c) => (
             <button key={c} className={`chip ${cat === c ? 'on' : ''}`} onClick={() => setCat(c)}>
-              {CATEGORY_ICON[c]} {c.replace('-', ' ').replace(/^./, (ch) => ch.toUpperCase())}
+              {CATEGORY_LABEL[c]}
             </button>
           ))}
         </div>
@@ -75,17 +89,37 @@ export function ExploreScreen() {
         </div>
       </Card>
 
-      <Note tone="tip">Tap ☆ to save a must-see. Saved sights are added to the right day, and their visiting time is factored into how the days are split.</Note>
+      {view === 'map' ? (
+        <>
+          <Card className="flush">
+            <ExploreMap route={plan.route.points} items={list} saved={settings.saved} selected={picked?.id} onSelect={setSelected} />
+            <div className="map-caption">
+              {list.length} places · <span className="legend-dot saved" /> saved · <span className="legend-dot" /> other
+            </div>
+          </Card>
+          <Card>
+            {picked ? (
+              <AttractionRow a={picked} offRoute={!onRoute.has(picked.stopId)} />
+            ) : (
+              <p className="muted small">{list.length ? 'Tap a dot to see the place and save it.' : 'Nothing matches — try turning off "On my route".'}</p>
+            )}
+          </Card>
+        </>
+      ) : (
+        <>
+          <Note tone="tip">Tap ☆ to save a must-see. Saved sights are added to the right day, and their visiting time is factored into how the days are split.</Note>
 
-      <Card title={`${list.length} places`}>
-        {list.length === 0 && <p className="muted">Nothing matches — try turning off "On my route" or choosing another route variant.</p>}
-        {list.map((a) => (
-          <AttractionRow key={a.id} a={a} offRoute={!onRoute.has(a.stopId)} />
-        ))}
-      </Card>
+          <Card title={`${list.length} places`}>
+            {list.length === 0 && <p className="muted">Nothing matches — try turning off "On my route" or choosing another route variant.</p>}
+            {list.map((a) => (
+              <AttractionRow key={a.id} a={a} offRoute={!onRoute.has(a.stopId)} />
+            ))}
+          </Card>
+        </>
+      )}
 
-      {(cat === 'all' || cat === 'food') && !savedOnly && !q && (
-        <Card title="🍜 What to eat where">
+      {view === 'list' && (cat === 'all' || cat === 'food') && !savedOnly && !q && (
+        <Card title="What to eat where">
           <dl className="food-list">
             {foodStops.map((s) => (
               <div key={s.id}>

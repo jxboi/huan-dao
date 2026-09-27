@@ -1,22 +1,27 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { RouteMap } from '../components/RouteMap';
 import { AttractionRow } from '../components/AttractionRow';
 import { Card, Note, Warning } from '../components/ui';
 import { STAYS } from '../data/costs';
 import { STOP_BY_ID } from '../data/stops';
-import { currencyFor } from '../lib/budget';
+import { currencyFor, nightFactor } from '../lib/budget';
 import { bookingSearch, fmtDate, fmtHours, fmtKm, fmtMoney, googleMapsDirections, stopName } from '../lib/format';
 import type { PlanDay } from '../lib/planner';
 import { useStore } from '../state/store';
 
 export function DaysScreen() {
   const { plan } = useStore();
-  const [open, setOpen] = useState<number | undefined>(1);
+  // #/days/3 (from the home screen's day strip) opens and scrolls to that day.
+  const [linked] = useState(() => Number(window.location.hash.match(/^#\/days\/(\d+)/)?.[1]) || undefined);
+  const [open, setOpen] = useState<number | undefined>(linked ?? 1);
+  useEffect(() => {
+    if (linked) document.getElementById(`day-${linked}`)?.scrollIntoView({ block: 'start' });
+  }, [linked]);
 
   return (
     <div className="screen">
       <Card className="flush sticky-map">
-        <RouteMap plan={plan} highlightDay={open} height={200} />
+        <RouteMap plan={plan} highlightDay={open} height={240} controls={false} />
       </Card>
       {plan.notes.map((n) => (
         <Note key={n} tone="warn">{n}</Note>
@@ -39,25 +44,29 @@ function DayCard({ d, open, onToggle }: { d: PlanDay; open: boolean; onToggle: (
   const roads = [...new Set(d.legs.map((l) => l.road))];
   const scenic = d.legs.length ? d.legs.reduce((s, l) => s + l.scenic * l.km, 0) / Math.max(1, d.km) : 0;
   const foods = [...new Set([d.to, ...d.via].map((id) => STOP_BY_ID[id]).filter(Boolean).flatMap((s) => s.food.map((f) => `${f} · ${s.name}`)))].slice(0, 6);
-  const nightPrice = overnight ? stay.price * overnight.lodgingFactor * (stay.perPerson ? settings.riders : Math.ceil(settings.riders / 2)) : 0;
+  const nightPrice = overnight
+    ? stay.price * overnight.lodgingFactor * nightFactor(d.date) * (stay.perPerson ? settings.riders : Math.ceil(settings.riders / 2))
+    : 0;
   const restHere = d.overnight ? settings.restDays[d.overnight] ?? 0 : 0;
 
   return (
-    <li className={`day ${d.kind} ${open ? 'open' : ''}`}>
+    <li id={`day-${d.day}`} className={`day ${d.kind} ${open ? 'open' : ''}`}>
       <button className="day-head" onClick={onToggle} aria-expanded={open}>
         <span className="day-num">{d.day}</span>
         <span className="day-title">
           <span className="day-date">
             Day {d.day}
             {d.date && ` · ${fmtDate(d.date)}`}
+            {d.holiday && <span className="holiday"> · {d.holiday.name}</span>}
           </span>
           <strong>{isRest ? `${d.flex ? 'Flex' : 'Rest'} day in ${stopName(d.to)}` : `${stopName(d.from)} → ${stopName(d.to)}`}</strong>
+          <span className="day-zh">{isRest ? STOP_BY_ID[d.to]?.zh : `${STOP_BY_ID[d.from]?.zh ?? ''} → ${STOP_BY_ID[d.to]?.zh ?? ''}`}</span>
           <span className="day-meta">
-            {isRest ? (d.flex ? 'Explore, side trip or weather buffer' : 'Your rest day') : `${fmtKm(d.km)} · ~${fmtHours(d.hours)} riding${scenic >= 2.4 ? ' · ✨ very scenic' : ''}`}
-            {d.warnings.some((w) => w.level === 'danger') && ' · ⛔ check road'}
+            {isRest ? (d.flex ? 'Explore, side trip or weather buffer' : 'Your rest day') : `${fmtKm(d.km)} · ~${fmtHours(d.hours)} riding${scenic >= 2.4 ? ' · very scenic' : ''}`}
+            {d.warnings.some((w) => w.level === 'danger') && <span className="flag"> · check road</span>}
           </span>
         </span>
-        <span className="chev" aria-hidden>{open ? '▴' : '▾'}</span>
+        <span className="chev" aria-hidden>{open ? '−' : '+'}</span>
       </button>
 
       {open && (
@@ -81,7 +90,7 @@ function DayCard({ d, open, onToggle }: { d: PlanDay; open: boolean; onToggle: (
                           onClick={() => dispatch({ type: 'togglePin', stopId: id })}
                           title={pinned ? 'Unpin this overnight stop' : isEnd ? 'Keep this overnight stop fixed when you change other settings' : 'Make this an overnight stop'}
                         >
-                          {pinned ? '📌 Pinned' : isEnd ? '📌 Pin' : '🛏️ Sleep here'}
+                          {pinned ? 'Pinned' : isEnd ? 'Pin' : 'Sleep here'}
                         </button>
                       )}
                     </span>
@@ -123,6 +132,7 @@ function DayCard({ d, open, onToggle }: { d: PlanDay; open: boolean; onToggle: (
                 <span>
                   {stay.label}: ~{fmtMoney(nightPrice, cur)} / night
                   {overnight.overnight === 1 && ' · limited options, book ahead'}
+                  {d.date && nightFactor(d.date) > 1 && ' · weekend/holiday rate'}
                 </span>
                 <a className="btn ghost small" href={bookingSearch(overnight.id, d.date)} target="_blank" rel="noreferrer">
                   Find a stay ↗

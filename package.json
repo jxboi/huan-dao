@@ -9,7 +9,7 @@
     "preview": "vite preview",
     "typecheck": "tsc -b",
     "test": "vitest run",
-    "geo": "node scripts/build-geometry.ts"
+    "snap-legs": "node scripts/snap-legs.ts"
   },
   "dependencies": {
     "leaflet": "^1.9.4",
