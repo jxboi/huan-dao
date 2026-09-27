@@ -201,6 +201,10 @@ p { margin: 4px 0; }
 .day-pin { background: var(--accent); color: #fff; border-radius: 50%; border: 2px solid #fff; display: grid; place-items: center; font-weight: 800; font-size: 11px; box-shadow: 0 1px 4px rgb(0 0 0 / 40%); }
 .road-label { display: flex; gap: 2px; width: max-content !important; height: auto !important; translate: -50% -50%; font-size: 11px; }
 .road-label .road { padding: 0 5px; line-height: 1.6; box-shadow: 0 1px 3px rgb(0 0 0 / 35%); }
+.focus-pin span { display: block; width: 100%; height: 100%; border-radius: 50%; border: 3px solid var(--accent); background: color-mix(in srgb, var(--accent) 20%, transparent); animation: focus-pulse 1.6s ease-out infinite; }
+@keyframes focus-pulse { 0% { transform: scale(0.6); opacity: 1; } 100% { transform: scale(1.4); opacity: 0.2; } }
+@media (prefers-reduced-motion: reduce) { .focus-pin span { animation: none; } }
+.focus-label { font-size: 0.85rem; }
 .day-pin.start { background: var(--primary); font-size: 13px; }
 
 /* Route variants */
@@ -242,6 +246,9 @@ p { margin: 4px 0; }
 .via-stop.end::before { background: var(--accent); border-color: var(--accent); }
 .via-stop.end .via-name { font-weight: 700; }
 .via-name small { color: var(--muted); }
+button.via-name { font: inherit; color: inherit; background: none; border: 0; padding: 8px 6px; margin: -8px -6px; min-height: 40px; border-radius: 8px; text-align: left; cursor: pointer; }
+button.via-name:hover { background: color-mix(in srgb, var(--primary) 8%, transparent); }
+button.via-name.focused { background: color-mix(in srgb, var(--primary) 14%, transparent); }
 .via-leg { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; padding: 2px 0 6px 14px; font-size: 0.75rem; }
 .road-badges { display: inline-flex; flex-wrap: wrap; gap: 4px; }
 .road { display: inline-flex; align-items: baseline; gap: 4px; border-radius: 6px; padding: 1px 6px; line-height: 1.5; }
