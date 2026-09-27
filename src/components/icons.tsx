@@ -79,3 +79,48 @@ export const IconLock = ({ open = false }: { open?: boolean }) => (
     <path d={open ? 'M8.5 11V7.5a3.5 3.5 0 0 1 6.8-1.2' : 'M8.5 11V7.5a3.5 3.5 0 0 1 7 0V11'} />
   </Svg>
 );
+
+export const IconClock = () => (
+  <Svg size={13}>
+    <circle cx="12" cy="12" r="9" />
+    <path d="M12 7v5l3 2" />
+  </Svg>
+);
+
+export const IconMapPin = () => (
+  <Svg size={18}>
+    <path d="M19 10c0 5-7 11-7 11s-7-6-7-11a7 7 0 0 1 14 0z" />
+    <circle cx="12" cy="10" r="2.4" />
+  </Svg>
+);
+
+export const IconNavigate = () => (
+  <Svg size={18}>
+    <path d="M3 11 21 3l-8 18-2-8z" />
+  </Svg>
+);
+
+export const IconExternal = () => (
+  <Svg size={14}>
+    <path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5" />
+  </Svg>
+);
+
+export const IconFood = () => (
+  <Svg size={15}>
+    <path d="M7 3v8M4.5 3v5a2.5 2.5 0 0 0 5 0V3M7 11v10M17 21V3c-2.2 1.2-3.5 3.6-3.5 7v3H17" />
+  </Svg>
+);
+
+export const IconStarLine = () => (
+  <Svg size={15}>
+    <path d="m12 3.5 2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.8l-5.2 2.8 1-5.8-4.3-4.1 5.9-.9z" />
+  </Svg>
+);
+
+export const IconInfo = () => (
+  <Svg size={14}>
+    <circle cx="12" cy="12" r="9" />
+    <path d="M12 11v5M12 7.5v.5" />
+  </Svg>
+);

@@ -270,12 +270,46 @@ p { margin: 4px 0; }
 @keyframes toast-in { from { opacity: 0; transform: translateY(8px); } }
 @media (prefers-reduced-motion: reduce) { .toast { animation: none; } }
 @media (min-width: 1024px) { .toast-slot { bottom: 24px; } }
-.block { margin-top: 14px; }
-.food { margin: 0; padding-left: 18px; font-size: 0.88rem; }
-.sleep-row .btn { white-space: nowrap; flex: none; }
-.sleep-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 0.88rem; margin-top: 6px; }
-.rest-ctl { display: flex; align-items: center; gap: 6px; margin-top: 8px; font-size: 0.85rem; }
-.rest-ctl span { flex: 1; }
+.block { margin-top: 18px; }
+.block-h { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
+.block-h .icon { color: var(--accent); }
+
+/* Day card: what to eat, as dish chips grouped by town */
+.food-town + .food-town { margin-top: 8px; }
+.food-where { display: block; font-size: 0.74rem; font-weight: 700; color: var(--muted); margin-bottom: 4px; }
+.food-chips { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.food-chips li { padding: 5px 11px; border-radius: 999px; background: var(--accent-soft); color: var(--text); font-size: 0.82rem; line-height: 1.35; }
+
+/* Day card: tonight's stay */
+.sleep-card { background: var(--surface-2); border-radius: 16px; padding: 12px; }
+.sleep-top { display: flex; align-items: center; gap: 10px; }
+.sleep-icon { flex: none; display: grid; place-items: center; width: 38px; height: 38px; border-radius: 12px; background: var(--accent); color: #fff; }
+.sleep-icon .icon { width: 20px; height: 20px; }
+.sleep-title { flex: 1; min-width: 0; display: flex; flex-direction: column; line-height: 1.25; }
+.sleep-kicker { font-size: 0.68rem; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; color: var(--accent); }
+.sleep-title strong { font-size: 1rem; }
+.sleep-title small { font-weight: 500; }
+.sleep-price { flex: none; display: flex; flex-direction: column; align-items: flex-end; line-height: 1.2; }
+.sleep-price strong { font-size: 1.05rem; }
+.sleep-price span { font-size: 0.7rem; color: var(--muted); }
+.sleep-blurb { margin: 8px 0 0; font-size: 0.84rem; color: var(--muted); line-height: 1.4; }
+.sleep-card .a-chips { margin-top: 8px; }
+.sleep-actions { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
+.sleep-actions .btn { flex: 1; white-space: nowrap; background: var(--surface); }
+.nights { display: flex; align-items: center; gap: 8px; }
+.nights-label { display: flex; flex-direction: column; font-size: 0.84rem; font-weight: 600; line-height: 1.2; }
+.nights-label small { font-weight: 500; color: var(--accent); font-size: 0.72rem; }
+.stepper.small { background: var(--surface); }
+.stepper.small button { width: 40px; height: 36px; font-size: 1.15rem; }
+.stepper.small output { min-width: 22px; font-weight: 700; }
+
+.nav-btn { gap: 8px; margin-top: 16px; }
+.nav-tip { display: flex; align-items: center; justify-content: center; gap: 5px; margin: 6px 0 0; font-size: 0.74rem; color: var(--muted); text-align: center; }
+.nav-tip .icon { flex: none; }
+.nav-tip b { color: var(--text); font-weight: 700; }
+.day-body .nav-tip { margin-left: -44px; }
+/* Content blocks use the card's full width (like the Navigate button); the timeline indent only suits the route. */
+.day-body > .block { margin-left: -44px; }
 
 /* Attractions */
 .attraction { display: flex; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); }
@@ -291,6 +325,18 @@ p { margin: 4px 0; }
 .attraction .link { margin-top: 2px; }
 .save { flex: none; width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--border); background: var(--surface-2); font-size: 1.2rem; color: var(--muted); }
 .save.on { color: var(--accent); border-color: var(--accent); background: var(--accent-soft); }
+/* Compact attraction tiles on a day card */
+.tiles { display: flex; flex-direction: column; gap: 8px; }
+.attraction.tile { align-items: center; gap: 8px; padding: 10px 10px 10px 12px; border: 1px solid var(--border); border-radius: 14px; background: var(--surface); }
+.attraction.tile:last-child { border-bottom: 1px solid var(--border); }
+.attraction.tile.saved { border-color: var(--accent); background: color-mix(in srgb, var(--accent-soft) 45%, var(--surface)); }
+.a-title { line-height: 1.3; }
+.a-chips { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+.chip { display: inline-flex; align-items: center; gap: 3px; padding: 2px 8px; border-radius: 999px; background: var(--surface-2); color: var(--muted); font-size: 0.72rem; font-weight: 600; line-height: 1.5; }
+.chip.cat { background: var(--primary-soft); color: var(--primary); font-size: 0.66rem; }
+.chip.cat-food, .chip.cat-night-market { background: var(--accent-soft); color: var(--accent); }
+.chip.warn { background: var(--caution-soft); color: var(--caution); }
+.round-btn { flex: none; display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--border); background: var(--surface); color: var(--primary); }
 .food-list { margin: 0; }
 .food-list div { padding: 8px 0; border-bottom: 1px solid var(--border); }
 .food-list dt { font-weight: 700; }
