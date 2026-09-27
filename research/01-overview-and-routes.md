@@ -81,7 +81,11 @@ Tai 17 / Tai 1 (clockwise, Kaohsiung → Tainan: Tai 17 north out of Zuoying, Ta
 
 ### Taichung ↔ Hsinchu
 1. **Tai 1 / Tai 61 coast** ~100 km. *Default.* (Tai 61 expressway sections are banned for scooters — follow signs; Tai 1 is safe.)
-2. **Hakka hills (Tai 3 / Tai 13 via Sanyi)** — woodcarving town Sanyi, Dahu strawberries, Beipu. ~115 km.
+2. **Hakka hills (Tai 3 / Tai 13 via Sanyi)** — woodcarving town Sanyi, Dahu strawberries, Beipu. ~145 km.
+   Taichung → Sanyi on Tai 13 (~45 km); Sanyi → Hsinchu ~100 km: Tai 13 to Tongluo, County 128 / Miaoli 27 to
+   Tai 6, Tai 3 north through Dahu, Shitan, Sanwan, Emei and Beipu (~57 km), then County 122 from Xiagongguan
+   (Zhudong) into Hsinchu (~16 km). Tai 3 doesn't pass through Sanyi and meets County 122 at Xiagongguan
+   (zh.wikipedia 臺3線; checked Sep 2026). Distance and roads from Valhalla `motor_scooter` routing (Sep 2026).
 
 ### Hsinchu ↔ Taipei
 1. **Tai 1 via Taoyuan** ~80 km. Urban, traffic lights.
@@ -117,8 +121,9 @@ detoured ~360 km), so there's no evidence either way; Tai 18 then Tai 21 via Tat
 * Beimen → Chiayi: named "County 168 / Tai 1", line uses Tai 17 then County 163.
 * Chiayi → Lukang: named "Tai 1 / Tai 17", line leaves Tai 1 for Tai 19 and County 146/144.
 * Sun Moon Lake → Taichung: named "Tai 21 / Tai 14 / Tai 3", line takes County 136 instead of Tai 3.
-* Sanyi → Hsinchu: named "Tai 3 / County 122", line uses Tai 13, County 119 and **~26 km on Tai 61**. If that's the
-  expressway mainline, the drawn line is on a road scooters can't use. Re-snap with Valhalla `motor_scooter` or add VIAS.
+* ~~Sanyi → Hsinchu~~ **fixed (Sep 2026):** the old line ran ~26 km along the coast on Tai 61, which may have
+  been the scooter-banned expressway. It's now forced onto Tai 3 via VIAS in `scripts/snap-legs.ts` and re-snapped with
+  Valhalla `motor_scooter`; the data now reads "Tai 6 / Tai 3 / County 122", 100 km (was 70 km).
 
 ## Popular side trips (extra days)
 * **Taroko Gorge** (from Xincheng/Hualien) — partly reopened, controlled access. 0.5–1 day.

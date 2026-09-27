@@ -40,6 +40,9 @@ const VIAS: Record<string, LatLng[]> = {
   'ruisui>jingpu': [[23.505, 121.44]],
   // Router otherwise leaves Tai 23 for the coast road.
   'fuli>donghe': [[23.08, 121.31]],
+  // Hakka hills: router otherwise runs up the coast on Tai 61 (expressway sections ban scooters). Force Tai 3 via
+  // Dahu, Shitan and Beipu, then County 122 from Xiagongguan (Zhudong) into Hsinchu (research/01).
+  'sanyi>hsinchu': [[24.423, 120.866], [24.54, 120.9205], [24.702, 121.0567], [24.7231, 121.096]],
 };
 
 const args = process.argv.slice(2);

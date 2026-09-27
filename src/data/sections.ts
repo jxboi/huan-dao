@@ -370,7 +370,7 @@ export const SECTIONS: Section[] = [
         tags: ['hills', 'culture'],
         legs: [
           { to: 'sanyi', km: 45, speed: 38, road: 'Tai 13', scenic: 2 },
-          { to: 'hsinchu', km: 70, speed: 35, road: 'Tai 3 / County 122', scenic: 2 },
+          { to: 'hsinchu', km: 100, speed: 35, road: 'Tai 6 / Tai 3 / County 122', scenic: 2 },
         ],
       },
     ],
