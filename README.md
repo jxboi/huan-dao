@@ -15,7 +15,8 @@ and get a balanced day-by-day itinerary with where to sleep, what to see and eat
 | **Budget** | Rental, fuel, lodging (per town & weekend), food, activities, extras, contingency. Per person/per day, 10 currencies, season pricing. |
 | **Guide** | Licence/IDP, road rules & fines, Suhua/Taroko status, safety & emergency quick-dial, month-by-month weather, packing checklist. |
 
-Everything persists in `localStorage`. No backend, no accounts.
+Everything persists in `localStorage`; no account needed. Optionally, riders can **Continue with Facebook** to sync
+their trip across devices (Supabase Auth + one Postgres table) — see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md#cloud-sync-srcstatecloudtsx-srclibsyncts).
 
 ## Quick start
 

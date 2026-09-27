@@ -12,6 +12,7 @@
     "snap-legs": "node scripts/snap-legs.ts"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.117.2",
     "leaflet": "^1.9.4",
     "react": "^19.3.0",
     "react-dom": "^19.3.0"
