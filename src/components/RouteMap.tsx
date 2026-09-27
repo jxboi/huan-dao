@@ -11,17 +11,26 @@ import { stopName } from '../lib/format';
  * Leaflet map of the planned loop. Lines follow the roads where snapped geometry exists
  * (data/geo/legs.ts) and are straight stop-to-stop otherwise. Overnight stops get numbered day markers.
  */
-export function RouteMap({ plan, highlightDay, height = 360, controls = true }: { plan: Plan; highlightDay?: number; height?: number; controls?: boolean }) {
+export function RouteMap({ plan, highlightDay, height = 360, controls = true }: { plan: Plan; highlightDay?: number; height?: number | string; controls?: boolean }) {
   const el = useRef<HTMLDivElement>(null);
   const map = useRef<L.Map | null>(null);
   const layer = useRef<L.LayerGroup | null>(null);
+  const fit = useRef<() => void>(() => {});
 
   useEffect(() => {
     if (!el.current || map.current) return;
-    map.current = createBaseMap(el.current, { controls });
-    layer.current = L.layerGroup().addTo(map.current);
+    const m = createBaseMap(el.current, { controls });
+    map.current = m;
+    layer.current = L.layerGroup().addTo(m);
+    // The container can change size (e.g. the desktop route panel opening/closing): re-measure and re-frame.
+    const ro = new ResizeObserver(() => {
+      m.invalidateSize();
+      fit.current();
+    });
+    ro.observe(el.current);
     return () => {
-      map.current?.remove();
+      ro.disconnect();
+      m.remove();
       map.current = null;
     };
   }, []);
@@ -76,13 +85,16 @@ export function RouteMap({ plan, highlightDay, height = 360, controls = true }: 
         .addTo(g);
     }
 
-    if (highlightDay !== undefined) {
-      const d = plan.days.find((x) => x.day === highlightDay);
-      const pts = d ? pathThrough([d.from, ...d.via], STOP_BY_ID, LEG_GEOMETRY) : [];
-      if (pts.length) m.fitBounds(L.latLngBounds(pts), { padding: [30, 30], maxZoom: 11 });
-    } else if (bounds.length) {
-      m.fitBounds(L.latLngBounds(bounds), { padding: [20, 20] });
-    }
+    fit.current = () => {
+      if (highlightDay !== undefined) {
+        const d = plan.days.find((x) => x.day === highlightDay);
+        const pts = d ? pathThrough([d.from, ...d.via], STOP_BY_ID, LEG_GEOMETRY) : [];
+        if (pts.length) m.fitBounds(L.latLngBounds(pts), { padding: [30, 30], maxZoom: 11 });
+      } else if (bounds.length) {
+        m.fitBounds(L.latLngBounds(bounds), { padding: [20, 20] });
+      }
+    };
+    fit.current();
   }, [plan, highlightDay]);
 
   return <div ref={el} className="map" style={{ height }} role="img" aria-label="Map of the planned route around Taiwan" />;

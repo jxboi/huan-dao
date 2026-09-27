@@ -68,7 +68,7 @@ function Shell({ tab, go }: { tab: Tab; go: (t: Tab, sub?: string) => void }) {
   const { plan, budget, settings } = useStore();
 
   return (
-    <div className="app">
+    <div className={`app ${tab === 'route' ? 'app-wide' : ''}`}>
       <header className="topbar">
         <div className="brand" onClick={() => go('plan')} role="link" tabIndex={0}>
           <span className="logo" aria-hidden>環島</span>
