@@ -3,6 +3,7 @@ import { IconBed, IconExternal, IconFood, IconInfo, IconLock, IconNavigate, Icon
 import { DESKTOP, MapPanel, useMedia } from '../components/MapPanel';
 import { RouteMap, type MapAlternative } from '../components/RouteMap';
 import { AttractionRow } from '../components/AttractionRow';
+import { Sheet } from '../components/Sheet';
 import { StopPicker } from '../components/StopPicker';
 import { Card, Note, Warning } from '../components/ui';
 import { STAYS } from '../data/costs';
@@ -194,6 +195,7 @@ function DayCard({
 }) {
   const { settings, plan, dispatch } = useStore();
   const [picking, setPicking] = useState(false);
+  const [sheet, setSheet] = useState<'see' | 'eat'>();
   const cur = currencyFor(settings.currency);
   const stay = STAYS.find((s) => s.id === settings.stay)!;
   const overnight = d.overnight ? STOP_BY_ID[d.overnight] : undefined;
@@ -210,6 +212,7 @@ function DayCard({
   const nightPrice = overnight
     ? stay.price * overnight.lodgingFactor * nightFactor(d.date) * (stay.perPerson ? settings.riders : Math.ceil(settings.riders / 2))
     : 0;
+  const seeTitle = isRest ? 'Things to do' : 'Stops worth making';
   const restHere = d.overnight ? settings.restDays[d.overnight] ?? 0 : 0;
 
   return (
@@ -323,25 +326,48 @@ function DayCard({
             </>
           )}
 
-          {d.attractions.length > 0 && (
-            <div className="block">
-              <h3 className="block-h">
-                <IconStarLine /> {isRest ? 'Things to do' : 'Stops worth making'}
-              </h3>
+          {(d.attractions.length > 0 || foodTowns.length > 0) && (
+            <div className="more-rows">
+              {d.attractions.length > 0 && (
+                <button type="button" className="more-row" onClick={() => setSheet('see')}>
+                  <span className="more-icon">
+                    <IconStarLine />
+                  </span>
+                  <span className="more-text">
+                    <strong>{seeTitle}</strong>
+                    <span className="muted">{d.attractions.map((a) => a.name).join(' · ')}</span>
+                  </span>
+                  <span className="more-count">{d.attractions.length}</span>
+                </button>
+              )}
+              {foodTowns.length > 0 && (
+                <button type="button" className="more-row" onClick={() => setSheet('eat')}>
+                  <span className="more-icon">
+                    <IconFood />
+                  </span>
+                  <span className="more-text">
+                    <strong>Eat</strong>
+                    <span className="muted">{foodTowns.flatMap((t) => t.food).join(' · ')}</span>
+                  </span>
+                  <span className="more-count">{foodTowns.reduce((n, t) => n + t.food.length, 0)}</span>
+                </button>
+              )}
+            </div>
+          )}
+          <Sheet
+            open={sheet !== undefined}
+            onClose={() => setSheet(undefined)}
+            title={sheet === 'eat' ? `Eat · Day ${d.day}` : `${seeTitle} · Day ${d.day}`}
+          >
+            {sheet === 'see' && (
               <div className="tiles">
                 {d.attractions.map((a) => (
                   <AttractionRow key={a.id} a={a} compact />
                 ))}
               </div>
-            </div>
-          )}
-
-          {foodTowns.length > 0 && (
-            <div className="block">
-              <h3 className="block-h">
-                <IconFood /> Eat
-              </h3>
-              {foodTowns.map((t) => (
+            )}
+            {sheet === 'eat' &&
+              foodTowns.map((t) => (
                 <div key={t.id} className="food-town">
                   {foodTowns.length > 1 && <span className="food-where">{t.name}</span>}
                   <ul className="food-chips">
@@ -351,8 +377,7 @@ function DayCard({
                   </ul>
                 </div>
               ))}
-            </div>
-          )}
+          </Sheet>
 
           {overnight && (
             <div className="block sleep-card">
