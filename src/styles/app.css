@@ -210,6 +210,8 @@ p { margin: 4px 0; }
 .variant-top { display: flex; align-items: center; gap: 8px; }
 .radio { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--muted); flex: none; }
 .variant.on .radio { border: 5px solid var(--primary); }
+.radio.check { border-radius: 4px; }
+.bypass-off { display: grid; gap: 8px; justify-items: start; margin-top: 8px; }
 .variant-meta { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 0.78rem; color: var(--muted); margin: 4px 0 2px 24px; }
 .variant p, .variant-via { margin-left: 24px; font-size: 0.85rem; }
 .variant-via { color: var(--muted); font-size: 0.78rem; }
@@ -596,5 +598,11 @@ body:has(.sheet[open]) { overflow: hidden; }
 .route-choice .segmented button { display: flex; flex-direction: column; align-items: center; gap: 1px; min-height: 44px; }
 .route-choice .rc-meta { font-size: 0.75rem; font-weight: 400; color: var(--muted); }
 .route-choice p { margin: 6px 2px 0; }
+.route-choice .rc-note { font-size: 0.85rem; color: var(--muted); margin: 0 2px; }
+.rc-more { border: 0; background: none; color: var(--primary); font-weight: 600; font-size: 0.85rem; padding: 10px 2px; min-height: 40px; }
+.rc-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.rc-list button { width: 100%; text-align: left; display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; min-height: 44px;
+  border: 1px solid var(--border); border-radius: 12px; background: var(--surface-2); }
+.rc-list .rc-flag { font-size: 0.75rem; color: var(--caution); }
 .day-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0 4px; }
 .variant-pick { display: block; width: 100%; text-align: left; background: none; border: 0; padding: 0; color: inherit; font: inherit; }

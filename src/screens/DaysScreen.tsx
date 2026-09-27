@@ -20,8 +20,9 @@ interface StopChange {
   stopId: string;
   kind: 'sleep' | 'lock' | 'unlock' | 'move' | 'route';
   /** For 'route': the day's start and the name of the route picked. */
+  /** For 'route': the day's start and how to name the route picked ("the scenic route"). */
   route?: { from: string; label: string };
-  prev: Pick<TripSettings, 'pinned' | 'restDays' | 'days' | 'variants' | 'customRoutes'>;
+  prev: Pick<TripSettings, 'pinned' | 'restDays' | 'days' | 'variants' | 'customRoutes' | 'bypasses'>;
 }
 
 export function DaysScreen() {
@@ -45,8 +46,8 @@ export function DaysScreen() {
     const text =
       change.kind === 'route' && rode
         ? rode.to === change.stopId
-          ? `Day ${rode.day} now takes the ${change.route!.label.toLowerCase()} route. Later days re-balanced.`
-          : `${change.route!.label} route set — the longer ride was split: Day ${rode.day} now ends in ${stopName(rode.to)}.`
+          ? `Day ${rode.day} now takes ${change.route!.label}. Later days re-balanced.`
+          : `Route changed — the longer ride was split: Day ${rode.day} now ends in ${stopName(rode.to)}.`
         : change.kind === 'unlock'
         ? `${name} unlocked — the planner may move this night.`
         : !day
@@ -69,6 +70,7 @@ export function DaysScreen() {
     days: settings.days,
     variants: settings.variants,
     customRoutes: settings.customRoutes,
+    bypasses: settings.bypasses,
   });
   const toggleStop = (stopId: string, kind: StopChange['kind']) => {
     setChange({ stopId, kind, prev: prev() });
@@ -79,8 +81,9 @@ export function DaysScreen() {
     dispatch({ type: 'changeDayEnd', day, stopId });
   };
   const chooseRoute = (day: DayRef, o: DayRouteOption) => {
-    setChange({ stopId: day.to, kind: 'route', route: { from: day.from, label: ROUTE_LABEL[o.kind] }, prev: prev() });
-    dispatch({ type: 'chooseDayRoute', day, variants: o.variants });
+    const label = o.kind === 'other' ? (o.name ? `the ${o.name} route` : 'the route you picked') : `the ${o.kind} route`;
+    setChange({ stopId: day.to, kind: 'route', route: { from: day.from, label }, prev: prev() });
+    dispatch({ type: 'chooseDayRoute', day, variants: o.variants, bypasses: o.bypasses });
   };
 
   const desktop = useMedia(DESKTOP);
@@ -332,48 +335,93 @@ function DayCard({
   );
 }
 
-const ROUTE_LABEL: Record<DayRouteOption['kind'], string> = { fast: 'Fast', scenic: 'Scenic', current: 'Your' };
-
-/** Fast / Scenic (/ the one you ride now) for today, with what each costs next to the one you ride. */
+/**
+ * Fast / Scenic (plus the one you ride now, if it's neither) for today, what the other headline route costs next to
+ * yours, and every other way to ride the day under "More routes".
+ */
 function RouteChoice({ opts, onPick }: { opts: DayRouteOption[]; onPick: (o: DayRouteOption) => void }) {
+  const [more, setMore] = useState(false);
   const cur = opts.find((o) => o.current) ?? opts[0];
-  const alt = opts.find((o) => !o.current);
-  const extra = alt && diffText(alt, cur);
-  // Towns the other route passes that yours doesn't.
-  const newTowns = alt ? alt.path.filter((x) => !cur.path.includes(x)) : [];
+  const headline = opts.filter((o) => o.kind !== 'other' || o.current);
+  const others = opts.filter((o) => !headline.includes(o));
+  const alt = headline.find((o) => !o.current);
   return (
     <div className="route-choice">
-      <div className="segmented" role="radiogroup" aria-label="Route for today">
-        {opts.map((o) => (
-          <button key={o.kind} role="radio" aria-checked={o.current} className={o.current ? 'on' : ''} onClick={() => !o.current && onPick(o)}>
-            <span className="rc-label">{routeName(o)}</span>
-            <span className="rc-meta">{fmtKm(o.km)} · {fmtHours(o.hours)}</span>
-          </button>
-        ))}
-      </div>
+      {headline.length > 1 ? (
+        <div className="segmented" role="radiogroup" aria-label="Route for today">
+          {headline.map((o) => (
+            <button key={o.kind} role="radio" aria-checked={o.current} className={o.current ? 'on' : ''} onClick={() => !o.current && onPick(o)}>
+              <span className="rc-label">{kindLabel(o)}</span>
+              <span className="rc-meta">{fmtKm(o.km)} · {fmtHours(o.hours)}</span>
+            </button>
+          ))}
+        </div>
+      ) : (
+        <p className="rc-note">You're on the fastest way, and nothing slower is more scenic.</p>
+      )}
       {alt && (
         <p className="muted tiny">
-          {routeName(alt)}: {extra}
-          {newTowns.length > 0 && ` · via ${newTowns.map(stopName).join(', ')}`}
+          <strong>{kindLabel(alt)}</strong>
+          {alt.name && ` · ${alt.name}`}
+          <br />
+          {diffText(alt, cur)}
+          {newTowns(alt, cur)}
         </p>
+      )}
+      {others.length > 0 && (
+        <>
+          <button type="button" className="rc-more" aria-expanded={more} onClick={() => setMore(!more)}>
+            {more ? 'Fewer routes' : `More routes (${others.length})`}
+          </button>
+          {more && (
+            <ul className="rc-list">
+              {others.map((o) => (
+                <li key={o.path.join('>')}>
+                  <button type="button" onClick={() => onPick(o)}>
+                    <strong>{o.name || `Via ${o.path.slice(1, -1).map(stopName).join(', ') || 'the direct road'}`}</strong>
+                    <span className="muted small">
+                      {fmtKm(o.km)} · {fmtHours(o.hours)} ({diffText(o, cur)}){o.scenic >= 2.4 && ' · very scenic'}
+                    </span>
+                    {o.long && <span className="rc-flag">Longer than a day at your pace</span>}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </>
       )}
     </div>
   );
 }
 
-function routeName(o: DayRouteOption): string {
-  return o.kind === 'current' ? 'Your route' : ROUTE_LABEL[o.kind];
+function kindLabel(o: DayRouteOption): string {
+  return o.kind === 'fast' ? 'Fast' : o.kind === 'scenic' ? 'Scenic' : 'Your route';
+}
+
+/** " · via X, Y" for towns `o` passes that `from` doesn't. */
+function newTowns(o: DayRouteOption, from: DayRouteOption): string {
+  const towns = o.path.filter((x) => !from.path.includes(x));
+  return towns.length ? ` · via ${towns.map(stopName).join(', ')}` : '';
 }
 
 function diffText(o: DayRouteOption, from: DayRouteOption): string {
   const km = Math.round(o.km - from.km);
   const h = o.hours - from.hours;
   const sign = (n: number) => (n >= 0 ? '+' : '−');
-  return `${sign(km)}${fmtKm(Math.abs(km))}, ${sign(h)}${fmtHours(Math.abs(h))}`;
+  const dist = km === 0 ? 'same distance' : `${sign(km)}${fmtKm(Math.abs(km))}`;
+  // Under ~5 minutes either way reads as the same.
+  const time = Math.abs(h) < 1 / 12 ? 'same riding time' : `${sign(h)}${fmtHours(Math.abs(h))}`;
+  return `${dist}, ${time}`;
 }
 
 function dayRef(d: PlanDay): DayRef {
-  return { from: d.from, to: d.to, via: d.via, sectionIds: [...new Set(d.legs.map((l) => l.sectionId))] };
+  return {
+    from: d.from,
+    to: d.to,
+    via: d.via,
+    sectionIds: [...new Set(d.legs.map((l) => l.sectionId))],
+    bypasses: [...new Set(d.legs.flatMap((l) => (l.bypass ? [l.bypass] : [])))],
+  };
 }
 
 function RoadBadges({ roads }: { roads: RoadRef[] }) {

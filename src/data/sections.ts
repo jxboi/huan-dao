@@ -21,6 +21,15 @@ const FUEL_EAST: RoadWarning = {
   text: 'Long gaps between petrol stations; rural stations may close by 20:00. Fill up at every town.',
 };
 
+const TAI8_EAST: RoadWarning = {
+  level: 'caution',
+  text:
+    'Tai 8 through Taroko (Guanyuan–Taroko) is still being repaired after the 2024 quake: traffic moves in set release ' +
+    'windows (five a day, 06:30–18:00, in Sep 2026) and the road closes 18:30–06:30. Rockfall risk; check the day\'s schedule.',
+  url: 'https://www.taroko.gov.tw/en/TAROKO_HighwayCondition.aspx?n=7879',
+  checked: '2026-09',
+};
+
 const MOUNTAIN_WARNING: RoadWarning = {
   level: 'caution',
   text: 'Steep mountain road with fog and cold at altitude. 125cc works but is slow two-up. Avoid after dark.',
@@ -100,7 +109,7 @@ export const SECTIONS: Section[] = [
     id: 'yilan-hualien',
     from: 'yilan',
     to: 'hualien',
-    title: 'Yilan → Hualien (Suhua)',
+    title: 'Yilan → Hualien',
     defaultVariant: 'suhua',
     variants: [
       {
@@ -115,6 +124,28 @@ export const SECTIONS: Section[] = [
           { to: 'nanao', km: 28, speed: 35, road: 'Tai 9D / Tai 9', scenic: 3, warnings: [SUHUA_WARNING] },
           { to: 'heping', km: 29, speed: 35, road: 'Tai 9D', scenic: 3, warnings: [SUHUA_WARNING] },
           { to: 'xincheng', km: 30, speed: 35, road: 'Tai 9', scenic: 3, warnings: [SUHUA_WARNING] },
+          { to: 'hualien', km: 20, speed: 35, road: 'Tai 9', scenic: 1 },
+        ],
+      },
+      {
+        id: 'central-cross',
+        name: 'Mountain route via Lishan & Taroko (Tai 7A / Tai 8)',
+        summary:
+          'Skips the Suhua: up the Lanyang valley over Siyuan Pass (1,948 m) to Lishan, over Dayuling (2,565 m) and down ' +
+          'through Taroko Gorge. Remote, cold and slow; plan 2–3 days and sleep in Lishan.',
+        difficulty: 3,
+        tags: ['mountain', 'advanced'],
+        legs: [
+          {
+            to: 'lishan', km: 110, speed: 30, road: 'Tai 7 / Tai 7A', scenic: 3,
+            warnings: [MOUNTAIN_WARNING, { level: 'caution', text: 'Last petrol before Lishan is at Nanshan, ~45 km out. Roadworks with stop-go control on Tai 7A.', checked: '2026-09' }],
+          },
+          {
+            to: 'dayuling', km: 30, speed: 28, road: 'Tai 8', scenic: 3,
+            warnings: [{ level: 'caution', text: 'Fill up in Lishan. Next petrol: Guanyuan, just past Dayuling (~35 km), then none until Xincheng.', checked: '2026-09' }],
+          },
+          { to: 'tianxiang', km: 56, speed: 30, road: 'Tai 8', scenic: 3, warnings: [TAI8_EAST, MOUNTAIN_WARNING] },
+          { to: 'xincheng', km: 22, speed: 30, road: 'Tai 8', scenic: 3, warnings: [TAI8_EAST] },
           { to: 'hualien', km: 20, speed: 35, road: 'Tai 9', scenic: 1 },
         ],
       },
@@ -270,6 +301,17 @@ export const SECTIONS: Section[] = [
         tags: ['urban'],
         legs: [{ to: 'tainan', km: 50, speed: 30, road: 'Tai 17 / Tai 1', scenic: 1 }],
       },
+      {
+        id: 'meinong',
+        name: 'Hakka foothills via Qishan & Meinong',
+        summary: 'Over the Gaoping River to Hakka Meinong (oil-paper umbrellas, rice noodles), past Qishan\'s banana old street, then north on Tai 3 into Tainan.',
+        difficulty: 1,
+        tags: ['culture', 'hills'],
+        legs: [
+          { to: 'meinong', km: 50, speed: 35, road: 'Tai 1E / County 189 / Tai 3', scenic: 1 },
+          { to: 'tainan', km: 47, speed: 38, road: 'Tai 28 / Tai 3 / County 182', scenic: 2 },
+        ],
+      },
     ],
   },
   {
@@ -370,7 +412,24 @@ export const SECTIONS: Section[] = [
         tags: ['hills', 'culture'],
         legs: [
           { to: 'sanyi', km: 45, speed: 38, road: 'Tai 13', scenic: 2 },
-          { to: 'hsinchu', km: 100, speed: 35, road: 'Tai 6 / Tai 3 / County 122', scenic: 2 },
+          { to: 'dahu', km: 28, speed: 35, road: 'Tai 13 / Tai 6 / Tai 3', scenic: 2 },
+          { to: 'beipu', km: 50, speed: 35, road: 'Tai 3', scenic: 2 },
+          { to: 'hsinchu', km: 22, speed: 35, road: 'Tai 3 / County 122', scenic: 1 },
+        ],
+      },
+      {
+        id: 'tai3',
+        name: 'Tai 3 inland (Dongshi, Dahu, Beipu)',
+        summary:
+          'The old inland highway north through Hakka country: Dongshi\'s orchards, Zhuolan, Dahu\'s strawberry farms, ' +
+          'Shitan and Beipu. Slower than Tai 1 with far fewer trucks.',
+        difficulty: 2,
+        tags: ['hills', 'culture'],
+        legs: [
+          { to: 'dongshi', km: 27, speed: 32, road: 'Tai 3', scenic: 1 },
+          { to: 'dahu', km: 29, speed: 38, road: 'Tai 3', scenic: 2 },
+          { to: 'beipu', km: 50, speed: 35, road: 'Tai 3', scenic: 2 },
+          { to: 'hsinchu', km: 22, speed: 35, road: 'Tai 3 / County 122', scenic: 1 },
         ],
       },
     ],

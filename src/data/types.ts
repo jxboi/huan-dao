@@ -66,6 +66,22 @@ export interface Link extends Leg {
   difficulty: 1 | 2 | 3;
 }
 
+/**
+ * A way round a hub (src/data/bypasses.ts): a road from a stop just before the hub to one just after it that doesn't
+ * go through the hub town. Written like a variant: `legs` run clockwise from `from`. It applies only when the stops
+ * either side of the hub on your route are both on it.
+ */
+export interface Bypass {
+  id: string;
+  name: string;
+  summary: string;
+  /** The hub it skips. */
+  hub: string;
+  from: string;
+  legs: Leg[];
+  difficulty: 1 | 2 | 3;
+}
+
 export interface Variant {
   id: string;
   name: string;

@@ -23,7 +23,7 @@ state/store.tsx (useReducer + localStorage) ───► React context ───
 - **Attraction** — a sight/food spot tied to a `stopId`, with hours, cost, category, optional status warning.
 
 ## Settings (`src/state/settings.ts`)
-`TripSettings` holds everything user-adjustable: days, startDate, startHub, direction, pace, variants, customRoutes, pinned stops,
+`TripSettings` holds everything user-adjustable: days, startDate, startHub, direction, pace, variants, customRoutes, bypasses, pinned stops,
 restDays, vehicle, riders, bikes, stay tier, food style, season mode, saved attractions, currency, checklist.
 `migrate()` makes any stored/partial object valid.
 
@@ -39,12 +39,26 @@ restDays, vehicle, riders, bikes, stay tier, food style, season mode, saved attr
   the day's start; if the town isn't on the route, drops the old end and places the new one in today's sections or
   the next, dropping stops you'd pass today that became detours (unless pinned, resting there or with saved sights).
   `dayEndOptions` lists only towns that fit that way.
-- `dayRouteOptions` (Fast / Scenic switch on a day card): tries every combination of presets (plus your custom
-  route) for the day's sections, keeps those that still pass both of the day's ends, and offers the fewest riding hours
-  as **Fast** and the highest km-weighted `scenic` score as **Scenic**. Scenic has to score at least 0.2 higher and
-  take no more than 1.6× Fast's hours. `chooseDayRoute` sets those variants and pins both ends; the planner can
-  still split a much longer ride, and the toast says so. Routes stay hub to hub, so a scenic ride that skips a hub
-  (Hsinchu → Tai 3 → Puli without Taichung) needs links that bypass hubs first.
+- `dayRouteOptions` (route choice on a day card): tries every combination of presets (plus your custom route) for the
+  day's sections, and each bypass round a hub the day passes on and off, keeping those that still pass both of the day's
+  ends. Combinations that give the same day are merged, keeping the one that changes least of what you ride now (so a
+  custom route isn't swapped for a preset that happens to match today). **Fast** = fewest riding hours; **Scenic** =
+  highest km-weighted `scenic` score that is ≥ 0.2 above Fast and no longer than the pace's longest day
+  (`PACES[pace].max`, or 1.25× Fast if that's already over). The rest are listed under "More routes", flagged when
+  they're longer than a day at your pace. `chooseDayRoute` sets those variants and bypasses and pins both ends; the
+  planner can still split a much longer ride, and the toast says so.
+
+## Bypasses round hubs (`src/data/bypasses.ts`)
+- Sections run hub to hub, so without help every route passes through each hub town. A `Bypass` is a short chain of legs
+  (written clockwise from `from`, like a variant) that joins the stop before a hub to the stop after it.
+- `settings.bypasses` lists the ones you want; `buildRoute` rides one only where the stops either side of the hub on your
+  route are both on it, in riding order (`rideBypass` in `lib/route.ts`), and reports the ones it rode in
+  `route.bypasses`. Bypass legs carry `bypass: id` and the section of the side they start on (the last one: the section
+  after the hub), so days, `dayWindow` and `dayRouteOptions` still see both sections.
+- `setBypass` (the "Skip Taichung?" card between the two sections on the Route screen) also switches either neighbouring
+  section to its shortest preset that reaches the bypass, if yours doesn't.
+- Bypass legs are not in the custom-route network; `src/data/roadLegs.ts` lists every drawable road (section legs,
+  links, bypasses) for `snap-legs` and the geometry/road tests.
 
 ## Planner details (`src/lib/planner.ts`)
 1. **Load**: for each point, cumulative ride hours + hours for saved (non side-trip) attractions at that stop.
@@ -100,11 +114,12 @@ restDays, vehicle, riders, bikes, stay tier, food style, season mode, saved attr
 
 ## Road geometry (`src/data/geo/legs.ts`, `scripts/snap-legs.ts`)
 - One Google-encoded polyline per leg, keyed `from>to` in **clockwise** order; counter-clockwise travel reverses it.
-- Generated, not hand-written: `npm run snap-legs` routes every leg in `SECTIONS` through an OSRM-compatible server
+- Generated, not hand-written: `npm run snap-legs` routes every leg in `roadLegs()` (sections, links, bypasses) through an OSRM-compatible server
   (`OSRM_URL`, default the public demo, `exclude=motorway`) or, with `VALHALLA_URL` set, Valhalla's `motor_scooter`
   costing (no motorways, honours scooter access tags — preferred), simplifies to ~30 m and writes the file. It skips legs that
   already have geometry (`--force` to redo, `--only=a>b,…`, `--dry-run`) and lists legs whose routed km differs from the
-  data by >20 % — use that to check `sections.ts` distances. Pin a road with `VIAS` in the script. A test checks keys are
+  data by >20 % — use that to check `sections.ts` distances. Pin a road with `VIAS` in the script. Lines for legs the
+  data no longer has (e.g. a leg split in two) are dropped. A test checks keys are
   real legs and lines start and end within 3 km of their stops.
 - **Scooter-rule guard.** Every line is map-matched with Valhalla `trace_attributes` into the roads it follows (names/refs,
   OSM road class, tunnel, km), written to `src/data/geo/legRoads.ts` with a fingerprint of the line (test-only, not

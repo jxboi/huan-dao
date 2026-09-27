@@ -98,6 +98,12 @@ export const STOPS: Stop[] = [
     food: ['Xincheng old street snacks'],
   },
   {
+    id: 'tianxiang', name: 'Tianxiang', zh: '天祥', lat: 24.1825, lng: 121.494, region: 'east',
+    overnight: 1, lodgingFactor: 1.3,
+    blurb: 'Village deep in Taroko Gorge with a youth activity centre and a resort hotel. Tai 8 closes at night — arrive in daylight.',
+    food: ['Hotel restaurants only — bring snacks'],
+  },
+  {
     id: 'hualien', name: 'Hualien', zh: '花蓮', lat: 23.992, lng: 121.601, region: 'east',
     overnight: 3, lodgingFactor: 1.0,
     blurb: 'East-coast hub between mountains and sea. Great base for a rest day.',
@@ -231,6 +237,12 @@ export const STOPS: Stop[] = [
     food: ['Papaya milk', 'Seafood', 'Ruifeng night market'],
   },
   {
+    id: 'meinong', name: 'Meinong', zh: '美濃', lat: 22.8979, lng: 120.5415, region: 'southwest',
+    overnight: 1, lodgingFactor: 0.85,
+    blurb: 'Hakka farming town of oil-paper umbrellas and old tobacco barns under the foothills; Qishan\'s banana old street is next door.',
+    food: ['Hakka flat rice noodles (美濃粄條)', 'Banana cake (旗山香蕉)'],
+  },
+  {
     id: 'tainan', name: 'Tainan', zh: '台南', lat: 22.997, lng: 120.203, region: 'southwest',
     overnight: 3, lodgingFactor: 0.95,
     blurb: 'The old capital and food capital — temples, alleys and the best breakfasts in Taiwan.',
@@ -285,12 +297,42 @@ export const STOPS: Stop[] = [
     blurb: 'Big, sunny, easy-going city. Birthplace of bubble tea; Fengjia night market.',
     food: ['Bubble tea', 'Sun cakes (太陽餅)', 'Fengjia night market'],
   },
+  {
+    id: 'dongshi', name: 'Dongshi', zh: '東勢', lat: 24.2586, lng: 120.8278, region: 'central',
+    overnight: 1, lodgingFactor: 0.85,
+    blurb: 'Hakka fruit town on the Dajia River where Tai 3 meets Tai 8; the Tai 21 valley road to Puli starts nearby.',
+    food: ['Hakka flat rice noodles (粄條)', 'Pears and persimmons in season'],
+  },
+  {
+    id: 'lishan', name: 'Lishan', zh: '梨山', lat: 24.255, lng: 121.2512, region: 'central',
+    overnight: 2, lodgingFactor: 1.1,
+    blurb: 'Orchard village at ~1,950 m where Tai 7A meets Tai 8. Its petrol station is the only one for 35+ km in any direction.',
+    food: ['Pears, apples and peaches (in season)', 'High-mountain oolong'],
+  },
+  {
+    id: 'dayuling', name: 'Dayuling', zh: '大禹嶺', lat: 24.1803, lng: 121.3111, region: 'central',
+    overnight: 0, lodgingFactor: 1.3,
+    blurb: 'Pass at 2,565 m where Tai 14A climbs to Hehuanshan and Wuling. A few stalls, no petrol, cold even in summer.',
+    food: ['Hot drinks and snacks at the pass'],
+  },
   // ── Northwest ─────────────────────────────────────────────────────────
   {
     id: 'sanyi', name: 'Sanyi', zh: '三義', lat: 24.413, lng: 120.765, region: 'northwest',
     overnight: 2, lodgingFactor: 0.95,
     blurb: 'Hakka woodcarving town in the hills; Longteng broken bridge nearby.',
     food: ['Hakka stir-fry', 'Hakka mochi'],
+  },
+  {
+    id: 'dahu', name: 'Dahu', zh: '大湖', lat: 24.423, lng: 120.866, region: 'northwest',
+    overnight: 1, lodgingFactor: 0.85,
+    blurb: 'Hill basin on Tai 3 and Taiwan\'s strawberry capital: pick-your-own farms from December to April.',
+    food: ['Strawberries (Dec–Apr)', 'Strawberry wine and ice cream'],
+  },
+  {
+    id: 'beipu', name: 'Beipu', zh: '北埔', lat: 24.702, lng: 121.0567, region: 'northwest',
+    overnight: 1, lodgingFactor: 0.9,
+    blurb: 'Hakka hill town with a compact old street, Citian Temple and the Jiang A-Xin mansion.',
+    food: ['Lei cha (擂茶, pounded tea)', 'Oriental Beauty tea (膨風茶)', 'Hakka mochi'],
   },
   {
     id: 'hsinchu', name: 'Hsinchu', zh: '新竹', lat: 24.802, lng: 120.972, region: 'northwest',

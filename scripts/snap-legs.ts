@@ -1,5 +1,6 @@
 /**
- * Generate road-snapped geometry for every leg in src/data/sections.ts (and every link in src/data/links.ts) and write it to
+ * Generate road-snapped geometry for every leg in src/data/sections.ts (and every link in src/data/links.ts and bypass in
+ * src/data/bypasses.ts) and write it to
  * src/data/geo/legs.ts. Also prints legs whose routed distance disagrees with the km in the
  * data by more than 20 % — a useful check on research/01 numbers.
  *
@@ -26,8 +27,7 @@
  */
 import { writeFileSync, readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { LINKS } from '../src/data/links.ts';
-import { SECTIONS } from '../src/data/sections.ts';
+import { roadLegs } from '../src/data/roadLegs.ts';
 import { STOP_BY_ID } from '../src/data/stops.ts';
 import { decodePolyline, encodePolyline, pathKm, simplify, type LatLng } from '../src/lib/geo.ts';
 import { describeSeg, lineFingerprint, namedShare, violations, type RoadSeg } from '../src/lib/roadCheck.ts';
@@ -90,9 +90,19 @@ const VIAS: Record<string, LatLng[]> = {
   'changhua>taichung': [[24.113, 120.591], [24.107, 120.637], [24.123, 120.663]],
   // Tai 3 through the tea and bamboo country (Zhuqi, Meishan, Gukeng, Douliu, Zhushan), then Tai 16/21.
   'chiayi>sunmoonlake': [[23.492, 120.537], [23.579, 120.559], [23.641, 120.547], [23.699, 120.544], [23.772, 120.637], [23.757, 120.681]],
-  // Hakka hills: router otherwise runs up the coast on Tai 61 (expressway sections ban scooters). Force Tai 3 via
-  // Dahu, Shitan and Beipu, then County 122 from Xiagongguan (Zhudong) into Hsinchu (research/01).
-  'sanyi>hsinchu': [[24.423, 120.866], [24.54, 120.9205], [24.702, 121.0567], [24.7231, 121.096]],
+  // Hakka hills / Tai 3: keep to Tai 3 via Shitan, then County 122 from Xiagongguan (Zhudong) into Hsinchu (research/01).
+  // (Was one sanyi>hsinchu leg; the router otherwise ran up the coast on Tai 61, whose expressway sections ban scooters.)
+  'dahu>beipu': [[24.54, 120.9205]],
+  'beipu>hsinchu': [[24.7231, 121.096]],
+  // Tai 3 via Fengyuan and Shigang (router otherwise takes County 129 over the hills).
+  'taichung>dongshi': [[24.2515, 120.7185], [24.2745, 120.7745]],
+  'dongshi>dahu': [[24.313, 120.8246]],
+  // Bypass: Tai 14 to Guoxing, then up the Tai 21 valley via Shuichangliu and Tianleng to Dongshi.
+  'puli>dongshi': [[24.0414, 120.8578], [24.0704, 120.876], [24.1634, 120.8602]],
+  // Tai 7 up the Lanyang valley to Qilan, Tai 7A over Siyuan Pass.
+  'yilan>lishan': [[24.6019, 121.5158], [24.394, 121.3528]],
+  // Tai 8 through Taroko to the Taroko arch, then Tai 9 to Xincheng.
+  'tianxiang>xincheng': [[24.1539, 121.6234]],
 };
 
 const args = process.argv.slice(2);
@@ -103,22 +113,7 @@ const allowBanned = args.includes('--allow-banned');
 const only = args.find((a) => a.startsWith('--only='))?.slice(7).split(',');
 
 function allLegs() {
-  const legs = new Map<string, { from: string; to: string; km: number; road: string }>();
-  for (const s of SECTIONS) {
-    for (const v of s.variants) {
-      let from = s.from;
-      for (const l of v.legs) {
-        const key = `${from}>${l.to}`;
-        if (!legs.has(key)) legs.set(key, { from, to: l.to, km: l.km, road: l.road });
-        from = l.to;
-      }
-    }
-  }
-  for (const l of LINKS) {
-    const key = `${l.from}>${l.to}`;
-    if (!legs.has(key)) legs.set(key, { from: l.from, to: l.to, km: l.km, road: l.road });
-  }
-  return legs;
+  return roadLegs();
 }
 
 function readExisting(): Record<string, string> {
@@ -286,8 +281,15 @@ async function main() {
   if (rejected.length) {
     console.log(`\nNOT saved — uses roads scooters may not ride (add VIAS, or --allow-banned): ${rejected.join(', ')}`);
   }
+  // Lines for legs the data no longer has (a leg split in two, a variant removed).
+  const gone = Object.keys(out).filter((k) => !allLegs().has(k));
+  for (const k of gone) {
+    delete out[k];
+    delete roads[k];
+  }
+  if (gone.length) console.log(`\nDropped lines for legs no longer in the data: ${gone.join(', ')}`);
   console.log(`\n${done} ${roadsOnly ? 'checked' : 'snapped'}, ${failed} failed.`);
-  if (dryRun || !done) return;
+  if (dryRun || !(done || gone.length)) return;
 
   if (!roadsOnly) writeGeometry(out);
   writeRoads(roads);

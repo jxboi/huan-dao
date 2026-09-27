@@ -15,6 +15,7 @@ const SHARED_KEYS = [
   'pace',
   'variants',
   'customRoutes',
+  'bypasses',
   'pinned',
   'restDays',
   'vehicle',

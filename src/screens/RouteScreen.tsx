@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { Fragment, useState } from 'react';
 import { DESKTOP, MapPanel, useMedia } from '../components/MapPanel';
 import { RouteMap } from '../components/RouteMap';
 import { StopPicker } from '../components/StopPicker';
 import { Card, Dots, Warning } from '../components/ui';
 import { RIDE_OVERHEAD, VEHICLES } from '../data/costs';
+import { BYPASS_BY_ID, BYPASSES } from '../data/bypasses';
 import { STOP_BY_ID } from '../data/stops';
 import type { Section, Variant } from '../data/types';
 import { LEG_GEOMETRY } from '../data/geo/legs';
@@ -49,45 +50,50 @@ export function RouteScreen() {
     const to = reversed ? section.from : section.to;
     const warnings = [...new Map(chosen.legs.flatMap((l) => l.warnings ?? []).map((w) => [w.text, w])).values()];
     return (
-      <Card key={section.id} title={`${stopName(from)} → ${stopName(to)}`}>
-        <div className="variants" role="radiogroup" aria-label={`${stopName(from)} to ${stopName(to)} route`}>
-          {section.variants.map((v) => {
-            const st = variantStats(v, speedFactor);
-            const on = v.id === chosen.id;
-            const via = variantStops(section, v, reversed).slice(1, -1);
-            return (
-              <button
-                key={v.id}
-                type="button"
-                role="radio"
-                aria-checked={on}
-                className={`variant ${on ? 'on' : ''}`}
-                onClick={() => dispatch({ type: 'setVariant', sectionId: section.id, variantId: v.id })}
-              >
-                <div className="variant-top">
-                  <span className="radio" aria-hidden />
-                  <strong>{v.name}</strong>
-                </div>
-                <div className="variant-meta">
-                  <span>{fmtKm(st.km)}</span>
-                  <span>~{fmtHours(st.hours)}</span>
-                  <span>Scenery <Dots n={st.scenic} label="Scenery" /></span>
-                  <span>Difficulty <Dots n={v.difficulty} label="Difficulty" /></span>
-                </div>
-                <p>{v.summary}</p>
-                {via.length > 0 && <div className="variant-via">via {via.map(stopName).join(' · ')}</div>}
-              </button>
-            );
-          })}
-          <CustomOption section={section} chosen={chosen} reversed={reversed} speedFactor={speedFactor} />
-        </div>
-        {warnings.map((w) => (
-          <Warning key={w.text} w={w} />
+      <Fragment key={section.id}>
+        <Card title={`${stopName(from)} → ${stopName(to)}`}>
+          <div className="variants" role="radiogroup" aria-label={`${stopName(from)} to ${stopName(to)} route`}>
+            {section.variants.map((v) => {
+              const st = variantStats(v, speedFactor);
+              const on = v.id === chosen.id;
+              const via = variantStops(section, v, reversed).slice(1, -1);
+              return (
+                <button
+                  key={v.id}
+                  type="button"
+                  role="radio"
+                  aria-checked={on}
+                  className={`variant ${on ? 'on' : ''}`}
+                  onClick={() => dispatch({ type: 'setVariant', sectionId: section.id, variantId: v.id })}
+                >
+                  <div className="variant-top">
+                    <span className="radio" aria-hidden />
+                    <strong>{v.name}</strong>
+                  </div>
+                  <div className="variant-meta">
+                    <span>{fmtKm(st.km)}</span>
+                    <span>~{fmtHours(st.hours)}</span>
+                    <span>Scenery <Dots n={st.scenic} label="Scenery" /></span>
+                    <span>Difficulty <Dots n={v.difficulty} label="Difficulty" /></span>
+                  </div>
+                  <p>{v.summary}</p>
+                  {via.length > 0 && <div className="variant-via">via {via.map(stopName).join(' · ')}</div>}
+                </button>
+              );
+            })}
+            <CustomOption section={section} chosen={chosen} reversed={reversed} speedFactor={speedFactor} />
+          </div>
+          {warnings.map((w) => (
+            <Warning key={w.text} w={w} />
+          ))}
+          <a className="link" href={googleMapsDirections(variantStops(section, chosen, reversed))} target="_blank" rel="noreferrer">
+            Open this section in Google Maps ↗
+          </a>
+        </Card>
+        {BYPASSES.filter((b) => b.hub === to && to !== settings.startHub).map((b) => (
+          <BypassCard key={b.id} id={b.id} speedFactor={speedFactor} />
         ))}
-        <a className="link" href={googleMapsDirections(variantStops(section, chosen, reversed))} target="_blank" rel="noreferrer">
-          Open this section in Google Maps ↗
-        </a>
-      </Card>
+      </Fragment>
     );
   });
 
@@ -108,6 +114,47 @@ export function RouteScreen() {
       {head}
       {sections}
     </div>
+  );
+}
+
+/** A way round a hub, between the two sections that meet there. */
+function BypassCard({ id, speedFactor }: { id: string; speedFactor: number }) {
+  const { settings, plan, dispatch } = useStore();
+  const b = BYPASS_BY_ID[id];
+  const on = settings.bypasses.includes(id);
+  const riding = plan.route.bypasses.includes(id);
+  const st = variantStats(b, speedFactor);
+  const path = [b.from, ...b.legs.map((l) => l.to)];
+  const shown = settings.direction === 'ccw' ? [...path].reverse() : path;
+  return (
+    <Card title={`Skip ${stopName(b.hub)}?`}>
+      <button type="button" role="switch" aria-checked={on} className={`variant ${on ? 'on' : ''}`} onClick={() => dispatch({ type: 'setBypass', id, on: !on })}>
+        <div className="variant-top">
+          <span className="radio check" aria-hidden />
+          <strong>{b.name}</strong>
+        </div>
+        <div className="variant-meta">
+          <span>{fmtKm(st.km)}</span>
+          <span>~{fmtHours(st.hours)}</span>
+          <span>Scenery <Dots n={st.scenic} label="Scenery" /></span>
+          <span>Difficulty <Dots n={b.difficulty} label="Difficulty" /></span>
+        </div>
+        <p>{b.summary}</p>
+        <div className="variant-via">{shown.map(stopName).join(' → ')}</div>
+      </button>
+      {on && !riding && (
+        <div className="bypass-off">
+          <p className="muted small">
+            Your routes either side of {stopName(b.hub)} don't reach it, so you still ride through {stopName(b.hub)}. It needs a route through{' '}
+            {path.map(stopName).join(' or ')} on both sides.
+          </p>
+          <button type="button" className="btn ghost small" onClick={() => dispatch({ type: 'setBypass', id, on: true })}>
+            Switch those routes for me
+          </button>
+        </div>
+      )}
+      {riding && <p className="muted small">Your route rides round {stopName(b.hub)} on this road; the sections above and below meet here.</p>}
+    </Card>
   );
 }
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { SECTIONS } from '../data/sections';
+import { roadLegs } from '../data/roadLegs';
 import { parseRoad, parseRoads, roadName, roadSequence, roadTitle } from './roads';
 
 describe('parseRoad', () => {
@@ -37,10 +37,7 @@ describe('parseRoads', () => {
   });
 
   it('recognises every road in the route data', () => {
-    for (const s of SECTIONS)
-      for (const v of s.variants)
-        for (const l of v.legs)
-          for (const r of parseRoads(l.road)) expect(r.kind, `${v.id} → ${l.to}: "${l.road}"`).not.toBe('other');
+    for (const [key, l] of roadLegs()) for (const r of parseRoads(l.road)) expect(r.kind, `${key}: "${l.road}"`).not.toBe('other');
   });
 });
 
