@@ -2,11 +2,13 @@ import { Fragment, useEffect, useRef, useState } from 'react';
 import { IconBed, IconLock } from '../components/icons';
 import { RouteMap } from '../components/RouteMap';
 import { AttractionRow } from '../components/AttractionRow';
+import { StopPicker } from '../components/StopPicker';
 import { Card, Note, Warning } from '../components/ui';
 import { STAYS } from '../data/costs';
 import { STOP_BY_ID } from '../data/stops';
 import { currencyFor, nightFactor } from '../lib/budget';
 import { bookingSearch, fmtDate, fmtHours, fmtKm, fmtMoney, googleMapsDirections, stopName } from '../lib/format';
+import { dayEndOptions, type DayRef } from '../lib/editRoute';
 import type { PlanDay } from '../lib/planner';
 import { parseRoads, roadName, roadSequence, roadTitle, type RoadRef } from '../lib/roads';
 import { useStore } from '../state/store';
@@ -15,8 +17,8 @@ import type { TripSettings } from '../state/settings';
 /** What the user just did to an overnight stop, so the toast can say where it landed and undo it. */
 interface StopChange {
   stopId: string;
-  kind: 'sleep' | 'lock' | 'unlock';
-  prev: Pick<TripSettings, 'pinned' | 'restDays' | 'days'>;
+  kind: 'sleep' | 'lock' | 'unlock' | 'move';
+  prev: Pick<TripSettings, 'pinned' | 'restDays' | 'days' | 'variants' | 'customRoutes'>;
 }
 
 export function DaysScreen() {
@@ -41,10 +43,10 @@ export function DaysScreen() {
         ? `${name} unlocked — the planner may move this night.`
         : !day
           ? `Couldn't fit a night in ${name} with ${settings.days} days — try adding a day.`
-          : change.kind === 'sleep'
+          : change.kind === 'sleep' || change.kind === 'move'
             ? `Day ${day.day} now ends in ${name}. Later days re-balanced.`
             : `${name} locked for Day ${day.day} — it stays when you change days or pace.`;
-    if (change.kind === 'sleep' && day) setOpen(day.day);
+    if ((change.kind === 'sleep' || change.kind === 'move') && day) setOpen(day.day);
     setToast({ text, undo: change.prev });
     setChange(undefined);
     window.clearTimeout(timer.current);
@@ -52,9 +54,20 @@ export function DaysScreen() {
   }, [change, plan, settings.days]);
   useEffect(() => () => window.clearTimeout(timer.current), []);
 
+  const prev = (): StopChange['prev'] => ({
+    pinned: settings.pinned,
+    restDays: settings.restDays,
+    days: settings.days,
+    variants: settings.variants,
+    customRoutes: settings.customRoutes,
+  });
   const toggleStop = (stopId: string, kind: StopChange['kind']) => {
-    setChange({ stopId, kind, prev: { pinned: settings.pinned, restDays: settings.restDays, days: settings.days } });
+    setChange({ stopId, kind, prev: prev() });
     dispatch({ type: 'togglePin', stopId });
+  };
+  const changeEnd = (day: DayRef, stopId: string) => {
+    setChange({ stopId, kind: 'move', prev: prev() });
+    dispatch({ type: 'changeDayEnd', day, stopId });
   };
 
   return (
@@ -67,7 +80,7 @@ export function DaysScreen() {
       ))}
       <ol className="timeline">
         {plan.days.map((d) => (
-          <DayCard key={d.day} d={d} open={open === d.day} onToggle={() => setOpen(open === d.day ? undefined : d.day)} onStop={toggleStop} />
+          <DayCard key={d.day} d={d} open={open === d.day} onToggle={() => setOpen(open === d.day ? undefined : d.day)} onStop={toggleStop} onChangeEnd={changeEnd} />
         ))}
       </ol>
       <div className="toast-slot" aria-live="polite">
@@ -90,8 +103,21 @@ export function DaysScreen() {
   );
 }
 
-function DayCard({ d, open, onToggle, onStop }: { d: PlanDay; open: boolean; onToggle: () => void; onStop: (stopId: string, kind: StopChange['kind']) => void }) {
-  const { settings, dispatch } = useStore();
+function DayCard({
+  d,
+  open,
+  onToggle,
+  onStop,
+  onChangeEnd,
+}: {
+  d: PlanDay;
+  open: boolean;
+  onToggle: () => void;
+  onStop: (stopId: string, kind: StopChange['kind']) => void;
+  onChangeEnd: (day: DayRef, stopId: string) => void;
+}) {
+  const { settings, plan, dispatch } = useStore();
+  const [picking, setPicking] = useState(false);
   const cur = currencyFor(settings.currency);
   const stay = STAYS.find((s) => s.id === settings.stay)!;
   const overnight = d.overnight ? STOP_BY_ID[d.overnight] : undefined;
@@ -178,9 +204,34 @@ function DayCard({ d, open, onToggle, onStop }: { d: PlanDay; open: boolean; onT
                   );
                 })}
               </div>
+              {d.overnight && (
+                <div className="day-actions">
+                  <button type="button" className="btn ghost small" onClick={() => setPicking(true)}>
+                    Change destination
+                  </button>
+                </div>
+              )}
               {d.warnings.map((w) => (
                 <Warning key={w.text} w={w} />
               ))}
+              {d.overnight && (
+                <StopPicker
+                  open={picking}
+                  onClose={() => setPicking(false)}
+                  title={`Day ${d.day}: ${stopName(d.from)} → …`}
+                  hint={`Pick where to sleep instead of ${stopName(d.to)}. The route is re-drawn through it on the app's roads, and both ends of today are pinned.`}
+                  options={
+                    picking
+                      ? dayEndOptions(settings, plan.route, dayRef(d)).map((o) => ({
+                          id: o.id,
+                          detail: `${fmtKm(o.km)} from ${stopName(d.from)} by road`,
+                          tag: o.onRoute ? 'on your route' : undefined,
+                        }))
+                      : []
+                  }
+                  onPick={(stopId) => onChangeEnd(dayRef(d), stopId)}
+                />
+              )}
             </>
           )}
 
@@ -238,6 +289,10 @@ function DayCard({ d, open, onToggle, onStop }: { d: PlanDay; open: boolean; onT
       )}
     </li>
   );
+}
+
+function dayRef(d: PlanDay): DayRef {
+  return { from: d.from, to: d.to, via: d.via, sectionIds: [...new Set(d.legs.map((l) => l.sectionId))] };
 }
 
 function RoadBadges({ roads }: { roads: RoadRef[] }) {

@@ -3,6 +3,7 @@ import { describeSeg, lineFingerprint, namedShare, violations, type RoadSeg } fr
 import { LEG_ROADS } from './geo/legRoads';
 import { LEG_GEOMETRY } from './geo/legs';
 import { SCOOTER_RULES } from './scooterRules';
+import { LINKS } from './links';
 import { SECTIONS } from './sections';
 
 /**
@@ -24,6 +25,7 @@ for (const s of SECTIONS) {
     }
   }
 }
+for (const l of LINKS) if (!LEGS.has(`${l.from}>${l.to}`)) LEGS.set(`${l.from}>${l.to}`, l.road);
 const SNAPPED = [...LEGS.keys()].filter((k) => LEG_GEOMETRY[k]);
 
 describe('map lines vs scooter rules', () => {

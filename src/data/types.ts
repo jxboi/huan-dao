@@ -56,6 +56,16 @@ export interface Leg {
   warnings?: RoadWarning[];
 }
 
+/**
+ * A road between two stops that isn't part of any preset variant (src/data/links.ts). Custom routes can use it.
+ * `road` lists roads in `from` → `to` riding order.
+ */
+export interface Link extends Leg {
+  from: string;
+  /** 1–3, like Variant.difficulty. */
+  difficulty: 1 | 2 | 3;
+}
+
 export interface Variant {
   id: string;
   name: string;

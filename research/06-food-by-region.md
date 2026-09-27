@@ -22,6 +22,7 @@ Taiwan is a food trip disguised as a road trip. Everywhere: 7-Eleven / FamilyMar
 | Chiayi | Turkey rice (雞肉飯), fish-head casserole (砂鍋魚頭) | Wenhua Road night market |
 | Changhua / Lukang | Bawan (肉圓), Lukang ox-tongue cakes, oyster omelette | Lukang Old Street |
 | Taichung | Bubble tea birthplace (Chun Shui Tang), sun cakes (太陽餅), Fengjia night market | Fengjia, Yizhong St |
+| Puli | Rice noodles (米粉), water bamboo shoots (茭白筍), Shaoxing wine and wine ice cream at the Puli winery — added Sep 2026, ⚠ VERIFY | Puli winery, town market |
 | Sun Moon Lake | Thao-style dishes, Assam black tea, president fish (曲腰魚) | Ita Thao |
 | Alishan | High-mountain oolong, wasabi, bento | Alishan village |
 | Hsinchu | Rice noodles (米粉), meatballs (貢丸), Hakka lei cha (擂茶) in Beipu | City God Temple area |

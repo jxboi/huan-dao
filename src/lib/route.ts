@@ -2,6 +2,7 @@ import { RIDE_OVERHEAD } from '../data/costs';
 import { SECTIONS } from '../data/sections';
 import type { RoadWarning, Section, Variant } from '../data/types';
 import type { Direction } from '../state/settings';
+import { CUSTOM_VARIANT, customVariant } from './network';
 
 export interface RouteLeg {
   from: string;
@@ -33,11 +34,14 @@ export interface RouteOptions {
   startHub: string;
   direction: Direction;
   variants: Record<string, string>;
+  /** sectionId → your stops (clockwise), used where variants[sectionId] is 'custom'. */
+  customRoutes?: Record<string, string[]>;
   /** Multiplies average speeds (e.g. heavier bikes). */
   speedFactor?: number;
 }
 
-export function variantFor(section: Section, variants: Record<string, string>): Variant {
+export function variantFor(section: Section, variants: Record<string, string>, customRoutes: Record<string, string[]> = {}): Variant {
+  if (variants[section.id] === CUSTOM_VARIANT && customRoutes[section.id]) return customVariant(section, customRoutes[section.id]);
   return section.variants.find((v) => v.id === variants[section.id]) ?? section.variants.find((v) => v.id === section.defaultVariant)!;
 }
 
@@ -59,7 +63,7 @@ export function buildRoute(opts: RouteOptions): Route {
   const sections = orderedSections(opts.startHub, opts.direction).map(({ section, reversed }) => ({
     section,
     reversed,
-    variant: variantFor(section, opts.variants),
+    variant: variantFor(section, opts.variants, opts.customRoutes),
   }));
 
   const points: string[] = [sections[0].reversed ? sections[0].section.to : sections[0].section.from];

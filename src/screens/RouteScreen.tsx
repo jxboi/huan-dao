@@ -1,11 +1,14 @@
 import { useEffect, useState } from 'react';
 import { RouteMap } from '../components/RouteMap';
+import { StopPicker } from '../components/StopPicker';
 import { Card, Dots, Warning } from '../components/ui';
 import { RIDE_OVERHEAD, VEHICLES } from '../data/costs';
-import type { Variant } from '../data/types';
+import { STOP_BY_ID } from '../data/stops';
+import type { Section, Variant } from '../data/types';
 import { LEG_GEOMETRY } from '../data/geo/legs';
 import { fmtHours, fmtKm, googleMapsDirections, stopName } from '../lib/format';
 import { legKey } from '../lib/geo';
+import { CUSTOM_VARIANT, NETWORK_STOPS, addedKm, customVariant, expandStops } from '../lib/network';
 import { variantStops } from '../lib/route';
 import { useStore } from '../state/store';
 
@@ -47,7 +50,10 @@ export function RouteScreen() {
         {fmtKm(plan.totalKm)} · {settings.direction === 'ccw' ? 'counter-clockwise' : 'clockwise'} from {stopName(settings.startHub)}
       </div>
       <h1 className="display small-display">Choose your roads</h1>
-      <p className="muted small">Pick a way through each section — coast, mountains or the quick road. Days and budget update instantly. {mapNote}</p>
+      <p className="muted small">
+        Pick a way through each section — coast, mountains or the quick road — or build your own through the towns you want. Days and budget update
+        instantly. {mapNote}
+      </p>
     </header>
   );
 
@@ -86,6 +92,7 @@ export function RouteScreen() {
               </button>
             );
           })}
+          <CustomOption section={section} chosen={chosen} reversed={reversed} speedFactor={speedFactor} />
         </div>
         {warnings.map((w) => (
           <Warning key={w.text} w={w} />
@@ -129,6 +136,85 @@ export function RouteScreen() {
       </div>
       {head}
       {sections}
+    </div>
+  );
+}
+
+/** "Your route" for a section: your own stops, joined over the road network. Shown under the presets. */
+function CustomOption({ section, chosen, reversed, speedFactor }: { section: Section; chosen: Variant; reversed: boolean; speedFactor: number }) {
+  const { settings, dispatch } = useStore();
+  const [picking, setPicking] = useState(false);
+  const stops = settings.customRoutes[section.id];
+  const on = chosen.id === CUSTOM_VARIANT;
+
+  if (!stops) {
+    return (
+      <button type="button" className="variant build" onClick={() => dispatch({ type: 'customise', sectionId: section.id })}>
+        + Build your own route through this section
+      </button>
+    );
+  }
+
+  const v = on ? chosen : customVariant(section, stops);
+  const st = variantStats(v, speedFactor);
+  const path = expandStops(section, stops);
+  const passes = (reversed ? [...path].reverse() : path).slice(1, -1).filter((id) => !stops.includes(id));
+  const shownStops = reversed ? [...stops].reverse() : stops;
+  const onPath = new Set(path);
+  // Routing to every town is a few hundred shortest-path runs, so only when the picker is open.
+  const options = !picking
+    ? []
+    : NETWORK_STOPS.filter((id) => !onPath.has(id))
+        .map((id) => ({ id, km: addedKm(section, stops, id) }))
+        .filter((o) => o.km < Infinity)
+        .sort((a, b) => a.km - b.km)
+        .map(({ id, km }) => ({ id, detail: `+${fmtKm(km)}${STOP_BY_ID[id].overnight ? '' : ' · pass-through only'}` }));
+
+  return (
+    <div className={`variant ${on ? 'on' : ''}`}>
+      <button
+        type="button"
+        role="radio"
+        aria-checked={on}
+        className="variant-pick"
+        onClick={() => dispatch({ type: 'customise', sectionId: section.id })}
+      >
+        <div className="variant-top">
+          <span className="radio" aria-hidden />
+          <strong>{v.name}</strong>
+        </div>
+        <div className="variant-meta">
+          <span>{fmtKm(st.km)}</span>
+          <span>~{fmtHours(st.hours)}</span>
+          <span>Scenery <Dots n={st.scenic} label="Scenery" /></span>
+          <span>Difficulty <Dots n={v.difficulty} label="Difficulty" /></span>
+        </div>
+        <p>{v.summary}</p>
+      </button>
+      {on && (
+        <div className="custom-editor">
+          {shownStops.map((id) => (
+            <span key={id} className="stop-chip">
+              {stopName(id)}
+              <button type="button" aria-label={`Remove ${stopName(id)}`} onClick={() => dispatch({ type: 'removeStop', sectionId: section.id, stopId: id })}>
+                ×
+              </button>
+            </span>
+          ))}
+          <button type="button" className="btn ghost small" onClick={() => setPicking(true)}>
+            + Add a stop
+          </button>
+        </div>
+      )}
+      {passes.length > 0 && <div className="variant-via">also passes {passes.map(stopName).join(' · ')}</div>}
+      <StopPicker
+        open={picking}
+        onClose={() => setPicking(false)}
+        title="Add a stop"
+        hint="It goes in wherever it adds the fewest km. The extra distance is shown for each town."
+        options={options}
+        onPick={(id) => dispatch({ type: 'addStop', sectionId: section.id, stopId: id })}
+      />
     </div>
   );
 }

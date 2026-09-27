@@ -40,6 +40,9 @@ Status legend: ✅ done · 🟡 partial · ⬜ todo. Priorities from `research/1
 - ✅ Export: printable itinerary page (`#/print`, print CSS / save as PDF), `.ics` calendar (one all-day event per day),
   GPX (overnight waypoints + a route per riding day; tracks once road geometry exists)
 - ✅ Sign in with Facebook (Supabase) to sync the trip across devices; three-way merge, asks only when both sides changed
+- ✅ Custom routes: build your own route through any section (add/remove towns on the Route tab) and "Change
+  destination" on a day card; joined over a road network of every preset leg plus `links.ts` (new stop: Puli)
+- ⬜ More links/towns for custom routes (e.g. Cingjing, Jiji, Neiwan) — each needs a researched, snapped link
 - ⬜ Service worker for offline app shell (vite-plugin-pwa or hand-rolled)
 - ⬜ "Today" mode: current day card, progress check-ins, next petrol reminder on remote legs
 - ⬜ Per-night stay tier override (e.g., splurge in Hualien)

@@ -90,6 +90,18 @@ describe('migrate', () => {
     expect(s.variants).toEqual(defaultSettings().variants);
   });
 
+  it('keeps custom routes valid: known sections and stops, no hubs, custom only where a stop list exists', () => {
+    const s = migrate({
+      variants: { 'chiayi-taichung': 'custom', 'taichung-hsinchu': 'custom' },
+      customRoutes: { 'chiayi-taichung': ['puli', 'atlantis', 'chiayi', 'puli', 7], 'no-such-section': ['puli'] },
+    });
+    expect(s.customRoutes).toEqual({ 'chiayi-taichung': ['puli'] });
+    expect(s.variants['chiayi-taichung']).toBe('custom');
+    expect(s.variants['taichung-hsinchu']).toBe(defaultSettings().variants['taichung-hsinchu']);
+    expect(makePlan(s).route.points).toContain('puli');
+    expect(migrate({ customRoutes: 'x' }).customRoutes).toEqual({});
+  });
+
   it('always stamps the current version', () => {
     expect(migrate({ version: 0 }).version).toBe(SETTINGS_VERSION);
   });

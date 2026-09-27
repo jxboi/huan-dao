@@ -80,6 +80,14 @@ Tai 17 / Tai 1 (clockwise, Kaohsiung → Tainan: Tai 17 north out of Zuoying, Ta
    Tai 21 / Tai 14 / Tai 3 down to Taichung. ~185 km. Mountain roads.
 3. **Alishan + Sun Moon Lake (advanced)** — Tai 18 up to Alishan (2,200 m), Tai 18/21 over Tataka (2,600 m) to Sun Moon Lake, then Taichung. ~245 km, cold, steep, fog. 125cc works but slow. Plan 2 days.
 
+**Links for custom routes** (`src/data/links.ts`, Sep 2026). Riders can build their own route through any town the
+road network reaches (every preset leg + these links). Distances and roads from Valhalla `motor_scooter` routing
+(`npm run snap-legs`), share of the map line on the named road in brackets:
+* **Sun Moon Lake → Puli** — Tai 21, 20 km (72 %). **Puli → Taichung** — Tai 14 via Guoxing and Caotun, Tai 3 via
+  Wufeng, 64 km (80 %). Same road as the Sun Moon Lake → Taichung leg (76 km), which skirts Puli; going into town adds ~8 km.
+* **Changhua → Puli** — Tai 14 via Nantou, Caotun and Guoxing, 61 km (73 %; short local detours near Nantou). Tai 14
+  starts in Changhua city and ends at Wushe beyond Puli (zh.wikipedia 臺14線).
+
 ### Taichung ↔ Hsinchu
 1. **Tai 1 / Tai 61 coast** ~100 km. *Default.* (Tai 61 expressway sections are banned for scooters — follow signs; Tai 1 is safe.)
 2. **Hakka hills (Tai 3 / Tai 13 via Sanyi)** — woodcarving town Sanyi, Dahu strawberries, Beipu. ~145 km.

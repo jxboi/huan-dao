@@ -1,5 +1,5 @@
 /**
- * Generate road-snapped geometry for every leg in src/data/sections.ts and write it to
+ * Generate road-snapped geometry for every leg in src/data/sections.ts (and every link in src/data/links.ts) and write it to
  * src/data/geo/legs.ts. Also prints legs whose routed distance disagrees with the km in the
  * data by more than 20 % — a useful check on research/01 numbers.
  *
@@ -26,6 +26,7 @@
  */
 import { writeFileSync, readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
+import { LINKS } from '../src/data/links.ts';
 import { SECTIONS } from '../src/data/sections.ts';
 import { STOP_BY_ID } from '../src/data/stops.ts';
 import { decodePolyline, encodePolyline, pathKm, simplify, type LatLng } from '../src/lib/geo.ts';
@@ -58,6 +59,9 @@ const VIAS: Record<string, LatLng[]> = {
   'nanao>heping': [[24.4448, 121.7824], [24.3947, 121.7847], [24.3484, 121.7733]],
   // Tai 21 to Puli, Tai 14 via Guoxing to Caotun, Tai 3 via Wufeng; router otherwise takes County 136 over the hills.
   'sunmoonlake>taichung': [[23.918, 120.927], [23.966, 120.946], [24.042, 120.858], [23.9737, 120.6802], [24.061, 120.7]],
+  // The same road split at Puli (links.ts): Tai 21 up from the lake, then Tai 14 via Guoxing and Tai 3 via Wufeng.
+  'sunmoonlake>puli': [[23.918, 120.927]],
+  'puli>taichung': [[24.042, 120.858], [23.9737, 120.6802], [24.061, 120.7]],
   // Surface streets in and out of Taipei: routers otherwise use Taipei's expressways/elevated roads (市民大道高架,
   // 環東大道, 建國, 洲美, 中山高架), which ban white-plate scooters (research/02).
   'taipei>keelung': [[25.0415, 121.544], [25.052, 121.607], [25.063, 121.657]],
@@ -109,6 +113,10 @@ function allLegs() {
         from = l.to;
       }
     }
+  }
+  for (const l of LINKS) {
+    const key = `${l.from}>${l.to}`;
+    if (!legs.has(key)) legs.set(key, { from: l.from, to: l.to, km: l.km, road: l.road });
   }
   return legs;
 }

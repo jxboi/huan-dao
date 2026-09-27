@@ -65,6 +65,7 @@ export function makePlan(settings: TripSettings): Plan {
     startHub: settings.startHub,
     direction: settings.direction,
     variants: settings.variants,
+    customRoutes: settings.customRoutes,
     speedFactor: vehicle.speedFactor,
   });
   const pace = PACES[settings.pace];

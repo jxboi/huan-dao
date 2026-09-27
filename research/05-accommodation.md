@@ -17,6 +17,6 @@
 
 ## Good overnight towns (the app's `canOvernight` flag)
 High-quality overnight choices (score 3): Taipei, Taichung, Tainan, Kaohsiung, Kenting/Hengchun, Taitung, Hualien, Yilan/Luodong, Chiayi.
-Nice smaller stops (score 2): Jiufen, Toucheng, Lukang, Sun Moon Lake, Alishan, Donggang, Dulan, Chenggong, Chishang, Ruisui, Yuli, Su'ao, Hsinchu, Sanyi, Tamsui, Fulong, Taimali, Manzhou.
+Nice smaller stops (score 2): Jiufen, Toucheng, Lukang, Sun Moon Lake, Puli (added Sep 2026, ⚠ VERIFY), Alishan, Donggang, Dulan, Chenggong, Chishang, Ruisui, Yuli, Su'ao, Hsinchu, Sanyi, Tamsui, Fulong, Taimali, Manzhou.
 Possible but thin (score 1): Fengbin, Nan'ao, Heping, Dawu, Fangliao, Guangfu, Beimen, Changhua, Pinglin, Guanshan.
 Pass-through only (score 0): Shouka, Jingpu, Xuhai, Xincheng.

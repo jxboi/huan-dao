@@ -1,6 +1,8 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useReducer, type ReactNode } from 'react';
 import { makeBudget, type Budget } from '../lib/budget';
+import { addSectionStop, changeDayEnd, customiseSection, removeSectionStop, type DayRef } from '../lib/editRoute';
 import { makePlan, type Plan } from '../lib/planner';
+import { buildRoute } from '../lib/route';
 import { defaultSettings, migrate, type TripSettings } from './settings';
 
 const STORAGE_KEY = 'huandao.settings.v1';
@@ -8,6 +10,10 @@ const STORAGE_KEY = 'huandao.settings.v1';
 type Action =
   | { type: 'update'; patch: Partial<TripSettings> }
   | { type: 'setVariant'; sectionId: string; variantId: string }
+  | { type: 'customise'; sectionId: string }
+  | { type: 'addStop'; sectionId: string; stopId: string }
+  | { type: 'removeStop'; sectionId: string; stopId: string }
+  | { type: 'changeDayEnd'; day: DayRef; stopId: string }
   | { type: 'toggleSaved'; id: string }
   | { type: 'togglePin'; stopId: string }
   | { type: 'setRest'; stopId: string; nights: number }
@@ -21,6 +27,16 @@ function reducer(s: TripSettings, a: Action): TripSettings {
       return migrate({ ...s, ...a.patch });
     case 'setVariant':
       return { ...s, variants: { ...s.variants, [a.sectionId]: a.variantId } };
+    case 'customise':
+      return customiseSection(s, a.sectionId);
+    case 'addStop':
+      return addSectionStop(s, a.sectionId, a.stopId);
+    case 'removeStop':
+      return removeSectionStop(s, a.sectionId, a.stopId);
+    case 'changeDayEnd': {
+      const route = buildRoute({ startHub: s.startHub, direction: s.direction, variants: s.variants, customRoutes: s.customRoutes });
+      return changeDayEnd(s, route, a.day, a.stopId);
+    }
     case 'toggleSaved':
       return { ...s, saved: s.saved.includes(a.id) ? s.saved.filter((x) => x !== a.id) : [...s.saved, a.id] };
     case 'togglePin': {

@@ -18,12 +18,27 @@ state/store.tsx (useReducer + localStorage) ───► React context ───
 - **Section** — part of the loop between two hubs (Taipei, Yilan, Hualien, Taitung, Kenting, Kaohsiung, Tainan,
   Chiayi, Taichung, Hsinchu). Listed clockwise; each has ≥1 **Variant**.
 - **Variant** — a named way to ride a section: ordered **Legs** (`to`, `km`, `speed`, `road`, `scenic`, `warnings`).
+- **Link** (`links.ts`) — a road between two stops that no preset uses; with every preset leg it forms the road
+  network custom routes are built from.
 - **Attraction** — a sight/food spot tied to a `stopId`, with hours, cost, category, optional status warning.
 
 ## Settings (`src/state/settings.ts`)
-`TripSettings` holds everything user-adjustable: days, startDate, startHub, direction, pace, variants, pinned stops,
+`TripSettings` holds everything user-adjustable: days, startDate, startHub, direction, pace, variants, customRoutes, pinned stops,
 restDays, vehicle, riders, bikes, stay tier, food style, season mode, saved attractions, currency, checklist.
 `migrate()` makes any stored/partial object valid.
+
+## Custom routes (`src/lib/network.ts`, `src/lib/editRoute.ts`)
+- `network.ts` builds an undirected graph from every leg of every variant plus `LINKS` (a road stored both ways round,
+  like taipei>tamsui / tamsui>taipei, keeps both). `shortestPath` is Dijkstra by km, cached.
+- A section with `variants[id] === 'custom'` rides `customRoutes[id]` (your stops, clockwise): `customVariant` chains
+  section.from → stops → section.to with shortest paths and returns an ordinary `Variant`, so `route.ts`, the planner,
+  maps and exports need no special cases. A preset's own stops rebuild that preset exactly (tested).
+- A route is "bad" if it doubles back through a stop or passes another section's hub (the shortest way to a far-off
+  town is often most of the way round the island). Inserting picks the slot that adds the fewest km, avoiding bad routes.
+- `changeDayEnd` ("Change destination" on a day card): moves the pin and rest days from the old end to the new one, pins
+  the day's start; if the town isn't on the route, drops the old end and places the new one in today's sections or
+  the next, dropping stops you'd pass today that became detours (unless pinned, resting there or with saved sights).
+  `dayEndOptions` lists only towns that fit that way.
 
 ## Planner details (`src/lib/planner.ts`)
 1. **Load**: for each point, cumulative ride hours + hours for saved (non side-trip) attractions at that stop.
