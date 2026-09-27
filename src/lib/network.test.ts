@@ -3,7 +3,7 @@ import { LINKS } from '../data/links';
 import { SECTIONS, SECTION_BY_ID } from '../data/sections';
 import { STOPS } from '../data/stops';
 import { defaultSettings } from '../state/settings';
-import { changeDayEnd, customiseSection, dayEndOptions, removeSectionStop, sectionStops } from './editRoute';
+import { changeDayEnd, chooseDayRoute, customiseSection, dayEndOptions, dayRouteOptions, removeSectionStop, sectionStops } from './editRoute';
 import { customVariant, distanceKm, edgeBetween, expandStops, NETWORK_STOPS, presetStops, shortestPath } from './network';
 import { makePlan } from './planner';
 import { buildRoute } from './route';
@@ -100,5 +100,57 @@ describe('changeDayEnd', () => {
     const next = changeDayEnd(base, plan.route, { ...day!, sectionIds: day!.legs.map((l) => l.sectionId) }, 'changhua');
     expect(next.variants).toEqual(base.variants);
     expect(next.pinned).toContain('changhua');
+  });
+});
+
+describe('fast or scenic day routes', () => {
+  // Hsinchu → Puli, anticlockwise from Taipei with Puli on a custom Chiayi–Taichung route (the rider's day 2).
+  const base = { ...defaultSettings(), variants: { ...defaultSettings().variants, 'chiayi-taichung': 'custom' }, customRoutes: { 'chiayi-taichung': ['puli'] } };
+  const day = { from: 'hsinchu', to: 'puli', via: ['taichung', 'puli'], sectionIds: ['taichung-hsinchu', 'chiayi-taichung'] };
+
+  it('offers Tai 1 as fast and the Hakka Hills as scenic', () => {
+    const opts = dayRouteOptions(base, day);
+    expect(opts.map((o) => o.kind)).toEqual(['fast', 'scenic']);
+    const [fast, scenic] = opts;
+    expect(fast.current).toBe(true);
+    expect(fast.path).toEqual(['hsinchu', 'taichung', 'puli']);
+    expect(fast.km).toBe(176);
+    expect(scenic.variants['taichung-hsinchu']).toBe('hakka-hills');
+    expect(scenic.path).toEqual(['hsinchu', 'sanyi', 'taichung', 'puli']);
+    expect(scenic.km).toBe(209);
+    expect(scenic.hours).toBeGreaterThan(fast.hours);
+    expect(scenic.scenic).toBeGreaterThan(fast.scenic);
+  });
+
+  it('keeps the day\'s end: presets that skip Puli are not offered', () => {
+    for (const o of dayRouteOptions(base, day)) expect(o.variants['chiayi-taichung']).toBe('custom');
+  });
+
+  it('drops a scenic option that takes far longer than the fast one', () => {
+    // Taichung → Chiayi: Sun Moon Lake (183 km) and Alishan are well over 1.6× the Tai 1 plains ride.
+    const d = { from: 'taichung', to: 'chiayi', via: ['changhua', 'lukang', 'chiayi'], sectionIds: ['chiayi-taichung'] };
+    expect(dayRouteOptions(defaultSettings(), d)).toEqual([]);
+  });
+
+  it('marks the route you ride now', () => {
+    const s = { ...base, variants: { ...base.variants, 'taichung-hsinchu': 'hakka-hills' } };
+    const opts = dayRouteOptions(s, day);
+    expect(opts.find((o) => o.current)?.kind).toBe('scenic');
+  });
+
+  it('choosing one switches the section and pins both ends', () => {
+    const scenic = dayRouteOptions(base, day)[1];
+    const next = chooseDayRoute(base, day, scenic.variants);
+    expect(next.variants['taichung-hsinchu']).toBe('hakka-hills');
+    expect(next.pinned).toEqual(expect.arrayContaining(['hsinchu', 'puli']));
+    const plan = makePlan(next);
+    expect(plan.route.points).toContain('sanyi');
+    const nights = plan.days.map((d) => d.overnight);
+    expect(nights).toEqual(expect.arrayContaining(['hsinchu', 'puli']));
+  });
+
+  it('offers nothing when a day has only one way to go', () => {
+    const d = { from: 'kaohsiung', to: 'tainan', via: ['tainan'], sectionIds: ['kaohsiung-tainan'] };
+    expect(dayRouteOptions(defaultSettings(), d)).toEqual([]);
   });
 });

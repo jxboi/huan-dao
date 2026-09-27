@@ -39,6 +39,12 @@ restDays, vehicle, riders, bikes, stay tier, food style, season mode, saved attr
   the day's start; if the town isn't on the route, drops the old end and places the new one in today's sections or
   the next, dropping stops you'd pass today that became detours (unless pinned, resting there or with saved sights).
   `dayEndOptions` lists only towns that fit that way.
+- `dayRouteOptions` (Fast / Scenic switch on a day card): tries every combination of presets (plus your custom
+  route) for the day's sections, keeps those that still pass both of the day's ends, and offers the fewest riding hours
+  as **Fast** and the highest km-weighted `scenic` score as **Scenic**. Scenic has to score at least 0.2 higher and
+  take no more than 1.6× Fast's hours. `chooseDayRoute` sets those variants and pins both ends; the planner can
+  still split a much longer ride, and the toast says so. Routes stay hub to hub, so a scenic ride that skips a hub
+  (Hsinchu → Tai 3 → Puli without Taichung) needs links that bypass hubs first.
 
 ## Planner details (`src/lib/planner.ts`)
 1. **Load**: for each point, cumulative ride hours + hours for saved (non side-trip) attractions at that stop.
