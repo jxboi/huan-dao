@@ -6,6 +6,7 @@ import { MonthPicker } from '../components/MonthPicker';
 import { RouteMap } from '../components/RouteMap';
 import { ShareCard } from '../components/ShareCard';
 import { Sheet } from '../components/Sheet';
+import { SyncCard } from '../components/SyncCard';
 import { IconArrow } from '../components/icons';
 import { Choice, Field, Note, Stepper } from '../components/ui';
 import { currencyFor } from '../lib/budget';
@@ -137,6 +138,8 @@ export function PlanScreen({ go }: { go: (t: Tab, sub?: string) => void }) {
       </nav>
 
       <ShareCard onPrint={() => go('print')} onPickDate={() => setSheet('date')} />
+
+      <SyncCard />
 
       <div className="center">
         <button

@@ -39,6 +39,7 @@ Status legend: ✅ done · 🟡 partial · ⬜ todo. Priorities from `research/1
   opening a link asks before replacing an existing trip, keeps the receiver's packing list
 - ✅ Export: printable itinerary page (`#/print`, print CSS / save as PDF), `.ics` calendar (one all-day event per day),
   GPX (overnight waypoints + a route per riding day; tracks once road geometry exists)
+- ✅ Sign in with Facebook (Supabase) to sync the trip across devices; three-way merge, asks only when both sides changed
 - ⬜ Service worker for offline app shell (vite-plugin-pwa or hand-rolled)
 - ⬜ "Today" mode: current day card, progress check-ins, next petrol reminder on remote legs
 - ⬜ Per-night stay tier override (e.g., splurge in Hualien)

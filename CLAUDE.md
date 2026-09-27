@@ -12,7 +12,8 @@ motorbike loop around Taiwan. Read this file, then `docs/ARCHITECTURE.md` and `d
 4. **Don't break saved state.** User settings persist in localStorage (`huandao.settings.v1`). If you change
    `TripSettings`, extend `migrate()` in `src/state/settings.ts` (and bump `SETTINGS_VERSION` if the shape changes
    incompatibly).
-5. **Stay dependency-light.** Current runtime deps: react, react-dom, leaflet. Justify new ones.
+5. **Stay dependency-light.** Current runtime deps: react, react-dom, leaflet, @supabase/supabase-js
+   (optional cloud sync, lazy-loaded). Justify new ones.
 6. Before committing: `npm run typecheck && npm test && npm run build`.
 
 ## How the planner works (short)

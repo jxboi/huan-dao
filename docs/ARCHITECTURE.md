@@ -56,6 +56,21 @@ restDays, vehicle, riders, bikes, stay tier, food style, season mode, saved attr
   `components/download.ts` saves the text. `screens/PrintScreen.tsx` (`#/print`, outside the tab bar) is the whole
   plan as text for printing or saving as PDF.
 
+## Cloud sync (`src/state/cloud.tsx`, `src/lib/sync.ts`)
+- Optional. Enabled only when `VITE_SUPABASE_URL` + `VITE_SUPABASE_ANON_KEY` are set (or the `NEXT_PUBLIC_SUPABASE_*`
+  names Vercel's Supabase integration provisions — `vite.config.ts` exposes the `NEXT_PUBLIC_` prefix). Otherwise the
+  sign-in card doesn't render and the SDK is never downloaded (it's a lazy `import()` chunk).
+- Sign-in: Supabase Auth, Facebook provider, PKCE redirect back to the app's own URL (hash routing is untouched; the
+  SDK strips `?code=`; `?error_description=` is shown on the card).
+- Storage: table `plans (user_id pk, settings jsonb, updated_at)` with owner-only RLS —
+  `supabase/migrations/20260927000000_plans.sql`. Cloud settings always go through `migrate()` on the way in.
+- Merge (`reconcile`, pure + tested): each device keeps `huandao.sync.v1` = the canonical JSON both sides last agreed
+  on. If only one side differs from it, that side wins silently; if both changed, `SyncCard` asks which to keep
+  (packing ticks from both are kept). Pulls on sign-in, tab refocus and `online`; local edits upsert after 1.2 s.
+- Setup: create a Facebook app (Facebook Login → valid OAuth redirect URI =
+  `https://<project>.supabase.co/auth/v1/callback`); in Supabase enable the Facebook provider with its App ID/secret,
+  add the app's URLs (incl. `http://localhost:5173/`) to Auth → URL Configuration → Redirect URLs, run the migration.
+
 ## Road geometry (`src/data/geo/legs.ts`, `scripts/snap-legs.ts`)
 - One Google-encoded polyline per leg, keyed `from>to` in **clockwise** order; counter-clockwise travel reverses it.
 - Generated, not hand-written: `npm run snap-legs` routes every leg in `SECTIONS` through an OSRM-compatible server
