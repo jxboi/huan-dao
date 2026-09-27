@@ -65,11 +65,14 @@ restDays, vehicle, riders, bikes, stay tier, food style, season mode, saved attr
 - Storage: table `plans (user_id pk, settings jsonb, updated_at)` with owner-only RLS —
   `supabase/migrations/20260927000000_plans.sql`. Cloud settings always go through `migrate()` on the way in.
 - Merge (`reconcile`, pure + tested): each device keeps `huandao.sync.v1` = the canonical JSON both sides last agreed
-  on. If only one side differs from it, that side wins silently; if both changed, `SyncCard` asks which to keep
+  on. If only one side differs from it, that side wins silently; if both changed, `SyncConflictPrompt` asks which to keep
   (packing ticks from both are kept). Pulls on sign-in, tab refocus and `online`; local edits upsert after 1.2 s.
 - Setup: create a Facebook app (Facebook Login → valid OAuth redirect URI =
   `https://<project>.supabase.co/auth/v1/callback`); in Supabase enable the Facebook provider with its App ID/secret,
   add the app's URLs (incl. `http://localhost:5173/`) to Auth → URL Configuration → Redirect URLs, run the migrations.
+- UI (`components/Account.tsx`): `AccountButton` in the top bar on every tab ("Sign in", or your photo with a sync
+  status dot) opens the account sheet; `SyncNudge` is a dismissible prompt on the Trip screen for signed-out riders
+  (dismissal kept in `huandao.syncNudge.dismissed`).
 - Account deletion: "Delete my account" calls the `delete_my_account()` RPC (security definer, deletes the caller's
   `auth.users` row; `plans` cascades). Facebook's required pages are static files in `public/`: `privacy.html`,
   `data-deletion.html` (+ `icon-1024.png` for the app icon). Keep them accurate if what's collected changes.

@@ -53,6 +53,13 @@ export const IconBook = () => (
   </Svg>
 );
 
+export const IconUser = () => (
+  <Svg>
+    <circle cx="12" cy="8" r="4" />
+    <path d="M4.5 20.5c1.2-3.6 4-5.5 7.5-5.5s6.3 1.9 7.5 5.5" />
+  </Svg>
+);
+
 export const IconArrow = () => (
   <Svg size={18}>
     <path d="M5 12h14M13 6l6 6-6 6" />

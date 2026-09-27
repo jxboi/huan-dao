@@ -9,6 +9,7 @@ import { GuideScreen } from './screens/GuideScreen';
 import { Onboarding } from './screens/Onboarding';
 import { PlanScreen } from './screens/PlanScreen';
 import { PrintScreen } from './screens/PrintScreen';
+import { AccountButton, SyncConflictPrompt } from './components/Account';
 import { SharedPlanPrompt } from './components/SharedPlanPrompt';
 import { RouteScreen } from './screens/RouteScreen';
 import { useStore } from './state/store';
@@ -59,6 +60,7 @@ export default function App() {
   return (
     <>
       <SharedPlanPrompt />
+      <SyncConflictPrompt />
       {!settings.onboarded ? <Onboarding /> : tab === 'print' ? <PrintScreen go={go} /> : <Shell tab={tab} go={go} />}
     </>
   );
@@ -81,10 +83,13 @@ function Shell({ tab, go }: { tab: Tab; go: (t: Tab, sub?: string) => void }) {
             )}
           </div>
         </div>
-        <button className={`icon-btn ${tab === 'guide' ? 'on' : ''}`} onClick={() => go('guide')} aria-label="Rider guide">
-          <IconBook />
-          <span>Guide</span>
-        </button>
+        <div className="topbar-actions">
+          <button className={`icon-btn ${tab === 'guide' ? 'on' : ''}`} onClick={() => go('guide')} aria-label="Rider guide">
+            <IconBook />
+            <span>Guide</span>
+          </button>
+          <AccountButton />
+        </div>
       </header>
 
       <main>

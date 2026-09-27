@@ -35,6 +35,7 @@
   --caution: #8a4b0c;
   --caution-soft: #fbefd5;
   --info-soft: #e3eef2;
+  --good: #2f7a47;
   --good-soft: #e1efe3;
   --radius: 18px;
   --shadow: 0 1px 2px rgb(28 25 23 / 5%), 0 6px 20px rgb(28 25 23 / 6%);
@@ -61,6 +62,7 @@
     --caution: #f5c46a;
     --caution-soft: #3a2c0c;
     --info-soft: #172b33;
+    --good: #7bcf94;
     --good-soft: #15291b;
     --shadow: none;
     color-scheme: dark;
@@ -498,16 +500,30 @@ body:has(.sheet[open]) { overflow: hidden; }
 .share-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 16px; }
 .share-actions .btn { flex: 1; min-height: 44px; }
 
-.sync-card { margin: 0 16px 20px; }
-.sync-card h2 { font-size: 1.05rem; margin: 0 0 10px; }
-.sync-card p { margin: 10px 0 0; }
+.topbar-actions { display: flex; align-items: center; gap: 2px; flex: none; }
+.account-face { position: relative; display: block; width: 24px; height: 24px; }
+.account-btn.signed-in span:last-child { color: var(--muted); }
+.avatar { flex: none; display: block; border-radius: 50%; object-fit: cover; background: var(--surface-2); }
+.avatar-letter { display: grid; place-items: center; background: var(--primary-soft); color: var(--primary); font-weight: 800; }
+.status-dot { position: absolute; right: -2px; bottom: -2px; width: 10px; height: 10px; border-radius: 50%; border: 2px solid var(--bg); background: var(--muted); }
+.status-dot.synced { background: var(--good); }
+.status-dot.syncing { background: var(--primary); }
+.status-dot.offline { background: var(--caution); }
 .btn.fb { width: 100%; min-height: 44px; gap: 8px; background: #1877f2; color: #fff; }
+.btn.fb.small { width: auto; min-height: 40px; padding: 8px 14px; }
+.account-panel { display: flex; flex-direction: column; gap: 14px; }
+.account-panel p { margin: 0; }
+.account-perks { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px; }
+.account-perks li { position: relative; padding-left: 26px; }
+.account-perks li::before { content: '✓'; position: absolute; left: 0; top: 0; width: 18px; height: 18px; margin-top: 2px; border-radius: 50%; background: var(--good-soft); color: var(--good); font-size: 0.7rem; font-weight: 800; display: grid; place-items: center; }
 .sync-user { display: flex; align-items: center; gap: 12px; }
-.sync-user img, .sync-avatar { flex: none; width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
-.sync-avatar { display: grid; place-items: center; background: var(--primary-soft); color: var(--primary); font-weight: 800; }
 .sync-who { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 .sync-who strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .sync-error { color: var(--danger); }
+.sync-nudge { display: flex; align-items: center; gap: 12px; padding: 12px 8px 12px 14px; border-radius: var(--radius); background: var(--primary-soft); }
+.sync-nudge-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; font-size: 0.85rem; line-height: 1.35; }
+.sync-nudge-text strong { font-size: 0.92rem; }
+.sync-nudge-close { flex: none; width: 40px; height: 40px; margin-left: -6px; border: 0; background: none; color: var(--muted); font-size: 1.4rem; line-height: 1; border-radius: 50%; }
 .sync-option { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); margin: 14px 0 4px; }
 
 /* ── Printable itinerary (#/print) ──────────────────────────────────── */
