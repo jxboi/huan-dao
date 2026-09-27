@@ -79,6 +79,17 @@ describe('migrate', () => {
     expect(s.variants).toEqual(defaultSettings().variants);
   });
 
+  it('drops stop and section ids that no longer exist', () => {
+    const s = migrate({
+      pinned: ['dulan', 'atlantis'],
+      restDays: { hualien: 1, atlantis: 2 },
+      variants: { 'no-such-section': 'x' },
+    });
+    expect(s.pinned).toEqual(['dulan']);
+    expect(s.restDays).toEqual({ hualien: 1 });
+    expect(s.variants).toEqual(defaultSettings().variants);
+  });
+
   it('always stamps the current version', () => {
     expect(migrate({ version: 0 }).version).toBe(SETTINGS_VERSION);
   });

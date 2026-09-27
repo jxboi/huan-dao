@@ -2,7 +2,9 @@ import { RouteMap } from '../components/RouteMap';
 import { Card, Dots, Warning } from '../components/ui';
 import { RIDE_OVERHEAD, VEHICLES } from '../data/costs';
 import type { Variant } from '../data/types';
+import { LEG_GEOMETRY } from '../data/geo/legs';
 import { fmtHours, fmtKm, googleMapsDirections, stopName } from '../lib/format';
+import { legKey } from '../lib/geo';
 import { variantStops } from '../lib/route';
 import { useStore } from '../state/store';
 
@@ -17,6 +19,11 @@ export function RouteScreen() {
   const { settings, plan, dispatch } = useStore();
   const speedFactor = VEHICLES.find((v) => v.id === settings.vehicle)?.speedFactor ?? 1;
 
+  const legCount = plan.route.legs.length;
+  const straight = plan.route.legs.filter((l) => !LEG_GEOMETRY[legKey(l.from, l.to)] && !LEG_GEOMETRY[legKey(l.to, l.from)]).length;
+  const mapNote =
+    straight === 0 ? 'Map lines follow the roads.' : straight === legCount ? 'Map lines are schematic.' : `Map lines follow the roads, except ${straight} of ${legCount} legs drawn straight.`;
+
   return (
     <div className="screen">
       <div className="bleed-map">
@@ -28,7 +35,7 @@ export function RouteScreen() {
           {fmtKm(plan.totalKm)} · {settings.direction === 'ccw' ? 'counter-clockwise' : 'clockwise'} from {stopName(settings.startHub)}
         </div>
         <h1 className="display small-display">Choose your roads</h1>
-        <p className="muted small">Pick a way through each section — coast, mountains or the quick road. Days and budget update instantly. Map lines are schematic.</p>
+        <p className="muted small">Pick a way through each section — coast, mountains or the quick road. Days and budget update instantly. {mapNote}</p>
       </header>
 
       {plan.route.sections.map(({ section, variant: chosen, reversed }) => {

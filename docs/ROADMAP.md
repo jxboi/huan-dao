@@ -31,7 +31,8 @@ Status legend: ✅ done · 🟡 partial · ⬜ todo. Priorities from `research/1
 - ✅ New variants: Pingxi Valley (Taipei → Yilan), Rift Valley + Hwy 23 (Hualien → Taitung); new stops Pingxi, Fuli, Donghe
 - ✅ Fixed Hwy 11 Fengbin/Chenggong leg split (was shorter than the straight line)
 - 🟡 Road-snapped geometry: plumbing, generator script and tests done; `src/data/geo/legs.ts` still empty — run
-  `npm run snap-legs` from a machine that can reach an OSRM server, review on the map, commit
+  `npm run snap-legs` (ideally `VALHALLA_URL=https://valhalla1.openstreetmap.de` for scooter routing) from a machine
+  that can reach the router, review on the map, commit
 
 ## v0.2 — Share & take it on the road
 - ✅ Share plan via URL (`#/plan?s=…`, base64url JSON of settings that differ from defaults) + share/copy button;

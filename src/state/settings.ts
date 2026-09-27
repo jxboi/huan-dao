@@ -1,5 +1,6 @@
 import { CURRENCIES, FOOD_STYLES, STAYS, VEHICLES, type FoodStyle, type SeasonMode, type StayTier, type VehicleId } from '../data/costs';
 import { HUBS, SECTIONS } from '../data/sections';
+import { STOP_BY_ID } from '../data/stops';
 
 export type Direction = 'ccw' | 'cw';
 export type Pace = 'relaxed' | 'moderate' | 'fast';
@@ -76,6 +77,8 @@ export function migrate(raw: unknown): TripSettings {
   for (const sec of SECTIONS) {
     if (!sec.variants.some((v) => v.id === s.variants[sec.id])) s.variants[sec.id] = sec.defaultVariant;
   }
+  // …and sections that no longer exist.
+  for (const k of Object.keys(s.variants)) if (!SECTIONS.some((sec) => sec.id === k)) delete s.variants[k];
   // Enums, ids and collections: anything unknown falls back to the default, so a bad value in
   // storage (or a hand-edited/shared link) can never crash the planner.
   const oneOf = <T,>(v: unknown, ok: readonly T[], fallback: T): T => (ok.includes(v as T) ? (v as T) : fallback);
@@ -88,10 +91,11 @@ export function migrate(raw: unknown): TripSettings {
   s.season = oneOf(s.season, ['auto', 'low', 'peak'] as const, base.season);
   s.currency = oneOf(s.currency, CURRENCIES.map((c) => c.code), base.currency);
   s.startDate = typeof s.startDate === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s.startDate) ? s.startDate : '';
-  s.pinned = stringList(s.pinned);
+  s.pinned = stringList(s.pinned).filter((id) => id in STOP_BY_ID);
   s.saved = stringList(s.saved);
   s.restDays = Object.fromEntries(
     Object.entries(isRecord(s.restDays) ? s.restDays : {})
+      .filter(([k]) => k in STOP_BY_ID)
       .map(([k, v]) => [k, clamp(Math.round(Number(v) || 0), 0, 10)] as const)
       .filter(([, v]) => v > 0),
   );

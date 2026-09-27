@@ -59,7 +59,8 @@ restDays, vehicle, riders, bikes, stay tier, food style, season mode, saved attr
 ## Road geometry (`src/data/geo/legs.ts`, `scripts/snap-legs.ts`)
 - One Google-encoded polyline per leg, keyed `from>to` in **clockwise** order; counter-clockwise travel reverses it.
 - Generated, not hand-written: `npm run snap-legs` routes every leg in `SECTIONS` through an OSRM-compatible server
-  (`OSRM_URL`, default the public demo, `exclude=motorway`), simplifies to ~30 m and writes the file. It skips legs that
+  (`OSRM_URL`, default the public demo, `exclude=motorway`) or, with `VALHALLA_URL` set, Valhalla's `motor_scooter`
+  costing (no motorways, honours scooter access tags — preferred), simplifies to ~30 m and writes the file. It skips legs that
   already have geometry (`--force` to redo, `--only=a>b,…`, `--dry-run`) and lists legs whose routed km differs from the
   data by >20 % — use that to check `sections.ts` distances. Check new lines on the map: expressways tagged as trunk
   roads can still slip through; pin a road with `VIAS` in the script. A test checks keys are real legs and lines start
