@@ -19,8 +19,9 @@ Status legend: ✅ done · 🟡 partial · ⬜ todo. Priorities from `research/1
 - ⬜ Per-night stay tier override (e.g., splurge in Hualien)
 
 ## v0.3 — Better data
-- ⬜ Road-snapped leg geometry (pre-compute with OSRM/GraphHopper *scooter/moped profile*, avoid motorways; store
-  simplified GeoJSON in `src/data/geo/`)
+- 🟡 Road-snapped leg geometry: pipeline + map support done (`npm run geo`, Valhalla `motor_scooter`, encoded
+  polylines in `src/data/geo/legs.json`); geometry still needs generating and eyeballing per leg (add `via` hints where
+  the router picks a different road than `road`)
 - ⬜ More variants: Tai 61/Tai 17 coast, Hwy 23 (Fuli–Donghe), Southern Cross-Island (Tai 20), Hehuanshan (Tai 14A),
   Pingxi detour, Alishan-only
 - ⬜ Petrol & Gogoro swap station layer on remote legs

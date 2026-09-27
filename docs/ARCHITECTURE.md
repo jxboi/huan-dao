@@ -39,7 +39,12 @@ restDays, vehicle, riders, bikes, stay tier, food style, season mode, saved attr
 - `App.tsx`: hash routing (`#/plan`, `#/route`, `#/days`, `#/explore`, `#/budget`, `#/guide`), sticky top bar with
   running summary, bottom tab bar.
 - `components/ui.tsx`: Card, Stepper, Segmented, Choice, Chips, Field, Stat, Warning, Note, Dots.
-- `components/RouteMap.tsx`: Leaflet, OSM tiles, schematic polylines per day, numbered overnight pins.
+- `components/RouteMap.tsx`: Leaflet, OSM tiles, polylines per day, numbered overnight pins. Legs follow road
+  geometry from `data/geo/legs.json` (lazy-loaded chunk), falling back to straight stop-to-stop lines.
+- Road geometry: `npm run geo` (`scripts/build-geometry.ts`) routes every clockwise leg in `SECTIONS` with Valhalla's
+  `motor_scooter` costing (no motorways), simplifies it (Douglas–Peucker, 25 m) and stores an encoded polyline + the
+  routed km per `from>to` key. Reversed legs reuse the same geometry. Force a road with a leg's `via` points.
+  `lib/geometry.test.ts` fails if a stored leg no longer exists or its ends drift > 3 km from its stops.
 - Styling: single `styles/app.css`, CSS variables with automatic dark mode.
 
 ## Testing

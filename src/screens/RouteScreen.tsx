@@ -1,8 +1,9 @@
-import { RouteMap } from '../components/RouteMap';
+import { RouteMap, useLegGeometry } from '../components/RouteMap';
 import { Card, Dots, Note, Warning } from '../components/ui';
 import { RIDE_OVERHEAD, VEHICLES } from '../data/costs';
 import type { Variant } from '../data/types';
 import { fmtHours, fmtKm, googleMapsDirections, stopName } from '../lib/format';
+import { hasLegGeometry } from '../lib/geometry';
 import { variantStops } from '../lib/route';
 import { useStore } from '../state/store';
 
@@ -16,13 +17,16 @@ function variantStats(v: Variant, speedFactor: number) {
 export function RouteScreen() {
   const { settings, plan, dispatch } = useStore();
   const speedFactor = VEHICLES.find((v) => v.id === settings.vehicle)?.speedFactor ?? 1;
+  const geo = useLegGeometry();
+  const unsnapped = plan.route.legs.filter((l) => !hasLegGeometry(geo, l.from, l.to)).length;
 
   return (
     <div className="screen">
       <Card className="flush">
         <RouteMap plan={plan} />
         <div className="map-caption">
-          {fmtKm(plan.totalKm)} loop · {settings.direction === 'ccw' ? 'counter-clockwise' : 'clockwise'} from {stopName(settings.startHub)} · lines are schematic
+          {fmtKm(plan.totalKm)} loop · {settings.direction === 'ccw' ? 'counter-clockwise' : 'clockwise'} from {stopName(settings.startHub)}
+          {geo && (unsnapped === 0 ? ' · lines follow roads' : ` · ${unsnapped} of ${plan.route.legs.length} legs drawn as straight lines`)}
         </div>
       </Card>
 

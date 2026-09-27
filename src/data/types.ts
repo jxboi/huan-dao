@@ -50,6 +50,12 @@ export interface Leg {
   /** 1–3: how scenic the leg is (used for badges). */
   scenic?: 1 | 2 | 3;
   warnings?: RoadWarning[];
+  /**
+   * Optional [lat, lng] points the road-snapping script must pass through,
+   * to force the router onto `road` (e.g. the coast road instead of a
+   * shortcut). Only used by `npm run geo`.
+   */
+  via?: [number, number][];
 }
 
 export interface Variant {

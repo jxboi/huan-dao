@@ -31,6 +31,8 @@ motorbike loop around Taiwan. Read this file, then `docs/ARCHITECTURE.md` and `d
   last leg must end at the section's `to` hub. Tests enforce this.
 - **New attraction**: add to `ATTRACTIONS` with `stopId` of the nearest stop. `highlight: true` shows it by default on
   the day; `sideTrip: true` for things needing extra time (islands, gorges).
+- **New/changed leg**: run `npm run geo` to route it (needs network access to the Valhalla server), check it on the map,
+  and add `via` points to the leg if the router picked a different road.
 - Run `npm test` — data-integrity tests catch broken references.
 
 ## Known limitations / good next tasks

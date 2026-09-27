@@ -1,13 +1,36 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { STOP_BY_ID } from '../data/stops';
 import type { Plan } from '../lib/planner';
 import { stopName } from '../lib/format';
+import { joinPaths, legPath, type LegGeometryFile } from '../lib/geometry';
+import type { LatLng } from '../lib/polyline';
+
+const coords = (id: string): LatLng | undefined => {
+  const s = STOP_BY_ID[id];
+  return s ? [s.lat, s.lng] : undefined;
+};
+
+/** Road geometry is lazy-loaded so it stays out of the main bundle. */
+let geoPromise: Promise<LegGeometryFile> | null = null;
+export function useLegGeometry(): LegGeometryFile | null {
+  const [geo, setGeo] = useState<LegGeometryFile | null>(null);
+  useEffect(() => {
+    let live = true;
+    geoPromise ??= import('../data/geo/legs.json').then((m) => m.default as LegGeometryFile);
+    geoPromise.then((g) => live && setGeo(g), () => {});
+    return () => {
+      live = false;
+    };
+  }, []);
+  return geo;
+}
 
 /**
- * Leaflet map of the planned loop. Lines are drawn stop-to-stop (schematic,
- * not snapped to roads). Overnight stops get numbered day markers.
+ * Leaflet map of the planned loop. Legs follow pre-computed road geometry
+ * (src/data/geo/legs.json, built by `npm run geo`); legs without geometry are
+ * drawn as straight stop-to-stop lines. Overnight stops get numbered day markers.
  *
  * Tiles: OpenStreetMap standard tiles. For heavy production use, swap for a
  * tile provider with an API key (see docs/ROADMAP.md).
@@ -16,6 +39,7 @@ export function RouteMap({ plan, highlightDay, height = 360 }: { plan: Plan; hig
   const el = useRef<HTMLDivElement>(null);
   const map = useRef<L.Map | null>(null);
   const layer = useRef<L.LayerGroup | null>(null);
+  const geo = useLegGeometry();
 
   useEffect(() => {
     if (!el.current || map.current) return;
@@ -40,8 +64,7 @@ export function RouteMap({ plan, highlightDay, height = 360 }: { plan: Plan; hig
     const bounds: L.LatLngExpression[] = [];
     plan.days.forEach((d) => {
       if (d.kind !== 'ride') return;
-      const ids = [d.from, ...d.via];
-      const latlngs = ids.map((id) => STOP_BY_ID[id]).filter(Boolean).map((s) => [s.lat, s.lng] as L.LatLngTuple);
+      const latlngs = joinPaths(d.legs.map((l) => legPath(geo, l.from, l.to, coords).points));
       bounds.push(...latlngs);
       const active = highlightDay === undefined || highlightDay === d.day;
       L.polyline(latlngs, {
@@ -83,13 +106,12 @@ export function RouteMap({ plan, highlightDay, height = 360 }: { plan: Plan; hig
 
     if (highlightDay !== undefined) {
       const d = plan.days.find((x) => x.day === highlightDay);
-      const ids = d ? [d.from, ...d.via] : [];
-      const pts = ids.map((id) => STOP_BY_ID[id]).filter(Boolean).map((s) => [s.lat, s.lng] as L.LatLngTuple);
+      const pts = d ? joinPaths(d.legs.map((l) => legPath(geo, l.from, l.to, coords).points)) : [];
       if (pts.length) m.fitBounds(L.latLngBounds(pts), { padding: [30, 30], maxZoom: 11 });
     } else if (bounds.length) {
       m.fitBounds(L.latLngBounds(bounds), { padding: [20, 20] });
     }
-  }, [plan, highlightDay]);
+  }, [plan, highlightDay, geo]);
 
   return <div ref={el} className="map" style={{ height }} role="img" aria-label="Map of the planned route around Taiwan" />;
 }
