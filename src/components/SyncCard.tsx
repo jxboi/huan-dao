@@ -13,37 +13,53 @@ const STATUS_TEXT: Record<SyncStatus, string> = {
 
 /** Sign in with Facebook to keep the trip in sync across devices. Renders nothing when sync isn't configured. */
 export function SyncCard() {
-  const { available, status, user, error, signIn, signOut } = useCloud();
+  const { available, status, user, error, signIn, signOut, deleteAccount } = useCloud();
   if (!available) return null;
 
   return (
     <section className="sync-card" aria-labelledby="sync-h">
       <h2 id="sync-h">Your trip on every device</h2>
       {user ? (
-        <div className="sync-user">
-          {user.avatar ? <img src={user.avatar} alt="" width={40} height={40} referrerPolicy="no-referrer" /> : <span className="sync-avatar" aria-hidden>{user.name[0]}</span>}
-          <div className="sync-who">
-            <strong>{user.name}</strong>
-            <span className="muted small" role="status">
-              {STATUS_TEXT[status]}
-            </span>
+        <>
+          <div className="sync-user">
+            {user.avatar ? <img src={user.avatar} alt="" width={40} height={40} referrerPolicy="no-referrer" /> : <span className="sync-avatar" aria-hidden>{user.name[0]}</span>}
+            <div className="sync-who">
+              <strong>{user.name}</strong>
+              <span className="muted small" role="status">
+                {STATUS_TEXT[status]}
+              </span>
+            </div>
+            <button type="button" className="btn ghost small" onClick={signOut}>
+              Sign out
+            </button>
           </div>
-          <button type="button" className="btn ghost small" onClick={signOut}>
-            Sign out
-          </button>
-        </div>
+          <p className="small">
+            <button
+              type="button"
+              className="text-btn muted"
+              onClick={() => {
+                if (confirm('Delete your account and the trip saved in it? Your plan stays on this device.')) deleteAccount();
+              }}
+            >
+              Delete my account
+            </button>{' '}
+            · <a href="./privacy.html">Privacy</a>
+          </p>
+        </>
       ) : (
         <>
           <button type="button" className="btn fb" onClick={signIn} disabled={status === 'loading'}>
             <FacebookMark />
             Continue with Facebook
           </button>
-          <p className="muted small">Sign in to open this plan on your phone and laptop. Without signing in, everything stays on this device.</p>
+          <p className="muted small">
+            Sign in to open this plan on your phone and laptop. Without signing in, everything stays on this device. <a href="./privacy.html">Privacy</a>
+          </p>
         </>
       )}
       {error && (
         <p className="sync-error small" role="alert">
-          Sign-in didn't work: {error}
+          Something went wrong: {error}
         </p>
       )}
       <SyncConflictPrompt />
