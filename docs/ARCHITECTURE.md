@@ -77,9 +77,16 @@ restDays, vehicle, riders, bikes, stay tier, food style, season mode, saved attr
   (`OSRM_URL`, default the public demo, `exclude=motorway`) or, with `VALHALLA_URL` set, Valhalla's `motor_scooter`
   costing (no motorways, honours scooter access tags — preferred), simplifies to ~30 m and writes the file. It skips legs that
   already have geometry (`--force` to redo, `--only=a>b,…`, `--dry-run`) and lists legs whose routed km differs from the
-  data by >20 % — use that to check `sections.ts` distances. Check new lines on the map: expressways tagged as trunk
-  roads can still slip through; pin a road with `VIAS` in the script. A test checks keys are real legs and lines start
-  and end within 3 km of their stops.
+  data by >20 % — use that to check `sections.ts` distances. Pin a road with `VIAS` in the script. A test checks keys are
+  real legs and lines start and end within 3 km of their stops.
+- **Scooter-rule guard.** Every line is map-matched with Valhalla `trace_attributes` into the roads it follows (names/refs,
+  OSM road class, tunnel, km), written to `src/data/geo/legRoads.ts` with a fingerprint of the line (test-only, not
+  bundled). `src/data/scooterRules.ts` holds the rules white-plate scooters ride by (freeways; trunk-class expressways
+  and Taipei elevated roads; Suhua Improved Highway tunnels except Renshui/Zhongren), with sources in research/02; logic
+  is in `src/lib/roadCheck.ts`. `snap-legs` won't save a newly routed line that breaks a rule (`--allow-banned` to
+  override), and `src/data/scooterRules.test.ts` fails on: a banned road, stale road data (`--roads-only` re-checks lines
+  without re-routing), or a line under 50 % on the roads its `road` string names (known exceptions in `OFF_NAMED_ROADS`,
+  which may only improve). OSM often doesn't tag Taiwan's scooter bans, which is why the rules exist.
 
 ## Holidays (`src/data/holidays.ts`, `src/lib/holidays.ts`)
 - Breaks as inclusive date ranges (weekends included) per year in `HOLIDAY_YEARS`; `derived: true` marks ranges worked

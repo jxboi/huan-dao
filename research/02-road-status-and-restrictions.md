@@ -7,6 +7,19 @@ Provincial Expressways (快速公路, e.g. Tai 61, Tai 64, Tai 88) are also bann
 partially banned — follow blue/red signage. The Hsuehshan Tunnel (Taipei↔Yilan)
 is freeway: scooters must go via Tai 2 (coast) or Tai 9 (Beiyi).
 
+**City expressways (Taipei).** White-plate scooters may not ride Taipei's expressways and elevated roads:
+堤頂大道, 環東大道, 水源快速道路, 環河南北快速道路, 信義快速道路, 洲美快速道路, 建國高架道路, 市民高架道路,
+基隆高架道路, 新生高架 (Taipei Dept. of Transportation via LTN, 2026: https://news.ltn.com.tw/news/life/breakingnews/5487846;
+checked Sep 2026). Routers often send scooters onto them because OSM doesn't always tag the ban.
+
+**淡江大橋 (Danjiang Bridge, Tai 61, Tamsui ↔ Bali) is open to scooters** on a dedicated 2.5 m scooter lane,
+40 km/h (Highway Bureau, thb.gov.tw news 295386). The Bali end is entered "從台61線或挖子尾匝道" (from Tai 61 or
+the 挖子尾 ramp; 遠見 gvm.com.tw/article/130048). How far scooters may ride Tai 61 there isn't stated, so our map lines
+use the 挖子尾 ramp and treat the rest of Tai 61's expressway mainline as off-limits (checked Sep 2026).
+
+**Enforced in code:** `src/data/scooterRules.ts` turns these rules into checks on every map line
+(`src/data/scooterRules.test.ts`); `npm run snap-legs` won't save a line that breaks one.
+
 Plate colours:
 * **Green** — ≤50cc (and small e-scooters). Slow; not recommended for Huan Dao.
 * **White** — 50–250cc ("普通重型"). Most rentals (125cc/150cc). Must do two-stage left turns and stay in the scooter/right lane.
@@ -16,6 +29,9 @@ Plate colours:
 * Suhua Improved Highway (蘇花改, Tai 9) opened 2020. Heavy (yellow/red) bikes allowed since Sept 2022.
 * White-plate scooters (50–250cc) historically had to use the **old Suhua, Tai 9D (台9丁)** plus specific tunnels. **Renshui Tunnel** is open to scooters, bicycles and pedestrians.
 * **Zhongren Tunnel** (中仁隧道) trial for white plates from 30 Apr 2025 (6-month trial, dedicated right lane, 50 km/h limit, keep 50 m gap, headlights on). **⚠ VERIFY** whether the trial was made permanent.
+* The Improved Highway (Tai 9) has three new sections — **Su'ao–Dong'ao** (蘇澳, 東澳 tunnels), **Nan'ao–Heping**
+  (觀音, 谷風, 武塔 tunnels) and **Hezhong–Daqingshui** (中仁, 仁水 tunnels). **Daqingshui–Chongde (Qingshui Cliff:
+  大清水/錦文/匯德/崇德 tunnels) is still the old road** (zh.wikipedia 蘇花公路改善計畫; checked Sep 2026).
 * The **April 2024 Hualien earthquake** (M7.4) and later typhoons destroyed the Tai 9D section between **Daqingshui and Heren (9D 64K–69K)**. In **January 2026 the government announced it will not be repaired**; all traffic is routed through Tai 9 in that section.
 * Practical advice for the app:
   * Ride the Suhua in daylight, not in heavy rain, and not on holiday weekends (truck + tourist traffic).

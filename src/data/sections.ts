@@ -56,7 +56,7 @@ export const SECTIONS: Section[] = [
         tags: ['mountain', 'short'],
         legs: [
           {
-            to: 'pinglin', km: 35, speed: 32, road: 'Tai 9', scenic: 2,
+            to: 'pinglin', km: 41, speed: 32, road: 'Tai 9', scenic: 2,
             warnings: [{ level: 'caution', text: 'Hundreds of hairpins and many speeding bikes, esp. weekends. Heavy police enforcement.' }],
           },
           { to: 'yilan', km: 40, speed: 32, road: 'Tai 9', scenic: 2 },
@@ -360,7 +360,7 @@ export const SECTIONS: Section[] = [
         summary: 'Direct route north. Watch for signs — parts of Tai 61 expressway ban scooters.',
         difficulty: 1,
         tags: ['short'],
-        legs: [{ to: 'hsinchu', km: 100, speed: 38, road: 'Tai 1', scenic: 1 }],
+        legs: [{ to: 'hsinchu', km: 112, speed: 38, road: 'Tai 1', scenic: 1 }],
       },
       {
         id: 'hakka-hills',
@@ -388,7 +388,7 @@ export const SECTIONS: Section[] = [
         summary: 'Urban and full of traffic lights, but direct.',
         difficulty: 1,
         tags: ['urban'],
-        legs: [{ to: 'taipei', km: 80, speed: 30, road: 'Tai 1', scenic: 1 }],
+        legs: [{ to: 'taipei', km: 78, speed: 30, road: 'Tai 1', scenic: 1 }],
       },
       {
         id: 'west-coast',
@@ -397,8 +397,8 @@ export const SECTIONS: Section[] = [
         difficulty: 1,
         tags: ['coast', 'sunset'],
         legs: [
-          { to: 'tamsui', km: 85, speed: 38, road: 'Tai 15 / Tai 61 frontage', scenic: 2 },
-          { to: 'taipei', km: 25, speed: 30, road: 'Tai 2B', scenic: 1 },
+          { to: 'tamsui', km: 79, speed: 38, road: 'Tai 15 / Tai 61 frontage', scenic: 2 },
+          { to: 'taipei', km: 27, speed: 30, road: 'Tai 2B', scenic: 1 },
         ],
       },
     ],
