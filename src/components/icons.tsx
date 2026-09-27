@@ -65,3 +65,17 @@ export const IconArrow = () => (
     <path d="M5 12h14M13 6l6 6-6 6" />
   </Svg>
 );
+
+export const IconBed = () => (
+  <Svg size={15}>
+    <path d="M3 18V6M3 14h18v4M21 14v-2.5a3 3 0 0 0-3-3h-7V14" />
+    <circle cx="7" cy="10.5" r="1.8" />
+  </Svg>
+);
+
+export const IconLock = ({ open = false }: { open?: boolean }) => (
+  <Svg size={14}>
+    <rect x="5" y="11" width="14" height="9.5" rx="2" />
+    <path d={open ? 'M8.5 11V7.5a3.5 3.5 0 0 1 6.8-1.2' : 'M8.5 11V7.5a3.5 3.5 0 0 1 7 0V11'} />
+  </Svg>
+);
