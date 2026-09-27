@@ -78,7 +78,8 @@ export function buildRoute(opts: RouteOptions): Route {
         to: order[i + 1],
         km: src.km,
         hours: (src.km / (src.speed * speedFactor)) * RIDE_OVERHEAD,
-        road: src.road,
+        // Multi-road legs are written clockwise ("Tai 5 / Tai 2"); flip them for anticlockwise riding.
+        road: reversed ? src.road.split(' / ').reverse().join(' / ') : src.road,
         scenic: src.scenic ?? 1,
         warnings: src.warnings ?? [],
         sectionId: section.id,

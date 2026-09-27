@@ -29,10 +29,14 @@ motorbike loop around Taiwan. Read this file, then `docs/ARCHITECTURE.md` and `d
 ## Adding content
 - **New town**: add to `STOPS` (id, zh name, lat/lng, region, overnight score 0–3, lodgingFactor, blurb, food).
 - **New route variant**: add a `Variant` to the right `Section` in `sections.ts`; legs are listed **clockwise**,
-  last leg must end at the section's `to` hub. Tests enforce this.
+  last leg must end at the section's `to` hub. Tests enforce this. A leg on several roads lists them in clockwise
+  riding order (`road: 'Tai 5 / Tai 2'`): the app flips them for anticlockwise trips and shows them as badges.
 - **New holiday year**: append breaks to `HOLIDAYS` and the year to `HOLIDAY_YEARS` in `src/data/holidays.ts`; update the
   table in `research/08`.
 - **Road geometry**: `npm run snap-legs` (see `docs/ARCHITECTURE.md`). After adding/changing legs, re-run it for those legs.
+  It also records which roads each line follows (`src/data/geo/legRoads.ts`) and refuses lines on roads white-plate
+  scooters may not ride (`src/data/scooterRules.ts`); steer those with `VIAS`. Tests fail on a banned road, on a line
+  that isn't on the roads its `road` string names, or on stale road data (`npm run snap-legs -- --roads-only`).
 - **New attraction**: add to `ATTRACTIONS` with `stopId` of the nearest stop. `highlight: true` shows it by default on
   the day; `sideTrip: true` for things needing extra time (islands, gorges).
 - Run `npm test` — data-integrity tests catch broken references.

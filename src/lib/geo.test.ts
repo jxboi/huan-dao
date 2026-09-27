@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { LEG_GEOMETRY } from '../data/geo/legs';
 import { SECTIONS } from '../data/sections';
 import { STOP_BY_ID } from '../data/stops';
-import { decodePolyline, encodePolyline, haversineKm, legKey, legPath, pathKm, pathThrough, simplify, type LatLng } from './geo';
+import { decodePolyline, encodePolyline, haversineKm, legKey, legPath, pathKm, pathThrough, pointAlong, simplify, type LatLng } from './geo';
 
 const stops = {
   a: { lat: 25, lng: 121 },
@@ -107,5 +107,21 @@ describe('generated geometry', () => {
       expect(near(line[0], from), key).toBeLessThan(3);
       expect(near(line.at(-1)!, to), key).toBeLessThan(3);
     }
+  });
+});
+
+describe('pointAlong', () => {
+  it('finds the distance midpoint, not the vertex midpoint', () => {
+    // Short hop then a long run east along the equator: the halfway point lies on the long segment.
+    const pts: LatLng[] = [[0, 0], [0, 1], [0, 9]];
+    const mid = pointAlong(pts, 0.5)!;
+    expect(mid[0]).toBeCloseTo(0);
+    expect(mid[1]).toBeCloseTo(4.5);
+  });
+
+  it('clamps and handles degenerate paths', () => {
+    expect(pointAlong([], 0.5)).toBeUndefined();
+    expect(pointAlong([[1, 2]], 0.5)).toEqual([1, 2]);
+    expect(pointAlong([[0, 0], [0, 2]], 2)).toEqual([0, 2]);
   });
 });

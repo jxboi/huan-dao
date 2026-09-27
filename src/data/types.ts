@@ -46,6 +46,10 @@ export interface Leg {
   km: number;
   /** Average moving speed on this leg (km/h). Cities ~30, coast ~45, mountains ~30. */
   speed: number;
+  /**
+   * Road number(s) in CLOCKWISE riding order, "/"-separated: "Tai 5 / Tai 2" means Tai 5 first when riding
+   * clockwise. The app reverses them for anticlockwise trips, so keep the order (research/01, road-order audit).
+   */
   road: string;
   /** 1–3: how scenic the leg is (used for badges). */
   scenic?: 1 | 2 | 3;
