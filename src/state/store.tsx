@@ -1,8 +1,8 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useReducer, type ReactNode } from 'react';
 import { makeBudget, type Budget } from '../lib/budget';
-import { addSectionStop, changeDayEnd, chooseDayRoute, customiseSection, removeSectionStop, type DayRef } from '../lib/editRoute';
+import { addSectionStop, changeDayEnd, chooseDayRoute, setBypass, customiseSection, removeSectionStop, type DayRef } from '../lib/editRoute';
 import { makePlan, type Plan } from '../lib/planner';
-import { buildRoute } from '../lib/route';
+import { routeFor } from '../lib/route';
 import { defaultSettings, migrate, type TripSettings } from './settings';
 
 const STORAGE_KEY = 'huandao.settings.v1';
@@ -14,7 +14,8 @@ type Action =
   | { type: 'addStop'; sectionId: string; stopId: string }
   | { type: 'removeStop'; sectionId: string; stopId: string }
   | { type: 'changeDayEnd'; day: DayRef; stopId: string }
-  | { type: 'chooseDayRoute'; day: DayRef; variants: Record<string, string> }
+  | { type: 'chooseDayRoute'; day: DayRef; variants: Record<string, string>; bypasses: Record<string, boolean> }
+  | { type: 'setBypass'; id: string; on: boolean }
   | { type: 'toggleSaved'; id: string }
   | { type: 'togglePin'; stopId: string }
   | { type: 'setRest'; stopId: string; nights: number }
@@ -35,11 +36,13 @@ function reducer(s: TripSettings, a: Action): TripSettings {
     case 'removeStop':
       return removeSectionStop(s, a.sectionId, a.stopId);
     case 'changeDayEnd': {
-      const route = buildRoute({ startHub: s.startHub, direction: s.direction, variants: s.variants, customRoutes: s.customRoutes });
+      const route = routeFor(s);
       return changeDayEnd(s, route, a.day, a.stopId);
     }
     case 'chooseDayRoute':
-      return chooseDayRoute(s, a.day, a.variants);
+      return chooseDayRoute(s, a.day, a);
+    case 'setBypass':
+      return setBypass(s, a.id, a.on);
     case 'toggleSaved':
       return { ...s, saved: s.saved.includes(a.id) ? s.saved.filter((x) => x !== a.id) : [...s.saved, a.id] };
     case 'togglePin': {

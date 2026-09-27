@@ -45,6 +45,21 @@ Plate colours:
 * Tai 8 open only at **fixed release windows** (5 per day; 17:30–18:00 exit-only). Self-drive vehicles only; no buses to Tianxiang.
 * Oct 2025 landslide dam flooded part of Tai 8 (drained).
 * App guidance: treat Taroko as an optional half-day detour; always check https://www.taroko.gov.tw/en/TAROKO_HighwayCondition.aspx?n=7879 the morning of.
+* **Sep 2026 schedule, Tai 8 east (Guanyuan–Taroko):** five release windows a day between 06:30 and 18:00
+  (06:30–08:00, 10:00–10:05, 12:00–13:00, 15:00–15:05, 17:00–18:00); nightly closure 18:30–06:30; daytime two-way
+  traffic over the 25–28 Sep Mid-Autumn holiday (Tienhsiang Youth Activity Center, reposting the Highway Bureau notice:
+  tienhsiang.cyh.org.tw/?p=8151; checked Sep 2026). Earlier in 2026 it was 10 ten-minute windows 08:30–17:30 (Mar–Apr
+  notice, thb.gov.tw s=293860) — the schedule changes monthly. The notices set no separate rule for scooters.
+  Used by the Lishan mountain route (`TAI8_EAST` warning in sections.ts).
+* **Tai 8 west (Guguan–Deji, the "中橫便道") is still closed to the public**: only residents, officials and a
+  reservation bus, at three set times a day. A permanent rebuild is planned for ~2037 (storm.mg 2026-01-02; thb2museum;
+  checked Sep 2026). So Lishan can't be reached from Taichung — only via Tai 7A (Yilan), Tai 8 east (Hualien) or Tai 14A
+  (Puli).
+
+## Tai 7A — Central Cross-Island Highway, Yilan branch (Qilan → Lishan)
+* Open to all traffic incl. scooters; Siyuan Pass 1,948 m. Roadworks with stop-go control are common (e.g. 0K–45K and
+  35.9K, weekdays 08:00–17:00, 1 Jul–31 Aug 2026; thbu4.thb.gov.tw). Road condition line: 獨立山工務段 03-9962683.
+* Petrol: Nanshan (~45 km before Lishan) and Lishan only (LTN 2019, see research/01).
 
 ## South Link Highway (Tai 9, Taitung ↔ Pingtung)
 * Upgraded, wide, lots of tunnels on the new alignment; Shouka pass at 460 m.
@@ -59,8 +74,17 @@ Plate colours:
 
 ## Mountain roads (Alishan Tai 18, Hehuanshan Tai 14A, Southern Cross-Island Tai 20)
 * Tai 14A (Wuling 3,275 m) — highest road in East Asia; cold, thin air, 125cc struggles.
-* Tai 20 Southern Cross-Island reopened (2022) with controls. **⚠ VERIFY** closures.
-* Not part of the default loop; offer as "advanced detours".
+  * Open to scooters, but **all motorcycles and scooters (incl. heavy bikes) are stopped from entering the controlled
+    high section when there is snow or ice** — mostly Dec–Mar (Highway Bureau snow-season notices, thb.gov.tw, and
+    udn 2025; checked Sep 2026). Azalea season (11 Apr–14 Jun 2026): weekend/holiday 06:00–11:00 high-occupancy control
+    aimed at cars.
+* **Tai 20 Southern Cross-Island, Meishankou–Xiangyang (臨105線 0K–44K, includes Yakou):** open **Fri–Mon only**,
+  entry 07:00–14:00, everyone out by 17:00; **closed Tue–Thu**. Open to scooters and vehicles up to 9 seats; no hikers or
+  bicycles (Yushan National Park road status page, updated 2026-09-23: ysnp.gov.tw/Highway/C001300). In effect since
+  1 Dec 2025 (before that it was closed Tue & Thu only). Closed in typhoons, quakes and heavy rain.
+  * Petrol: none on the mountain road — Haiduan/Guanshan in the east, Meigu/Baolai in the west, 100+ km apart
+    (aroundtaiwan.net, 2023).
+* Not part of the default loop: Tai 14A and Tai 20 are side trips in the app (research/01).
 
 ## Official status sources to link from the app
 * Taiwan road traffic (Directorate General of Highways): https://www.thb.gov.tw/

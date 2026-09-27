@@ -60,3 +60,14 @@ Coordinates are approximate (±200 m) — good for maps, not for pin-point nav.
 * **Taichung:** Rainbow Village, National Opera House, Fengjia night market, Calligraphy Greenway.
 * **Sanyi:** woodcarving museum, Longteng broken bridge. 2 h.
 * **Hsinchu:** Old city god temple, Neiwan old street (inland), Beipu Hakka village.
+
+### Added Sep 2026 (new routes: Tai 3 inland, Meinong foothills, Lishan mountain route; coordinates from OSM/Nominatim)
+* **Beipu** (24.702, 121.057): old street, Citian Temple, Jiang A-Xin mansion; lei cha and Oriental Beauty tea. 1.5 h.
+* **Dahu** (24.423, 120.866): pick-your-own strawberries, roughly Dec–Apr; strawberry wine village. 1.5 h.
+* **Meinong** (22.898, 120.542): Hakka culture museum, oil-paper umbrella workshops, tobacco barns. 1.5 h.
+  **Qishan old street** (22.888, 120.483), 6 km away on the way to Tainan: banana-boom shophouses, old station. 1 h.
+* **Siyuan Pass** (24.394, 121.353), Tai 7A, 1,948 m watershed. 0.5 h.
+* **Wuling pass** (24.137, 121.276), Tai 14A, 3,275 m: 10 km up from Dayuling (Valhalla), or a full-day ride from Puli.
+* **Tianxiang** (24.183, 121.494): Xiangde Temple suspension bridge and pagoda, the classic overnight inside Taroko.
+* **Yakou** (23.264, 120.962), Tai 20 summit tunnel ~2,700 m: full-day ride from Guanshan (~69 km each way), Fri–Mon only
+  (research/02).

@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { haversineKm } from '../lib/geo';
 import { ATTRACTIONS } from './attractions';
+import { BYPASSES } from './bypasses';
 import { LINKS } from './links';
+import { roadLegs } from './roadLegs';
 import { HUBS, SECTIONS } from './sections';
 import { STOPS, STOP_BY_ID } from './stops';
 
@@ -63,8 +65,30 @@ describe('sections', () => {
     }
   });
 
+  it('bypasses skip a real hub and run from one side of it to the other', () => {
+    for (const b of BYPASSES) {
+      const nodes = [b.from, ...b.legs.map((l) => l.to)];
+      expect(HUBS, b.id).toContain(b.hub);
+      expect(nodes, b.id).not.toContain(b.hub);
+      expect(new Set(nodes).size, b.id).toBe(nodes.length);
+      for (const id of nodes) expect(STOP_BY_ID[id], `${b.id}: ${id}`).toBeDefined();
+      // Clockwise, the first stop is on the section into the hub and the last on the section out of it.
+      const into = SECTIONS.find((s) => s.to === b.hub)!;
+      const out = SECTIONS.find((s) => s.from === b.hub)!;
+      const on = (s: typeof into, id: string) => s.variants.some((v) => v.legs.some((l) => l.to === id)) || LINKS.some((l) => l.from === id || l.to === id);
+      expect(on(into, nodes[0]), `${b.id}: ${nodes[0]} before ${b.hub}`).toBe(true);
+      expect(on(out, nodes.at(-1)!), `${b.id}: ${nodes.at(-1)} after ${b.hub}`).toBe(true);
+      b.legs.forEach((l, i) => {
+        const from = i ? b.legs[i - 1].to : b.from;
+        expect(l.km, `${b.id}: ${from}>${l.to}`).toBeGreaterThanOrEqual(haversineKm(at(from), at(l.to)) * 0.95);
+        expect(l.speed).toBeGreaterThanOrEqual(20);
+        expect(l.speed).toBeLessThanOrEqual(60);
+      });
+    }
+  });
+
   it('road warnings with a checked date use yyyy-mm', () => {
-    const ws = SECTIONS.flatMap((s) => s.variants.flatMap((v) => v.legs.flatMap((l) => l.warnings ?? [])));
+    const ws = [...roadLegs().values()].flatMap((l) => l.warnings ?? []);
     for (const w of ws) if (w.checked) expect(w.checked).toMatch(/^\d{4}-\d{2}(-\d{2})?$/);
   });
 });

@@ -3,8 +3,7 @@ import { describeSeg, lineFingerprint, namedShare, violations, type RoadSeg } fr
 import { LEG_ROADS } from './geo/legRoads';
 import { LEG_GEOMETRY } from './geo/legs';
 import { SCOOTER_RULES } from './scooterRules';
-import { LINKS } from './links';
-import { SECTIONS } from './sections';
+import { roadLegs } from './roadLegs';
 
 /**
  * Legs whose map line spends less than half its distance on the roads the data names, with the share today.
@@ -15,17 +14,7 @@ const OFF_NAMED_ROADS: Record<string, number> = {};
 const MIN_SHARE = 0.5;
 
 /** Every leg once, keyed "from>to" clockwise, with the road string the data gives it. */
-const LEGS = new Map<string, string>();
-for (const s of SECTIONS) {
-  for (const v of s.variants) {
-    let from = s.from;
-    for (const l of v.legs) {
-      if (!LEGS.has(`${from}>${l.to}`)) LEGS.set(`${from}>${l.to}`, l.road);
-      from = l.to;
-    }
-  }
-}
-for (const l of LINKS) if (!LEGS.has(`${l.from}>${l.to}`)) LEGS.set(`${l.from}>${l.to}`, l.road);
+const LEGS = new Map([...roadLegs()].map(([k, l]) => [k, l.road]));
 const SNAPPED = [...LEGS.keys()].filter((k) => LEG_GEOMETRY[k]);
 
 describe('map lines vs scooter rules', () => {

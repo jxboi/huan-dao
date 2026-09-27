@@ -5,7 +5,7 @@ import type { HolidayBreak } from '../data/holidays';
 import type { Attraction, RoadWarning } from '../data/types';
 import { PACES, type TripSettings } from '../state/settings';
 import { fmtRange, holidayOn, holidaysCovered, holidaysDuring } from './holidays';
-import { buildRoute, type Route, type RouteLeg } from './route';
+import { routeFor, type Route, type RouteLeg } from './route';
 
 /**
  * The planner turns settings into a day-by-day itinerary.
@@ -61,13 +61,7 @@ const OVERNIGHT_PENALTY: Record<number, number> = { 0: Infinity, 1: 2.5, 2: 0.6,
 
 export function makePlan(settings: TripSettings): Plan {
   const vehicle = VEHICLES.find((v) => v.id === settings.vehicle) ?? VEHICLES[0];
-  const route = buildRoute({
-    startHub: settings.startHub,
-    direction: settings.direction,
-    variants: settings.variants,
-    customRoutes: settings.customRoutes,
-    speedFactor: vehicle.speedFactor,
-  });
+  const route = routeFor(settings, vehicle.speedFactor);
   const pace = PACES[settings.pace];
   const notes: string[] = [];
   const N = route.points.length - 1;

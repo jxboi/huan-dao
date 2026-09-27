@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { LEG_GEOMETRY } from '../data/geo/legs';
-import { LINKS } from '../data/links';
-import { SECTIONS } from '../data/sections';
+import { roadLegs } from '../data/roadLegs';
 import { STOP_BY_ID } from '../data/stops';
 import { decodePolyline, encodePolyline, haversineKm, legKey, legPath, pathKm, pathThrough, pointAlong, simplify, type LatLng } from './geo';
 
@@ -96,10 +95,7 @@ describe('leg paths', () => {
 });
 
 describe('generated geometry', () => {
-  const legs = new Set([
-    ...SECTIONS.flatMap((s) => s.variants.flatMap((v) => v.legs.map((l, i) => legKey(i ? v.legs[i - 1].to : s.from, l.to)))),
-    ...LINKS.map((l) => legKey(l.from, l.to)),
-  ]);
+  const legs = new Set(roadLegs().keys());
 
   it('only has clockwise keys for real legs, starting and ending near their stops', () => {
     for (const [key, poly] of Object.entries(LEG_GEOMETRY)) {

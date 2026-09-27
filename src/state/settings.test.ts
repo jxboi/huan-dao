@@ -102,6 +102,12 @@ describe('migrate', () => {
     expect(migrate({ customRoutes: 'x' }).customRoutes).toEqual({});
   });
 
+  it('keeps only known bypasses, once each', () => {
+    expect(migrate({ bypasses: ['tai21-guoxing', 'nope', 'tai21-guoxing', 3] }).bypasses).toEqual(['tai21-guoxing']);
+    expect(migrate({ bypasses: 'x' }).bypasses).toEqual([]);
+    expect(migrate({}).bypasses).toEqual([]);
+  });
+
   it('always stamps the current version', () => {
     expect(migrate({ version: 0 }).version).toBe(SETTINGS_VERSION);
   });

@@ -1,7 +1,8 @@
 import { RIDE_OVERHEAD } from '../data/costs';
+import { BYPASS_BY_ID } from '../data/bypasses';
 import { SECTIONS } from '../data/sections';
-import type { RoadWarning, Section, Variant } from '../data/types';
-import type { Direction } from '../state/settings';
+import type { Bypass, RoadWarning, Section, Variant } from '../data/types';
+import type { Direction, TripSettings } from '../state/settings';
 import { CUSTOM_VARIANT, customVariant } from './network';
 
 export interface RouteLeg {
@@ -14,6 +15,8 @@ export interface RouteLeg {
   scenic: number;
   warnings: RoadWarning[];
   sectionId: string;
+  /** Set on legs that ride a bypass round a hub. */
+  bypass?: string;
 }
 
 export interface Route {
@@ -28,6 +31,8 @@ export interface Route {
   totalHours: number;
   /** Sections in travel order with the chosen variant. */
   sections: { section: Section; variant: Variant; reversed: boolean }[];
+  /** Bypasses the route actually rides (enabled ones whose ends are on the route next to their hub). */
+  bypasses: string[];
 }
 
 export interface RouteOptions {
@@ -36,8 +41,18 @@ export interface RouteOptions {
   variants: Record<string, string>;
   /** sectionId → your stops (clockwise), used where variants[sectionId] is 'custom'. */
   customRoutes?: Record<string, string[]>;
+  /** Bypass ids to ride where they fit (src/data/bypasses.ts). */
+  bypasses?: string[];
   /** Multiplies average speeds (e.g. heavier bikes). */
   speedFactor?: number;
+}
+
+/** The route your settings describe. */
+export function routeFor(
+  s: Pick<TripSettings, 'startHub' | 'direction' | 'variants' | 'customRoutes' | 'bypasses'>,
+  speedFactor?: number,
+): Route {
+  return buildRoute({ startHub: s.startHub, direction: s.direction, variants: s.variants, customRoutes: s.customRoutes, bypasses: s.bypasses, speedFactor });
 }
 
 export function variantFor(section: Section, variants: Record<string, string>, customRoutes: Record<string, string[]> = {}): Variant {
@@ -66,8 +81,8 @@ export function buildRoute(opts: RouteOptions): Route {
     variant: variantFor(section, opts.variants, opts.customRoutes),
   }));
 
-  const points: string[] = [sections[0].reversed ? sections[0].section.to : sections[0].section.from];
-  const legs: RouteLeg[] = [];
+  let points: string[] = [sections[0].reversed ? sections[0].section.to : sections[0].section.from];
+  let legs: RouteLeg[] = [];
 
   for (const { section, variant, reversed } of sections) {
     // Clockwise node list for this variant.
@@ -92,6 +107,16 @@ export function buildRoute(opts: RouteOptions): Route {
     }
   }
 
+  const bypasses: string[] = [];
+  for (const id of opts.bypasses ?? []) {
+    const b = BYPASS_BY_ID[id];
+    const rode = b && rideBypass(points, legs, b, opts.direction, speedFactor);
+    if (rode) {
+      ({ points, legs } = rode);
+      bypasses.push(id);
+    }
+  }
+
   const cumKm = [0];
   const cumHours = [0];
   legs.forEach((l, i) => {
@@ -107,6 +132,42 @@ export function buildRoute(opts: RouteOptions): Route {
     totalKm: cumKm[cumKm.length - 1],
     totalHours: cumHours[cumHours.length - 1],
     sections,
+    bypasses,
+  };
+}
+
+/**
+ * `points`/`legs` with the hub swapped for the bypass, or undefined when the stops either side of the hub aren't
+ * both on the bypass (in riding order). Bypass legs keep the section of the side they start on, the last one the
+ * section after the hub, so days and route edits still see which sections a day rides.
+ */
+function rideBypass(points: string[], legs: RouteLeg[], b: Bypass, direction: Direction, speedFactor: number) {
+  const k = points.indexOf(b.hub, 1);
+  if (k < 1 || k >= points.length - 1) return undefined;
+  const nodes = [b.from, ...b.legs.map((l) => l.to)];
+  const cw = direction === 'cw';
+  const travel = cw ? nodes : [...nodes].reverse();
+  const i = travel.indexOf(points[k - 1]);
+  const j = travel.indexOf(points[k + 1]);
+  if (i < 0 || j <= i) return undefined;
+  const around: RouteLeg[] = [];
+  for (let t = i; t < j; t++) {
+    const src = b.legs[cw ? t : nodes.length - 2 - t];
+    around.push({
+      from: travel[t],
+      to: travel[t + 1],
+      km: src.km,
+      hours: (src.km / (src.speed * speedFactor)) * RIDE_OVERHEAD,
+      road: cw ? src.road : src.road.split(' / ').reverse().join(' / '),
+      scenic: src.scenic ?? 1,
+      warnings: src.warnings ?? [],
+      sectionId: t === j - 1 ? legs[k].sectionId : legs[k - 1].sectionId,
+      bypass: b.id,
+    });
+  }
+  return {
+    points: [...points.slice(0, k - 1), ...travel.slice(i, j + 1), ...points.slice(k + 2)],
+    legs: [...legs.slice(0, k - 1), ...around, ...legs.slice(k + 1)],
   };
 }
 

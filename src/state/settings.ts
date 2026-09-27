@@ -1,4 +1,5 @@
 import { CURRENCIES, FOOD_STYLES, STAYS, VEHICLES, type FoodStyle, type SeasonMode, type StayTier, type VehicleId } from '../data/costs';
+import { BYPASS_BY_ID } from '../data/bypasses';
 import { HUBS, SECTIONS } from '../data/sections';
 import { STOP_BY_ID } from '../data/stops';
 import { CUSTOM_VARIANT, NETWORK_STOPS } from '../lib/network';
@@ -23,6 +24,8 @@ export interface TripSettings {
   variants: Record<string, string>;
   /** sectionId → the stops you chose for that section, clockwise (hubs excluded). Kept when you switch back to a preset. */
   customRoutes: Record<string, string[]>;
+  /** Bypass ids (src/data/bypasses.ts) to ride round a hub wherever the route fits them. */
+  bypasses: string[];
   /** Stops the user wants to sleep at. */
   pinned: string[];
   /** stopId → extra nights (rest days) there. Implies pinned. */
@@ -55,6 +58,7 @@ export function defaultSettings(): TripSettings {
     pace: 'moderate',
     variants: Object.fromEntries(SECTIONS.map((s) => [s.id, s.defaultVariant])),
     customRoutes: {},
+    bypasses: [],
     pinned: [],
     restDays: {},
     vehicle: 'scooter125',
@@ -86,6 +90,7 @@ export function migrate(raw: unknown): TripSettings {
       return [[id, ok] as const];
     }),
   );
+  s.bypasses = [...new Set(stringList(s.bypasses))].filter((id) => id in BYPASS_BY_ID);
   s.variants = { ...base.variants, ...(isRecord(s.variants) ? (s.variants as Record<string, string>) : {}) };
   // Drop variant ids that no longer exist in data.
   for (const sec of SECTIONS) {

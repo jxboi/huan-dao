@@ -1,11 +1,12 @@
 import { ATTRACTIONS } from '../data/attractions';
+import { BYPASSES, BYPASS_BY_ID } from '../data/bypasses';
 import { VEHICLES } from '../data/costs';
 import { SECTIONS, SECTION_BY_ID } from '../data/sections';
 import { STOPS, STOP_BY_ID } from '../data/stops';
-import type { Section } from '../data/types';
-import type { TripSettings } from '../state/settings';
+import type { Section, Variant } from '../data/types';
+import { PACES, type TripSettings } from '../state/settings';
 import { CUSTOM_VARIANT, distanceKm, expandStops, insertStop, placeStop, presetStops } from './network';
-import { buildRoute, orderedSections, variantFor, type Route } from './route';
+import { orderedSections, routeFor, variantFor, type Route, type RouteLeg } from './route';
 
 /**
  * Route edits the user makes (the store's reducer calls these). Each returns new settings; nothing here
@@ -49,6 +50,8 @@ export interface DayRef {
   via: string[];
   /** Sections today's legs belong to, in riding order. */
   sectionIds: string[];
+  /** Bypasses today's legs ride. */
+  bypasses?: string[];
 }
 
 /**
@@ -127,9 +130,14 @@ export function dayEndOptions(s: TripSettings, route: Route, day: DayRef): DayEn
 }
 
 export interface DayRouteOption {
-  kind: 'fast' | 'scenic' | 'current';
+  /** The quickest, the most scenic that fits a day at your pace, or one of the rest. */
+  kind: 'fast' | 'scenic' | 'other';
+  /** The named routes today rides (e.g. "Tai 3 inland + Tai 21 via Guoxing"); empty if none has a name. */
+  name: string;
   /** Variant ids for today's sections (merge into settings.variants to ride it). */
   variants: Record<string, string>;
+  /** Bypasses round hubs today passes: on or off. */
+  bypasses: Record<string, boolean>;
   /** Stops today, from the start to the end. */
   path: string[];
   km: number;
@@ -138,15 +146,16 @@ export interface DayRouteOption {
   scenic: number;
   roads: string[];
   current: boolean;
+  /** More riding than your pace's longest day. */
+  long: boolean;
 }
-
-/** A scenic option may take at most this much longer than the fast one before it stops being a sensible offer. */
-const SCENIC_MAX_EXTRA = 1.6;
 
 /**
  * Other ways to ride a day between the same two towns: every combination of the presets (and your custom route)
- * for today's sections that still passes through both ends, reduced to the fastest and the most scenic. Includes
- * the one you ride now as 'current' when it is neither. Empty when there is nothing to choose.
+ * for today's sections, with and without bypasses round hubs it passes, that still goes through both ends. The first
+ * is the quickest ('fast'); next, if there is one, the most scenic ('scenic': clearly more scenic and no longer than
+ * your pace's longest day, or a quarter longer than the fast one if that's already over); then the rest by riding
+ * time. Empty when there is nothing to choose.
  */
 export function dayRouteOptions(s: TripSettings, day: DayRef): DayRouteOption[] {
   const speedFactor = (VEHICLES.find((v) => v.id === s.vehicle) ?? VEHICLES[0]).speedFactor;
@@ -156,35 +165,65 @@ export function dayRouteOptions(s: TripSettings, day: DayRef): DayRouteOption[] 
     if (s.customRoutes[id]) ids.push(CUSTOM_VARIANT);
     return { id, ids };
   });
-  const combos = choices.reduce<Record<string, string>[]>(
-    (acc, c) => acc.flatMap((combo) => c.ids.map((v) => ({ ...combo, [c.id]: v }))),
-    [{}],
-  );
+  // Bypasses round a hub you pass today, or that today already rides.
+  const bypassIds = BYPASSES.filter((b) => day.via.slice(0, -1).includes(b.hub) || day.bypasses?.includes(b.id)).map((b) => b.id);
+  type Combo = { variants: Record<string, string>; bypasses: Record<string, boolean> };
+  let combos: Combo[] = [{ variants: {}, bypasses: {} }];
+  for (const c of choices) combos = combos.flatMap((x) => c.ids.map((v) => ({ ...x, variants: { ...x.variants, [c.id]: v } })));
+  // Off before on: where a bypass doesn't fit, the route is the same and the plain one is kept.
+  for (const id of bypassIds) combos = [false, true].flatMap((on) => combos.map((x) => ({ ...x, bypasses: { ...x.bypasses, [id]: on } })));
 
-  const seen = new Map<string, DayRouteOption>();
+  const riding = new Set(routeFor(s, speedFactor).bypasses);
+  const seen = new Map<string, Omit<DayRouteOption, 'kind' | 'long'> & { same: number }>();
   for (const combo of combos) {
-    const variants = { ...s.variants, ...combo };
-    const route = buildRoute({ startHub: s.startHub, direction: s.direction, variants, customRoutes: s.customRoutes, speedFactor });
-    const opt = daySlice(route, day);
-    if (!opt) continue;
-    const key = opt.path.join('>');
-    const current = day.sectionIds.every((id) => (s.variants[id] ?? SECTION_BY_ID[id].defaultVariant) === combo[id]);
+    const variants = { ...s.variants, ...combo.variants };
+    const bypasses = [...s.bypasses.filter((id) => !(id in combo.bypasses)), ...bypassIds.filter((id) => combo.bypasses[id])];
+    const route = routeFor({ ...s, variants, bypasses }, speedFactor);
+    const slice = daySlice(route, day);
+    if (!slice) continue;
+    // A bypass switched on where it doesn't fit isn't ridden: record it as off, so picking this turns it off.
+    const flags = Object.fromEntries(bypassIds.map((id) => [id, route.bypasses.includes(id)]));
+    const key = slice.path.join('>');
+    // How much of this is what you ride now: sections and bypasses that stay as they are.
+    const same =
+      day.sectionIds.filter((id) => (s.variants[id] ?? SECTION_BY_ID[id].defaultVariant) === combo.variants[id]).length +
+      bypassIds.filter((id) => riding.has(id) === flags[id]).length;
+    const current = same === day.sectionIds.length + bypassIds.length;
     const had = seen.get(key);
-    // Presets that only differ outside today give the same day: keep the one you ride now, if it's among them.
-    if (!had || current) seen.set(key, { kind: 'current', variants: combo, ...opt, current: current || !!had?.current });
+    // Choices that only differ outside today give the same day: keep the one that changes least of your route.
+    if (!had || same > had.same) {
+      const { legs, ...rest } = slice;
+      seen.set(key, { variants: combo.variants, bypasses: flags, ...rest, name: optionName(route, legs, slice.path, combo.variants), current: current || !!had?.current, same });
+    }
   }
 
   const all = [...seen.values()];
   if (all.length < 2) return [];
+  const maxHours = PACES[s.pace].max;
   const fast = all.reduce((a, b) => (b.hours < a.hours - 1e-9 || (Math.abs(b.hours - a.hours) < 1e-9 && b.current) ? b : a));
+  const limit = Math.max(maxHours, fast.hours * 1.25);
   const scenic = all
-    .filter((o) => o !== fast && o.scenic > fast.scenic + 0.2 && o.hours <= fast.hours * SCENIC_MAX_EXTRA)
+    .filter((o) => o !== fast && o.scenic > fast.scenic + 0.2 && o.hours <= limit)
     .sort((a, b) => b.scenic - a.scenic || a.hours - b.hours)[0];
-  if (!scenic) return [];
-  const out: DayRouteOption[] = [{ ...fast, kind: 'fast' }, { ...scenic, kind: 'scenic' }];
-  const cur = all.find((o) => o.current);
-  if (cur && cur !== fast && cur !== scenic) out.push(cur);
-  return out;
+  const rest = all.filter((o) => o !== fast && o !== scenic).sort((a, b) => a.hours - b.hours);
+  const tag = ({ same: _, ...o }: (typeof all)[number], kind: DayRouteOption['kind']): DayRouteOption => ({ ...o, kind, long: o.hours > maxHours });
+  return [tag(fast, 'fast'), ...(scenic ? [tag(scenic, 'scenic')] : []), ...rest.map((o) => tag(o, 'other'))];
+}
+
+/**
+ * The named routes a day rides: each preset whose own towns it passes (a preset only touched at a hub says
+ * nothing about today), then any bypass.
+ */
+function optionName(route: Route, legs: RouteLeg[], path: string[], variants: Record<string, string>): string {
+  const parts: string[] = [];
+  for (const { section, variant } of route.sections) {
+    if (!(section.id in variants) || variant.id === CUSTOM_VARIANT || section.variants.length < 2) continue;
+    const rides = legs.some((l) => l.sectionId === section.id && !l.bypass);
+    const own = presetStops(variant);
+    if (rides && (own.length === 0 || own.some((x) => path.includes(x)))) parts.push(variant.name);
+  }
+  for (const id of new Set(legs.map((l) => l.bypass).filter(Boolean))) parts.push(BYPASS_BY_ID[id!].name);
+  return parts.join(' + ');
 }
 
 /** Today's stretch of `route`: day.from → day.to, if the route passes both in that order. */
@@ -196,6 +235,7 @@ function daySlice(route: Route, day: DayRef) {
   const legs = route.legs.slice(i, j);
   const km = legs.reduce((a, l) => a + l.km, 0);
   return {
+    legs,
     path: route.points.slice(i, j + 1),
     km,
     hours: legs.reduce((a, l) => a + l.hours, 0),
@@ -208,12 +248,38 @@ function daySlice(route: Route, day: DayRef) {
  * Ride a day on another route. Both ends of the day are pinned (like changing its destination) so the day keeps
  * its shape while the rest of the trip re-balances around the longer or shorter ride.
  */
-export function chooseDayRoute(s: TripSettings, day: DayRef, variants: Record<string, string>): TripSettings {
+export function chooseDayRoute(s: TripSettings, day: DayRef, choice: Pick<DayRouteOption, 'variants' | 'bypasses'>): TripSettings {
   const pinned = [...s.pinned];
   for (const id of [day.from, day.to]) {
     if (id !== s.startHub && (STOP_BY_ID[id]?.overnight ?? 0) > 0 && !pinned.includes(id)) pinned.push(id);
   }
-  return { ...s, pinned, variants: { ...s.variants, ...variants } };
+  const on = Object.entries(choice.bypasses ?? {});
+  const bypasses = [...s.bypasses.filter((id) => !on.some(([b]) => b === id)), ...on.filter(([, v]) => v).map(([b]) => b)];
+  return { ...s, pinned, variants: { ...s.variants, ...choice.variants }, bypasses };
+}
+
+/**
+ * Ride a bypass round a hub, or stop riding it. Turning one on also switches either neighbouring section to its
+ * shortest preset that reaches the bypass next to the hub, if the route you ride there doesn't.
+ */
+export function setBypass(s: TripSettings, id: string, on: boolean): TripSettings {
+  const b = BYPASS_BY_ID[id];
+  if (!b) return s;
+  const rest = s.bypasses.filter((x) => x !== id);
+  if (!on) return { ...s, bypasses: rest };
+  const nodes = new Set([b.from, ...b.legs.map((l) => l.to)]);
+  const variants = { ...s.variants };
+  for (const section of SECTIONS) {
+    const before = section.to === b.hub;
+    if (!before && section.from !== b.hub) continue;
+    // The stop next to the hub, clockwise: last before it, or first after it.
+    const reaches = (v: Variant) => nodes.has(before ? [section.from, ...v.legs.map((l) => l.to)].at(-2)! : v.legs[0].to);
+    if (reaches(variantFor(section, s.variants, s.customRoutes))) continue;
+    const km = (v: Variant) => v.legs.reduce((a, l) => a + l.km, 0);
+    const pick = section.variants.filter(reaches).sort((x, y) => km(x) - km(y))[0];
+    if (pick) variants[section.id] = pick.id;
+  }
+  return { ...s, variants, bypasses: [...rest, id] };
 }
 
 function savedAt(stop: string, saved: Set<string>): boolean {

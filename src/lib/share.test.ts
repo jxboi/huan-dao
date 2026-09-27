@@ -46,6 +46,11 @@ describe('share links', () => {
     expect(encodeShare(custom).length).toBeLessThan(500);
   });
 
+  it('carries bypasses round hubs', () => {
+    const t = trip({ bypasses: ['tai21-guoxing'] });
+    expect(decodeShare(encodeShare(t))!.bypasses).toEqual(['tai21-guoxing']);
+  });
+
   it('is URL-safe and survives non-ASCII', () => {
     const code = encodeShare(trip({ saved: ['台北-測試'] }));
     expect(code).toMatch(/^[A-Za-z0-9_-]+$/);

@@ -41,12 +41,20 @@ Distances are approximate, scooter-legal roads, rounded.
    via Shuangxi (Tai 2C / County 102) to Fulong, then the NE coast. ~115 km. Narrow valley roads, weekend crowds at Shifen.
    Leg distances approximate (last checked Sep 2026).
 
-### Yilan ↔ Hualien (Suhua)
-Only one realistic road corridor. ~125 km. See `02-road-status-and-restrictions.md`
+### Yilan ↔ Hualien
+1. **Suhua** — the coastal corridor. ~125 km. See `02-road-status-and-restrictions.md`
 — scooters ≤250cc must use Tai 9D (old Suhua) plus designated tunnels; since 2026
 the Daqingshui–Heren section of Tai 9D is abandoned and traffic is routed on Tai 9.
 **Most dangerous section of the loop** (trucks, tunnels, rockfall). Ride in daylight
 and good weather, check status the morning of.
+2. **Mountain route via Lishan & Taroko (Tai 7 / Tai 7A / Tai 8)** — added Sep 2026. The only way to Hualien that avoids the
+   Suhua: Tai 7 up the Lanyang valley to Qilan, Tai 7A over Siyuan Pass (1,948 m) to Lishan, Tai 8 over Dayuling (2,565 m)
+   and down through Taroko Gorge to Xincheng, then Tai 9 to Hualien. ~238 km; guides quote "250 km+, 3–4 days" by
+   bicycle (ctyeh.com/articles/1422). Legs (Valhalla `motor_scooter`, Sep 2026): Yilan → Lishan 110 km (Tai 7 ~37 km,
+   Tai 7A ~70 km), Lishan → Dayuling 30 km, Dayuling → Tianxiang 56 km, Tianxiang → Xincheng 22 km (all Tai 8),
+   Xincheng → Hualien 20 km. Petrol: Lishan's CPC station is the only one in the area; next are Nanshan (~45 km towards
+   Yilan) and Guanyuan (~35 km towards Hualien, just past Dayuling) (LTN 2019, news.ltn.com.tw/news/life/breakingnews/2932282).
+   Road status in research/02. Wuling (Hehuanshan, 3,275 m) is a 10 km detour up Tai 14A from Dayuling.
 
 ### Hualien ↔ Taitung (the headline choice)
 1. **Coastal Hwy 11** — Baqi viewpoint, Shitiping, Baxian Caves, Sanxiantai, Dulan. ~170 km. Pacific views all day. *Default.*
@@ -68,7 +76,10 @@ Taitung city. App legs: Hualien → Fengbin ~45, Fengbin → Chenggong ~65, Chen
 Tai 26 → Tai 1 via Fangliao & Donggang (ferry to Xiaoliuqiu). ~105 km.
 
 ### Kaohsiung ↔ Tainan
-Tai 17 / Tai 1 (clockwise, Kaohsiung → Tainan: Tai 17 north out of Zuoying, Tai 1 for the last ~8 km into Tainan). ~50 km. Urban.
+1. **Tai 17 / Tai 1** (clockwise, Kaohsiung → Tainan: Tai 17 north out of Zuoying, Tai 1 for the last ~8 km into Tainan). ~50 km. Urban. *Default.*
+2. **Hakka foothills via Meinong & Qishan** — added Sep 2026. Kaohsiung → Meinong 50 km: Tai 1E out of the city, Tai 1 over
+   the Gaoping River bridge, County 189 and Tai 3 north into Meinong (routed without passing Qishan). Meinong → Tainan
+   47 km: Tai 28 to Qishan, Tai 3 north, County 182 into Tainan. ~97 km. Valhalla `motor_scooter`, Sep 2026.
 
 ### Tainan ↔ Chiayi
 1. **Tai 1 direct** ~65 km. *Default.*
@@ -95,6 +106,21 @@ road network reaches (every preset leg + these links). Distances and roads from 
    Tai 6, Tai 3 north through Dahu, Shitan, Sanwan, Emei and Beipu (~57 km), then County 122 from Xiagongguan
    (Zhudong) into Hsinchu (~16 km). Tai 3 doesn't pass through Sanyi and meets County 122 at Xiagongguan
    (zh.wikipedia 臺3線; checked Sep 2026). Distance and roads from Valhalla `motor_scooter` routing (Sep 2026).
+   Split at Dahu and Beipu in Sep 2026 so they can be stops: Sanyi → Dahu 28 km, Dahu → Beipu 50 km, Beipu → Hsinchu
+   22 km (sum 100 km, unchanged).
+3. **Tai 3 inland (Dongshi, Dahu, Beipu)** — added Sep 2026. Tai 3 all the way: out of Taichung via Fengyuan and Shigang to
+   Dongshi (27 km), north via Zhuolan to Dahu (29 km), then the same road as the Hakka hills route via Shitan to Beipu
+   (50 km) and County 122 into Hsinchu (22 km). ~128 km. Tai 3 runs Zhudong → Beipu → Emei → Sanwan → Shitan → Dahu →
+   Zhuolan → Dongshi → Shigang → Fengyuan → Tanzi → Beitun → … → Wufeng → Caotun; km markers Beipu 81.6, Zhuolan 148.5,
+   Dongshi 157.9, Fengyuan 167.9, Wufeng 193.1 (zh.wikipedia 臺3線, checked Sep 2026). Valhalla `motor_scooter`, Sep 2026.
+
+### Bypass round Taichung: Tai 21 via Guoxing (`src/data/bypasses.ts`, Sep 2026)
+Sections run hub to hub, so every route passed through Taichung city. Tai 21's northern end is at Tianleng (天冷) in
+Dongshi district (0 km); it runs south through Guoxing (Shuichangliu, 21.3 km) to Puli (44.4 km) and on to Sun Moon Lake
+(zh.wikipedia 臺21線, checked Sep 2026). So a rider on Tai 3 can turn south at Dongshi and reach Puli without Taichung:
+Dongshi → Puli 61 km (Valhalla `motor_scooter`: Tai 3 / 豐勢路 out of Dongshi, Tai 21 down the valley, Tai 14 for the last
+~11 km from Guoxing), vs ~94 km via Taichung (27 + 64). Sun Moon Lake → Puli is the existing 20 km Tai 21 link.
+Hsinchu → Puli via Tai 3 and the bypass is ~161 km, vs 176 km on Tai 1 via Taichung.
 
 ### Hsinchu ↔ Taipei
 1. **Tai 1 via Taoyuan** ~80 km. Urban, traffic lights.
@@ -177,6 +203,13 @@ leg is now ≥ 50 % on its named roads (test: `OFF_NAMED_ROADS` is empty). Waypo
 
 ## Popular side trips (extra days)
 * **Taroko Gorge** (from Xincheng/Hualien) — partly reopened, controlled access. 0.5–1 day.
+* **Hehuanshan / Wuling pass (Tai 14A, 3,275 m)** — from Puli, Tai 14 via Wushe then Tai 14A past Cingjing, 57 km each way
+  (Valhalla `motor_scooter`, Sep 2026). Full day. Crossing on to Hualien via Tai 8 is possible but leaves the loop, so the
+  app offers it as an out-and-back from Puli (or the 10 km detour from Dayuling on the Lishan route).
+* **Southern Cross-Island Highway to Yakou (Tai 20, ~2,700 m)** — from Guanshan: Tai 9 to Haiduan, Tai 20 past Lidao and
+  Xiangyang to the Yakou tunnel, ~69 km each way (Valhalla, Sep 2026; aroundtaiwan.net gives Haiduan → Yakou ~52 km).
+  Crossing to Tainan (~144 km of mountain road Haiduan–Jiaxian) would skip the whole south of the loop, so it's a side trip.
+  Access rules in research/02.
 * **Green Island / Orchid Island** — ferry from Fugang (Taitung). Rent a scooter on the island. 1–3 days.
 * **Xiaoliuqiu** — ferry from Donggang. Turtles, scooter the 12 km loop. 1 day.
 * **Alishan / Sun Moon Lake** — see above.
