@@ -13,6 +13,8 @@ import { parseRoads, roadTitle } from '../lib/roads';
  * (data/geo/legs.ts) and are straight stop-to-stop otherwise. Overnight stops get numbered day markers.
  * Road numbers (台9, 縣道102) label each stretch: always for the highlighted day, on the whole loop once zoomed in.
  * `focus` (a stop tapped in the day list) flies the map to that stop and rings it; `at` makes a repeat tap fly again.
+ * `alternatives` (other ways to ride the highlighted day) are drawn pale under it, like a maps app's route choices:
+ * hovering one (here or in the list, via `hoverAlt`) darkens it and labels it; tapping it calls `onPickAlt`.
  */
 export function RouteMap({
   plan,
@@ -20,12 +22,20 @@ export function RouteMap({
   focus,
   height = 360,
   controls = true,
+  alternatives,
+  hoverAlt,
+  onHoverAlt,
+  onPickAlt,
 }: {
   plan: Plan;
   highlightDay?: number;
   focus?: { stopId: string; at: number };
   height?: number | string;
   controls?: boolean;
+  alternatives?: MapAlternative[];
+  hoverAlt?: string;
+  onHoverAlt?: (key: string | undefined) => void;
+  onPickAlt?: (key: string) => void;
 }) {
   const el = useRef<HTMLDivElement>(null);
   const map = useRef<L.Map | null>(null);
@@ -33,11 +43,19 @@ export function RouteMap({
   const fit = useRef<() => void>(() => {});
   const labels = useRef<L.LayerGroup | null>(null);
   const focusLayer = useRef<L.LayerGroup | null>(null);
+  const altLayer = useRef<L.LayerGroup | null>(null);
+  const altLines = useRef(new Map<string, { line: L.Polyline; casing: L.Polyline; at: L.LatLngExpression; label: string }>());
+  // Read at event time, so new callbacks each render don't redraw the map.
+  const handlers = useRef({ onHoverAlt, onPickAlt });
+  handlers.current = { onHoverAlt, onPickAlt };
 
   useEffect(() => {
     if (!el.current || map.current) return;
     const m = createBaseMap(el.current, { controls });
     map.current = m;
+    // Alternatives sit in their own pane under the planned route, so the ridden day always draws on top.
+    m.createPane('alternatives').style.zIndex = '350';
+    altLayer.current = L.layerGroup().addTo(m);
     layer.current = L.layerGroup().addTo(m);
     labels.current = L.layerGroup();
     focusLayer.current = L.layerGroup().addTo(m);
@@ -58,9 +76,12 @@ export function RouteMap({
     const m = map.current;
     const g = layer.current;
     const lg = labels.current;
-    if (!m || !g || !lg) return;
+    const ag = altLayer.current;
+    if (!m || !g || !lg || !ag) return;
     g.clearLayers();
     lg.clearLayers();
+    ag.clearLayers();
+    altLines.current.clear();
 
     const bounds: L.LatLngExpression[] = [];
     plan.days.forEach((d) => {
@@ -82,6 +103,26 @@ export function RouteMap({
         if (s) L.circleMarker([s.lat, s.lng], { radius: 3, color: MAP_COLORS.ink, weight: 1, fillOpacity: 0.8 }).bindTooltip(s.name).addTo(g);
       });
     });
+
+    const day = highlightDay !== undefined ? plan.days.find((x) => x.day === highlightDay) : undefined;
+    const dayPts: L.LatLngExpression[] = day ? pathThrough([day.from, ...day.via], STOP_BY_ID, LEG_GEOMETRY) : [];
+    if (day) {
+      const ridden = [day.from, ...day.via];
+      for (const alt of alternatives ?? []) {
+        const latlngs = pathThrough(alt.path, STOP_BY_ID, LEG_GEOMETRY);
+        if (latlngs.length < 2) continue;
+        dayPts.push(...latlngs);
+        const casing = L.polyline(latlngs, { pane: 'alternatives', color: MAP_COLORS.altCasing, weight: 8, opacity: 0.7, interactive: false }).addTo(ag);
+        const line = L.polyline(latlngs, { pane: 'alternatives', color: MAP_COLORS.alt, weight: 5, opacity: 1, interactive: false }).addTo(ag);
+        // An invisible wider line takes the taps: a 5 px line is hard to hit with a finger.
+        L.polyline(latlngs, { pane: 'alternatives', opacity: 0, weight: 20 })
+          .on('mouseover', () => handlers.current.onHoverAlt?.(alt.key))
+          .on('mouseout', () => handlers.current.onHoverAlt?.(undefined))
+          .on('click', () => handlers.current.onPickAlt?.(alt.key))
+          .addTo(ag);
+        altLines.current.set(alt.key, { line, casing, at: labelPoint(alt.path, ridden) ?? latlngs[0], label: alt.label });
+      }
+    }
 
     // Numbered overnight markers (group rest days on the same marker).
     const nights = new Map<string, number[]>();
@@ -117,9 +158,7 @@ export function RouteMap({
 
     fit.current = () => {
       if (highlightDay !== undefined) {
-        const d = plan.days.find((x) => x.day === highlightDay);
-        const pts = d ? pathThrough([d.from, ...d.via], STOP_BY_ID, LEG_GEOMETRY) : [];
-        if (pts.length) m.fitBounds(L.latLngBounds(pts), { padding: [30, 30], maxZoom: 11 });
+        if (dayPts.length) m.fitBounds(L.latLngBounds(dayPts), { padding: [30, 30], maxZoom: 11 });
       } else if (bounds.length) {
         m.fitBounds(L.latLngBounds(bounds), { padding: [20, 20] });
       }
@@ -129,7 +168,22 @@ export function RouteMap({
     return () => {
       m.off('zoomend', toggleLabels);
     };
-  }, [plan, highlightDay]);
+  }, [plan, highlightDay, alternatives]);
+
+  // The hovered alternative: darker, on top of the other alternatives, with its time and distance.
+  useEffect(() => {
+    const m = map.current;
+    const alt = hoverAlt ? altLines.current.get(hoverAlt) : undefined;
+    if (!m || !alt) return;
+    alt.casing.setStyle({ color: MAP_COLORS.altHoverCasing, opacity: 0.9 }).bringToFront();
+    alt.line.setStyle({ color: MAP_COLORS.altHover }).bringToFront();
+    const tip = L.tooltip({ direction: 'top', permanent: true, className: 'alt-label' }).setLatLng(alt.at).setContent(alt.label).addTo(m);
+    return () => {
+      alt.casing.setStyle({ color: MAP_COLORS.altCasing, opacity: 0.7 });
+      alt.line.setStyle({ color: MAP_COLORS.alt });
+      tip.remove();
+    };
+  }, [hoverAlt, alternatives, plan, highlightDay]);
 
   useEffect(() => {
     const m = map.current;
@@ -151,6 +205,13 @@ export function RouteMap({
   }, [focus]);
 
   return <div ref={el} className="map" style={{ height }} role="img" aria-label="Map of the planned route around Taiwan" />;
+}
+
+/** Another way to ride the highlighted day: its stops, and the label shown while it's hovered. */
+export interface MapAlternative {
+  key: string;
+  path: string[];
+  label: string;
 }
 
 const LABEL_MIN_ZOOM = 9;
@@ -179,4 +240,11 @@ function addRoadLabels(legs: Plan['days'][number]['legs'], g: L.LayerGroup) {
     }
     i = j + 1;
   }
+}
+
+/** Mid-way along the stretch where an alternative leaves the ridden day's towns, so its label sits on its own line. */
+function labelPoint(path: string[], ridden: string[]): L.LatLngExpression | undefined {
+  const off = path.map((id, i) => (ridden.includes(id) ? -1 : i)).filter((i) => i >= 0);
+  const ids = off.length ? path.slice(Math.max(0, off[0] - 1), off[off.length - 1] + 2) : path;
+  return pointAlong(pathThrough(ids, STOP_BY_ID, LEG_GEOMETRY), 0.5);
 }
