@@ -5,7 +5,7 @@ import { SECTIONS, SECTION_BY_ID } from '../data/sections';
 import { STOPS, STOP_BY_ID } from '../data/stops';
 import type { Section, Variant } from '../data/types';
 import { PACES, type TripSettings } from '../state/settings';
-import { CUSTOM_VARIANT, distanceKm, expandStops, insertStop, placeStop, presetStops } from './network';
+import { CUSTOM_VARIANT, distanceKm, expandStops, insertStop, placeStop, presetStops, pruneDetours } from './network';
 import { orderedSections, routeFor, variantFor, type Route, type RouteLeg } from './route';
 
 /**
@@ -58,7 +58,9 @@ export interface DayRef {
  * End a riding day somewhere else: "Hsinchu → Lukang" becomes "Hsinchu → Puli". Moves the overnight pin (and any
  * rest days) from the old end to the new one and pins the day's start so the day keeps its shape. If the new stop
  * isn't on the route, it is added to whichever of today's sections (or the next one) it fits best, the old end is
- * dropped from the route, and other stops you'd have passed today are dropped if they became detours.
+ * dropped from the route, and other stops you'd have passed today are dropped if they became detours. If it is
+ * further along the route, the old end (and today's other stops) go if they are now detours. Either way, towns the
+ * new day rides past are marked pass-through so the planner doesn't split the day there again.
  */
 export function changeDayEnd(s: TripSettings, route: Route, day: DayRef, newEnd: string): TripSettings {
   if (newEnd === day.to || newEnd === s.startHub || !STOP_BY_ID[newEnd]) return s;
@@ -71,12 +73,39 @@ export function changeDayEnd(s: TripSettings, route: Route, day: DayRef, newEnd:
     restDays[newEnd] = restDays[day.to];
     delete restDays[day.to];
   }
-  const next: TripSettings = { ...s, pinned, restDays };
-  if (route.points.includes(newEnd)) return next;
+  let next: TripSettings = { ...s, pinned, restDays };
+  const start = route.points.indexOf(day.from);
+  const endIdx = route.points.indexOf(newEnd, start + 1);
+  if (endIdx < 0) {
+    const placed = placeDayEnd(s, day, newEnd) ?? placeStop(SECTIONS.map((section) => ({ section, stops: sectionStops(s, section) })), newEnd);
+    if (!placed) return s;
+    next = setSectionStops(next, placed.sectionId, placed.stops);
+  } else if (endIdx > route.points.indexOf(day.to, start + 1)) {
+    const droppable = dayDroppable(s, day);
+    droppable.add(day.to);
+    for (const section of dayWindow(s, day)) {
+      const stops = sectionStops(s, section);
+      const pruned = pruneDetours(section, stops, droppable);
+      if (pruned.length !== stops.length) next = setSectionStops(next, section.id, pruned);
+    }
+  }
+  return { ...next, passThrough: passedThrough(next, day.from, newEnd) };
+}
 
-  const placed = placeDayEnd(s, day, newEnd) ?? placeStop(SECTIONS.map((section) => ({ section, stops: sectionStops(s, section) })), newEnd);
-  if (!placed) return s;
-  return setSectionStops(next, placed.sectionId, placed.stops);
+/** `s.passThrough` plus the overnight towns ridden past between `from` and `to`, less the day's two ends. */
+function passedThrough(s: TripSettings, from: string, to: string): string[] {
+  const points = routeFor(s).points;
+  const i = points.indexOf(from);
+  const j = points.indexOf(to, i + 1);
+  const between = j < 0 ? [] : points.slice(i + 1, j).filter((x) => (STOP_BY_ID[x]?.overnight ?? 0) > 0 && !s.pinned.includes(x));
+  return [...new Set([...s.passThrough, ...between])].filter((x) => x !== from && x !== to);
+}
+
+/** Stops passed today (before its end) that could go: not pinned, resting or holding saved attractions. */
+function dayDroppable(s: TripSettings, day: DayRef): Set<string> {
+  const saved = new Set(s.saved);
+  const keep = new Set([...s.pinned, ...Object.keys(s.restDays)].filter((x) => x !== day.to));
+  return new Set(day.via.filter((x) => x !== day.to && !keep.has(x) && !savedAt(x, saved)));
 }
 
 /**
@@ -88,10 +117,7 @@ function placeDayEnd(s: TripSettings, day: DayRef, newEnd: string) {
     section,
     stops: sectionStops(s, section).filter((x) => x !== day.to),
   }));
-  const saved = new Set(s.saved);
-  const keep = new Set([...s.pinned, ...Object.keys(s.restDays)].filter((x) => x !== day.to));
-  const droppable = new Set(day.via.filter((x) => x !== day.to && !keep.has(x) && !savedAt(x, saved)));
-  return placeStop(candidates, newEnd, droppable);
+  return placeStop(candidates, newEnd, dayDroppable(s, day));
 }
 
 /** The sections a day's end can move within: today's, plus the next one. */

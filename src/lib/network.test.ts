@@ -103,6 +103,36 @@ describe('changeDayEnd', () => {
   });
 });
 
+describe('changeDayEnd further along the route', () => {
+  // A rider's 8-day trip: day 3 is Puli → Alishan, day 4 Alishan → Tainan. They want Puli → Tainan in one day.
+  const d = defaultSettings();
+  const base = {
+    ...d,
+    days: 8,
+    variants: { ...d.variants, 'chiayi-taichung': 'custom' },
+    customRoutes: { 'chiayi-taichung': ['alishan', 'puli'] },
+    pinned: ['hsinchu', 'puli', 'alishan', 'kenting', 'chenggong', 'suao'],
+  };
+  const plan = makePlan(base);
+  const day = plan.days.find((x) => x.from === 'puli')!;
+
+  it('rides through instead of stopping at the old end again', () => {
+    expect(day.to).toBe('alishan');
+    const next = changeDayEnd(base, plan.route, { ...day, sectionIds: day.legs.map((l) => l.sectionId) }, 'tainan');
+    const after = makePlan(next);
+    expect(after.days.find((x) => x.from === 'puli')?.to).toBe('tainan');
+    expect(after.route.points).not.toContain('alishan'); // a detour once you're not sleeping there
+    expect(next.passThrough).toContain('chiayi');
+    expect(after.days.length).toBe(base.days);
+  });
+
+  it('lets you sleep at a pass-through town again by pinning it', () => {
+    const next = changeDayEnd(base, plan.route, { ...day, sectionIds: day.legs.map((l) => l.sectionId) }, 'tainan');
+    const again = makePlan({ ...next, pinned: [...next.pinned, 'chiayi'] });
+    expect(again.days.some((x) => x.to === 'chiayi')).toBe(true);
+  });
+});
+
 describe('fast or scenic day routes', () => {
   // Hsinchu → Puli, anticlockwise from Taipei with Puli on a custom Chiayi–Taichung route (the rider's day 2).
   const base = { ...defaultSettings(), variants: { ...defaultSettings().variants, 'chiayi-taichung': 'custom' }, customRoutes: { 'chiayi-taichung': ['puli'] } };
