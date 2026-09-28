@@ -17,6 +17,7 @@ const SHARED_KEYS = [
   'customRoutes',
   'bypasses',
   'pinned',
+  'passThrough',
   'restDays',
   'vehicle',
   'riders',

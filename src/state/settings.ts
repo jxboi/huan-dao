@@ -28,6 +28,8 @@ export interface TripSettings {
   bypasses: string[];
   /** Stops the user wants to sleep at. */
   pinned: string[];
+  /** Stops a day rides past without sleeping (set when you move a day's end further along). Pins win. */
+  passThrough: string[];
   /** stopId → extra nights (rest days) there. Implies pinned. */
   restDays: Record<string, number>;
   vehicle: VehicleId;
@@ -60,6 +62,7 @@ export function defaultSettings(): TripSettings {
     customRoutes: {},
     bypasses: [],
     pinned: [],
+    passThrough: [],
     restDays: {},
     vehicle: 'scooter125',
     riders: 1,
@@ -112,6 +115,7 @@ export function migrate(raw: unknown): TripSettings {
   s.currency = oneOf(s.currency, CURRENCIES.map((c) => c.code), base.currency);
   s.startDate = typeof s.startDate === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s.startDate) ? s.startDate : '';
   s.pinned = stringList(s.pinned).filter((id) => id in STOP_BY_ID);
+  s.passThrough = [...new Set(stringList(s.passThrough))].filter((id) => id in STOP_BY_ID);
   s.saved = stringList(s.saved);
   s.restDays = Object.fromEntries(
     Object.entries(isRecord(s.restDays) ? s.restDays : {})

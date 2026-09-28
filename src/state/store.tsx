@@ -49,7 +49,7 @@ function reducer(s: TripSettings, a: Action): TripSettings {
       const pinned = s.pinned.includes(a.stopId) ? s.pinned.filter((x) => x !== a.stopId) : [...s.pinned, a.stopId];
       const restDays = { ...s.restDays };
       if (!pinned.includes(a.stopId)) delete restDays[a.stopId];
-      return { ...s, pinned, restDays };
+      return { ...s, pinned, restDays, passThrough: s.passThrough.filter((x) => x !== a.stopId) };
     }
     case 'setRest': {
       const restDays = { ...s.restDays };

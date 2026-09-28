@@ -95,10 +95,11 @@ export function makePlan(settings: TripSettings): Plan {
   }
   const userRestTotal = Object.values(userRest).reduce((a, b) => a + b, 0);
 
-  const canEnd = route.points.map((p, i) => i === N || (i > 0 && (STOP_BY_ID[p]?.overnight ?? 0) > 0));
+  const pinnedStops = new Set([...settings.pinned, ...Object.keys(userRest)]);
+  const passThrough = new Set(settings.passThrough.filter((p) => !pinnedStops.has(p)));
+  const canEnd = route.points.map((p, i) => i === N || (i > 0 && (STOP_BY_ID[p]?.overnight ?? 0) > 0 && !passThrough.has(p)));
   const maxRidingDays = canEnd.filter(Boolean).length;
 
-  const pinnedStops = new Set([...settings.pinned, ...Object.keys(userRest)]);
   const pinnedIdx: number[] = [];
   const pinnedSeen = new Set<string>();
   route.points.forEach((p, i) => {
