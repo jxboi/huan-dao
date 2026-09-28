@@ -283,14 +283,18 @@ button.via-name.focused { background: color-mix(in srgb, var(--primary) 14%, tra
 .block-h .icon { color: var(--accent); }
 
 /* Day card: what to eat, as dish chips grouped by town */
-.more-rows { display: flex; flex-direction: column; gap: 8px; margin: 12px 0; }
-.more-row { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 56px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 16px; background: var(--surface); color: var(--text); font: inherit; text-align: left; cursor: pointer; }
-.more-row:hover { border-color: var(--accent); }
-.more-icon { flex: none; display: grid; place-items: center; width: 34px; height: 34px; border-radius: 10px; background: var(--accent-soft); color: var(--accent); }
-.more-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+/* Day card: tap-to-open lists, same family as the tonight card below them (full width, soft fill). */
+.day-body > .more-rows { display: flex; flex-direction: column; gap: 8px; margin: 18px 0 0 -44px; }
+.day-body > .more-rows + .block { margin-top: 8px; }
+.more-row { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 56px; padding: 10px 12px; border: 0; border-radius: 16px; background: var(--surface-2); color: var(--text); font: inherit; text-align: left; cursor: pointer; transition: background 0.15s; }
+.more-row:hover { background: color-mix(in srgb, var(--accent) 10%, var(--surface-2)); }
+.more-row:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.more-icon { flex: none; display: grid; place-items: center; width: 38px; height: 38px; border-radius: 12px; background: var(--surface); color: var(--accent); }
+.more-icon .icon { width: 20px; height: 20px; }
+.more-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; line-height: 1.25; }
+.more-text strong { font-size: 0.95rem; }
 .more-text .muted { font-size: 0.8rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.more-count { flex: none; min-width: 26px; padding: 2px 8px; border-radius: 999px; background: var(--surface-2); font-size: 0.78rem; font-weight: 700; text-align: center; }
-.more-count::after { content: ' ›'; color: var(--muted); }
+.more-chev { flex: none; font-size: 1.4rem; line-height: 1; color: var(--muted); padding: 0 2px; }
 .food-town + .food-town { margin-top: 8px; }
 .food-where { display: block; font-size: 0.74rem; font-weight: 700; color: var(--muted); margin-bottom: 4px; }
 .food-chips { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
@@ -660,6 +664,9 @@ body:has(.sheet[open]) { overflow: hidden; }
 .route-choice .segmented button { display: flex; flex-direction: column; align-items: center; gap: 1px; min-height: 44px; }
 .route-choice .rc-meta { font-size: 0.75rem; font-weight: 400; color: var(--muted); }
 .route-choice p { margin: 6px 2px 0; }
+.rc-alt { font-size: 0.78rem; color: var(--muted); line-height: 1.4; }
+.rc-alt strong { color: var(--text); }
+.nowrap { white-space: nowrap; }
 .route-choice .rc-note { font-size: 0.85rem; color: var(--muted); margin: 0 2px; }
 .rc-more { border: 0; background: none; color: var(--primary); font-weight: 600; font-size: 0.85rem; padding: 10px 2px; min-height: 40px; }
 .rc-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }

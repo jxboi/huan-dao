@@ -337,7 +337,7 @@ function DayCard({
                     <strong>{seeTitle}</strong>
                     <span className="muted">{d.attractions.map((a) => a.name).join(' · ')}</span>
                   </span>
-                  <span className="more-count">{d.attractions.length}</span>
+                  <span className="more-chev" aria-hidden>›</span>
                 </button>
               )}
               {foodTowns.length > 0 && (
@@ -349,7 +349,7 @@ function DayCard({
                     <strong>Eat</strong>
                     <span className="muted">{foodTowns.flatMap((t) => t.food).join(' · ')}</span>
                   </span>
-                  <span className="more-count">{foodTowns.reduce((n, t) => n + t.food.length, 0)}</span>
+                  <span className="more-chev" aria-hidden>›</span>
                 </button>
               )}
             </div>
@@ -490,11 +490,9 @@ function RouteChoice({
         <p className="rc-note">You're on the fastest way, and nothing slower is more scenic.</p>
       )}
       {alt && (
-        <p className="muted tiny">
+        <p className="rc-alt">
           <strong>{kindLabel(alt)}</strong>
-          {alt.name && ` · ${alt.name}`}
-          <br />
-          {diffText(alt, cur)}
+          {alt.name && ` · ${alt.name}`} · <span className="nowrap">{diffText(alt, cur)}</span>
           {newTowns(alt, cur)}
         </p>
       )}
