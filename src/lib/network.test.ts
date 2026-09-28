@@ -202,6 +202,19 @@ describe('fast or scenic day routes', () => {
     expect(back.variants['taichung-hsinchu']).toBe('tai1');
   });
 
+  it('a longer route keeps the day whole instead of splitting it at a town it passes', () => {
+    // e.g. Taichung → Chiayi over Alishan used to end the day at Alishan.
+    const s = defaultSettings();
+    for (const d of makePlan(s).days) {
+      if (d.kind !== 'ride') continue;
+      const ref = { from: d.from, to: d.to, via: d.via, sectionIds: [...new Set(d.legs.map((l) => l.sectionId))] };
+      for (const o of dayRouteOptions(s, ref)) {
+        const after = makePlan(chooseDayRoute(s, ref, o)).days.find((x) => x.kind === 'ride' && x.from === d.from);
+        expect(after?.to, `${d.from} → ${d.to} via ${o.name}`).toBe(d.to);
+      }
+    }
+  });
+
   it('offers nothing when a day has only one way to go', () => {
     expect(dayRouteOptions(defaultSettings(), oneSection('kenting-kaohsiung'))).toEqual([]);
   });
