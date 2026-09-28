@@ -271,8 +271,9 @@ function daySlice(route: Route, day: DayRef) {
 }
 
 /**
- * Ride a day on another route. Both ends of the day are pinned (like changing its destination) so the day keeps
- * its shape while the rest of the trip re-balances around the longer or shorter ride.
+ * Ride a day on another route. Both ends of the day are pinned (like changing its destination) and the towns it
+ * rides past marked pass-through, so the day keeps its shape while the rest of the trip re-balances around the
+ * longer or shorter ride.
  */
 export function chooseDayRoute(s: TripSettings, day: DayRef, choice: Pick<DayRouteOption, 'variants' | 'bypasses'>): TripSettings {
   const pinned = [...s.pinned];
@@ -281,7 +282,9 @@ export function chooseDayRoute(s: TripSettings, day: DayRef, choice: Pick<DayRou
   }
   const on = Object.entries(choice.bypasses ?? {});
   const bypasses = [...s.bypasses.filter((id) => !on.some(([b]) => b === id)), ...on.filter(([, v]) => v).map(([b]) => b)];
-  return { ...s, pinned, variants: { ...s.variants, ...choice.variants }, bypasses };
+  const next = { ...s, pinned, variants: { ...s.variants, ...choice.variants }, bypasses };
+  // Towns the new route rides past today are pass-through, or the planner would split a long day at one of them.
+  return { ...next, passThrough: passedThrough(next, day.from, day.to) };
 }
 
 /**
